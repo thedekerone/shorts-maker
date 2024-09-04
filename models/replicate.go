@@ -28,3 +28,22 @@ type PredictionOutputFormat struct {
 	Script string   `json:"script"`
 	Tags   []string `json:"tags"`
 }
+
+type TranscriptionOutput struct {
+	Segments         []Segment `json:"segments"`
+	DetectedLanguage string    `json:"detected_language"`
+}
+
+type Segment struct {
+	End   float64 `json:"end"`
+	Start float64 `json:"start"`
+	Text  string  `json:"text"`
+	Words []Word  `json:"words"`
+}
+
+type Word struct {
+	End   float64 `json:"end"`
+	Start float64 `json:"start"`
+	Word  string  `json:"word"`
+	Score float64 `json:"score"`
+}
