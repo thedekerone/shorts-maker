@@ -41,16 +41,40 @@ func (rs *ReplicateService) GetCompletition(prompt string) (*models.PredictionOu
 		return nil, errors.New("output is nil")
 	}
 
-	stringOutput := outputToString(output)
+	stringOutput := outputToStrings(output)
 
 	test := models.PredictionOutputFormat{}
-	json.Unmarshal([]byte(stringOutput), &test)
+	json.Unmarshal([]byte(strings.Join(stringOutput, "")), &test)
 
 	return &test, nil
 
 }
 
-func outputToString[T any](output T) string {
+func (rs *ReplicateService) GetImages(prompt string, quantity int64) ([]string, error) {
+	ctx := context.TODO()
+	model := "black-forest-labs/flux-dev"
+
+	input := replicate.PredictionInput{
+		"prompt":      prompt,
+		"num_outputs": quantity,
+	}
+
+	output, err := rs.RunWithModel(ctx, model, input, nil)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if output == nil {
+		return nil, errors.New("output is nil")
+	}
+
+	stringsOutput := outputToStrings(output)
+
+	return stringsOutput, nil
+}
+
+func outputToStrings[T any](output T) []string {
 	switch v := any(output).(type) {
 	case []any:
 		stringOutput := make([]string, len(v))
@@ -58,13 +82,31 @@ func outputToString[T any](output T) string {
 			if str, ok := item.(string); ok {
 				stringOutput[i] = str
 			} else {
-				return ""
+				return nil
 			}
 		}
-		return strings.Join(stringOutput, "")
+		return stringOutput
 	case string:
-		return v
+		return []string{v}
 	default:
-		return ""
+		return nil
 	}
+}
+
+func (rs *ReplicateService) RunWithModel(ctx context.Context, identifier string, input replicate.PredictionInput, webhook *replicate.Webhook) (replicate.PredictionOutput, error) {
+	id, err := replicate.ParseIdentifier(identifier)
+
+	prediction, err := rs.client.CreatePredictionWithModel(ctx, id.Owner, id.Name, input, nil, false)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = rs.client.Wait(ctx, prediction)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return prediction.Output, nil
 }
