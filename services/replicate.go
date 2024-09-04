@@ -1,127 +1,70 @@
 package services
 
 import (
-	"bytes"
+	"context"
 	"encoding/json"
-	"net/http"
-	"os"
-	"time"
+	"errors"
+	"strings"
 
+	"github.com/replicate/replicate-go"
 	"github.com/thedekerone/shorts-maker/models"
 )
 
 type ReplicateService struct {
-	apiKey string
+	client *replicate.Client
 }
 
-func NewReplicateService(apiKey string) *ReplicateService {
-	return &ReplicateService{apiKey: apiKey}
+func NewReplicateService() (*ReplicateService, error) {
+	client, err := replicate.NewClient(replicate.WithTokenFromEnv())
+	if err != nil {
+		return nil, err
+	}
+	return &ReplicateService{client: client}, nil
 }
 
-func (rs *ReplicateService) GetCompletition(prompt string, url string) string {
-	replicateRequest := models.CompletitionRequest{
-		Stream: false,
-		Input: models.CompletitionRequestInput{
-			TopP:            0.9,
-			Prompt:          prompt,
-			MinTokens:       50,
-			Temperature:     0.9,
-			PromptTemplate:  "",
-			PresencePenalty: 0.0,
-		},
+func (rs *ReplicateService) GetCompletition(prompt string) (*models.PredictionOutputFormat, error) {
+	ctx := context.TODO()
+	model := "meta/meta-llama-3-70b-instruct:fbfb20b472b2f3bdd101412a9f70a0ed4fc0ced78a77ff00970ee7a2383c575d"
+
+	input := replicate.PredictionInput{
+		"system_prompt": "You are a tiktok script writer, you need to generate interesting stories for your audience. respond in the json format: {script: string; tags: string[]}. return only the json, don't include any other text. stories should last aproximately 3 minutes. this will be sent to a text to speech service to generate the final video, add punctuation and capitalization to make the text sound more natural.",
+		"prompt":        prompt,
 	}
 
-	resp, err := rs.makeRequest(url, "POST", replicateRequest)
-
-	if err != nil {
-		return err.Error()
-	}
-
-	defer resp.Body.Close()
-
-	buf := new(bytes.Buffer)
-
-	buf.ReadFrom(resp.Body)
-	jsonResponse := models.PollPredictionResponse{}
-	err = json.Unmarshal(buf.Bytes(), &jsonResponse)
-
-	if err != nil {
-		return err.Error()
-	}
-
-	time.Sleep(1 * time.Second)
-	ppr := rs.PollPrediction(jsonResponse.Id)
-
-	for ppr.Status != "completed" {
-		ppr = rs.PollPrediction(jsonResponse.Id)
-		time.Sleep(1 * time.Second)
-	}
-
-	return ppr.Output[0]
-}
-
-func (rs *ReplicateService) PollPrediction(id string) models.PollPredictionResponse {
-	c, err := http.NewRequest("GET", "https://api.replicate.com/v1/prediction/"+id, nil)
-
-	if err != nil {
-		return models.PollPredictionResponse{}
-	}
-
-	c.Header.Set("Authorization", "Bearer "+rs.apiKey)
-
-	client := &http.Client{}
-
-	resp, err := client.Do(c)
-
-	if err != nil {
-		return models.PollPredictionResponse{}
-	}
-
-	ppr := models.PollPredictionResponse{}
-
-	buf := new(bytes.Buffer)
-
-	buf.ReadFrom(resp.Body)
-
-	err = json.Unmarshal(buf.Bytes(), &ppr)
-
-	if err != nil {
-		return models.PollPredictionResponse{}
-	}
-
-	return ppr
-
-}
-
-func (rs *ReplicateService) makeRequest(url string, method string, request models.CompletitionRequest) (*http.Response, error) {
-	body, err := json.Marshal(request)
+	output, err := rs.client.Run(ctx, model, input, nil)
 
 	if err != nil {
 		return nil, err
 	}
 
-	c, err := http.NewRequest(method, url, bytes.NewBuffer(body))
-
-	if err != nil {
-		return nil, err
+	if output == nil {
+		return nil, errors.New("output is nil")
 	}
 
-	c.Header.Set("Authorization", "Bearer "+rs.apiKey)
-	c.Header.Set("Content-Type", "application/json")
-	c.Header.Set("Accept", "application/json")
-	c.Header.Set("User-Agent", "Replicate API Client")
+	stringOutput := outputToString(output)
 
-	client := &http.Client{}
-	resp, err := client.Do(c)
+	test := models.PredictionOutputFormat{}
+	json.Unmarshal([]byte(stringOutput), &test)
 
-	if err != nil {
-		return nil, err
-	}
-
-	return resp, nil
+	return &test, nil
 
 }
 
-func GetApiKeyFromEnv() string {
-	return os.Getenv("REPLICATE_API_KEY")
+func outputToString[T any](output T) string {
+	switch v := any(output).(type) {
+	case []any:
+		stringOutput := make([]string, len(v))
+		for i, item := range v {
+			if str, ok := item.(string); ok {
+				stringOutput[i] = str
+			} else {
+				return ""
+			}
+		}
+		return strings.Join(stringOutput, "")
+	case string:
+		return v
+	default:
+		return ""
+	}
 }

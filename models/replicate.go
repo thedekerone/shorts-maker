@@ -23,3 +23,8 @@ type PollPredictionResponse struct {
 		Cancel string `json:"cancel"`
 	} `json:"urls"`
 }
+
+type PredictionOutputFormat struct {
+	Script string   `json:"script"`
+	Tags   []string `json:"tags"`
+}
