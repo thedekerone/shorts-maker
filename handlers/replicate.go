@@ -1,12 +1,16 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
+	"time"
 
+	"github.com/minio/minio-go/v7"
 	"github.com/thedekerone/shorts-maker/pkg"
 	"github.com/thedekerone/shorts-maker/services"
 )
@@ -171,6 +175,13 @@ func generateAIShort(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	minioClient, err := services.ConnectToMinio()
+
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("couldn't connect to minio"))
+	}
+
 	rs, err := services.NewReplicateService()
 
 	if err != nil {
@@ -241,6 +252,31 @@ func generateAIShort(w http.ResponseWriter, r *http.Request) {
 	println("finished")
 	println(outputPath)
 
+	file, err := os.Open(outputPath)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("error opening file"))
+		return
+	}
+	defer file.Close()
+
+	fileInfo, err := file.Stat()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("error getting file info"))
+		return
+	}
+	fileSize := fileInfo.Size()
+	fileExt := filepath.Ext(fileInfo.Name())
+	generatedFileName := fmt.Sprintf("generated_short_%d.%s", time.Now().Unix(), fileExt)
+
+	_, err = minioClient.Client.PutObject(context.Background(), "shorts-maker", generatedFileName, file, fileSize, minio.PutObjectOptions{ContentType: "video/mp4"})
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("error uploading file to Minio"))
+		return
+	}
+
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("test"))
+	w.Write([]byte(fmt.Sprintf("File uploaded successfully: %s", generatedFileName)))
 }
