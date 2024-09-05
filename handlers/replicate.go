@@ -11,12 +11,12 @@ import (
 	"github.com/thedekerone/shorts-maker/services"
 )
 
-func HandleReplicateRequest(m *http.ServeMux) {
+func HandleReplicateRequest(m *http.ServeMux, minioClient *services.MinioService) {
 	prefix := "/replicate"
 
 	println("registering handlers")
 
-	m.HandleFunc(prefix+"/test", test)
+	m.HandleFunc(prefix+"/generate-ai-short", generateAIShort)
 	m.HandleFunc(prefix+"/get-completition", handleCompletition)
 	m.HandleFunc(prefix+"/get-voice", handleGetVoice)
 	m.HandleFunc(prefix+"/get-transcription", handleGetTranscription)
@@ -162,8 +162,14 @@ func handleGetImages(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(images)
 }
 
-func test(w http.ResponseWriter, r *http.Request) {
-	text := "write a scary story about a mansion in the woods"
+func generateAIShort(w http.ResponseWriter, r *http.Request) {
+	text := r.URL.Query().Get("text")
+
+	if text == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("text is required"))
+		return
+	}
 
 	rs, err := services.NewReplicateService()
 
@@ -183,14 +189,6 @@ func test(w http.ResponseWriter, r *http.Request) {
 
 	println(predictions)
 
-	images, err := rs.GetImages(predictions, 4)
-
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("error getting images"))
-		return
-	}
-
 	voice, err := rs.GetVoice(predictions)
 
 	if err != nil {
@@ -200,6 +198,7 @@ func test(w http.ResponseWriter, r *http.Request) {
 	}
 
 	println(voice)
+
 	transcript, err := rs.GetTranscription(voice, predictions)
 
 	if err != nil {
@@ -209,9 +208,19 @@ func test(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	lastSegment := transcript.Segments[len(transcript.Segments)-1]
+
+	images, err := rs.GetImages(predictions, 4)
+
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("error getting images"))
+		return
+	}
+
 	err = pkg.CreateAssFile(os.TempDir()+"testing.ass", *transcript)
 
-	path, err := pkg.MakeVideoOfImages(images, 40, os.TempDir())
+	path, err := pkg.MakeVideoOfImages(images, int(lastSegment.End), os.TempDir())
 
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)

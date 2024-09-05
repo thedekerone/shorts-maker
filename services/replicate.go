@@ -27,7 +27,7 @@ func (rs *ReplicateService) GetCompletition(prompt string) (string, error) {
 	model := "meta/meta-llama-3-70b-instruct:fbfb20b472b2f3bdd101412a9f70a0ed4fc0ced78a77ff00970ee7a2383c575d"
 
 	input := replicate.PredictionInput{
-		"system_prompt": "You are a tiktok script writer, you need to generate interesting stories for your audience.WRITE ONLY TEXT FOR NARRATION. include only the narration not any other text.  stories should last aproximately 3 minutes. this will be sent to a text to speech service to generate the final video, add punctuation and capitalization to make the text sound more natural.",
+		"system_prompt": "You are a tiktok script writer assistant, you help to generate interesting stories for a writer. stories should last aproximately 3 minutes. don't add extra text, only include the story in your answer. only respond with the story, don use introduction or conclusion.",
 		"prompt":        prompt,
 	}
 
@@ -77,7 +77,7 @@ func (rs *ReplicateService) GetVoice(text string) (string, error) {
 
 	input := replicate.PredictionInput{
 		"text":    text,
-		"speaker": "https://replicate.delivery/pbxt/Jt79w0xsT64R1JsiJ0LQRL8UcWspg5J4RFrU6YwEKpOT1ukS/male.wav",
+		"speaker": "http://velvetlettr.com/api/v1/download-shared-object/aHR0cDovLzEyNy4wLjAuMTo5MDAwL3JlcGxpY2F0ZS1maWxlcy9hdWRpby9FbGV2ZW5MYWJzXzIwMjQtMDktMDRUMThfNDBfMzRfQnJpYW5fcHJlX3M1MF9zYjc1X3NlMF9iX20yLm1wMz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPVZXNTJHOEkyMzVVSU40UFJHRVQzJTJGMjAyNDA5MDQlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjQwOTA0VDE4NDEyMlomWC1BbXotRXhwaXJlcz00MzIwMCZYLUFtei1TZWN1cml0eS1Ub2tlbj1leUpoYkdjaU9pSklVelV4TWlJc0luUjVjQ0k2SWtwWFZDSjkuZXlKaFkyTmxjM05MWlhraU9pSldWelV5UnpoSk1qTTFWVWxPTkZCU1IwVlVNeUlzSW1WNGNDSTZNVGN5TlRRNE9Ua3pOaXdpY0dGeVpXNTBJam9pYldsdWFXOWhaRzFwYmlKOS5DYmpZTXhVSHFyN2ZrdjZZOXpVbkhXVnZQdU9aNGh2b2FXcERuZ3BMZ0xMcVV0dEJqeGg5MUx4Y05PbjJqZ2djVThpYVZ2dmNiSzZ3Ul9IQ0p5WXZuQSZYLUFtei1TaWduZWRIZWFkZXJzPWhvc3QmdmVyc2lvbklkPW51bGwmWC1BbXotU2lnbmF0dXJlPWJmZTliYTJkZTdiMGU4MjQ2OTRjMGIwMjMzYWUyZTQzNjhhNzBjYWNlMDIyYTc1NThmYTRmNzRmZmM0MTdmNDI",
 	}
 
 	output, err := rs.client.Run(ctx, model, input, nil)
