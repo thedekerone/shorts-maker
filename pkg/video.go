@@ -3,30 +3,26 @@ package pkg
 import (
 	"fmt"
 	"io"
+	"math/rand"
 	"net/http"
 	"os"
 
 	gobra "github.com/thedekerone/gobra/video"
+	"github.com/thedekerone/shorts-maker/models"
 )
 
-func MakeVideoOfImages(imageUrls []string, duration int, outputFolder string) (string, error) {
-	images := make([]string, len(imageUrls))
-	for i, url := range imageUrls {
+func MakeVideoOfImages(imagesWithTS []models.ImageWithTimestamp, duration int, outputFolder string) (string, error) {
+	images := make([]string, len(imagesWithTS))
+	for i, image := range imagesWithTS {
 		fileName := fmt.Sprintf("%simage_%d.jpg", outputFolder, i)
-		err := DownloadFile(url, fileName)
+		err := DownloadFile(image.URL, fileName)
 		if err != nil {
-			return "", fmt.Errorf("failed to download image %s: %v", url, err)
+			return "", fmt.Errorf("failed to download image %s: %v", image.URL, err)
 		}
 		images[i] = fileName
 	}
 
 	//delete all create images
-
-	defer func() {
-		for _, image := range images {
-			os.Remove(image)
-		}
-	}()
 
 	var video []*gobra.Video
 
@@ -37,10 +33,10 @@ func MakeVideoOfImages(imageUrls []string, duration int, outputFolder string) (s
 		AspectRatio: 9.0 / 16.0,
 	}
 
-	durationByImage := duration / len(images) //duration of each image
+	interval := float64(duration) / 4
 
 	for _, image := range images {
-		currentVideo := gobra.NewZoomPanVideoFromImage(image, durationByImage, 1.5, config)
+		currentVideo := gobra.NewZoomPanVideoFromImage(image, int(interval), 1.5, config)
 		currentVideo = currentVideo.AddFadeIn(1)
 		currentVideo = currentVideo.AddFadeOut(1)
 		video = append(video, currentVideo)
@@ -92,4 +88,43 @@ func DownloadFile(url, fileName string) error {
 
 	_, err = io.Copy(file, response.Body)
 	return err
+}
+
+func MergeAudios(audioUrls []string, outputFolder string) (string, error) {
+	var audios []*gobra.Audio
+	var tempFiles []string
+
+	for _, url := range audioUrls {
+		randomName := generateRandomString(8)
+		fileName := fmt.Sprintf("%s%s.mp3", outputFolder, randomName)
+		err := DownloadFile(url, fileName)
+		if err != nil {
+			return "", fmt.Errorf("failed to download audio %s: %v", url, err)
+		}
+		audio := gobra.NewAudio(fileName)
+		audios = append(audios, audio)
+		tempFiles = append(tempFiles, fileName)
+	}
+
+	outputPath := outputFolder + "merged_audio.mp3"
+	err := gobra.MergeAudios(outputPath, audios...)
+
+	for _, file := range tempFiles {
+		os.Remove(file)
+	}
+
+	if err != nil {
+		return "", err
+	}
+
+	return outputPath, nil
+}
+
+func generateRandomString(length int) string {
+	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	result := make([]byte, length)
+	for i := range result {
+		result[i] = charset[rand.Intn(len(charset))]
+	}
+	return string(result)
 }

@@ -11,7 +11,7 @@ import (
 )
 
 type ReplicateService struct {
-	client *replicate.Client
+	Client *replicate.Client
 }
 
 func NewReplicateService() (*ReplicateService, error) {
@@ -19,7 +19,7 @@ func NewReplicateService() (*ReplicateService, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &ReplicateService{client: client}, nil
+	return &ReplicateService{Client: client}, nil
 }
 
 func (rs *ReplicateService) GetCompletition(prompt string) (string, error) {
@@ -31,7 +31,7 @@ func (rs *ReplicateService) GetCompletition(prompt string) (string, error) {
 		"prompt":        prompt,
 	}
 
-	output, err := rs.client.Run(ctx, model, input, nil)
+	output, err := rs.Client.Run(ctx, model, input, nil)
 
 	if err != nil {
 		return "", err
@@ -52,8 +52,9 @@ func (rs *ReplicateService) GetImages(prompt string, quantity int64) ([]string, 
 	model := "black-forest-labs/flux-dev"
 
 	input := replicate.PredictionInput{
-		"prompt":      prompt,
-		"num_outputs": quantity,
+		"prompt":                 prompt,
+		"num_outputs":            quantity,
+		"disable_safety_checker": true,
 	}
 
 	output, err := rs.RunWithModel(ctx, model, input, nil)
@@ -77,10 +78,10 @@ func (rs *ReplicateService) GetVoice(text string) (string, error) {
 
 	input := replicate.PredictionInput{
 		"text":    text,
-		"speaker": "http://velvetlettr.com/api/v1/download-shared-object/aHR0cDovLzEyNy4wLjAuMTo5MDAwL3JlcGxpY2F0ZS1maWxlcy9hdWRpby9FbGV2ZW5MYWJzXzIwMjQtMDktMDRUMThfNDBfMzRfQnJpYW5fcHJlX3M1MF9zYjc1X3NlMF9iX20yLm1wMz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPVZXNTJHOEkyMzVVSU40UFJHRVQzJTJGMjAyNDA5MDQlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjQwOTA0VDE4NDEyMlomWC1BbXotRXhwaXJlcz00MzIwMCZYLUFtei1TZWN1cml0eS1Ub2tlbj1leUpoYkdjaU9pSklVelV4TWlJc0luUjVjQ0k2SWtwWFZDSjkuZXlKaFkyTmxjM05MWlhraU9pSldWelV5UnpoSk1qTTFWVWxPTkZCU1IwVlVNeUlzSW1WNGNDSTZNVGN5TlRRNE9Ua3pOaXdpY0dGeVpXNTBJam9pYldsdWFXOWhaRzFwYmlKOS5DYmpZTXhVSHFyN2ZrdjZZOXpVbkhXVnZQdU9aNGh2b2FXcERuZ3BMZ0xMcVV0dEJqeGg5MUx4Y05PbjJqZ2djVThpYVZ2dmNiSzZ3Ul9IQ0p5WXZuQSZYLUFtei1TaWduZWRIZWFkZXJzPWhvc3QmdmVyc2lvbklkPW51bGwmWC1BbXotU2lnbmF0dXJlPWJmZTliYTJkZTdiMGU4MjQ2OTRjMGIwMjMzYWUyZTQzNjhhNzBjYWNlMDIyYTc1NThmYTRmNzRmZmM0MTdmNDI",
+		"speaker": "https://replicate.delivery/pbxt/KMZ6fyOMKrtwERmDWAJnd5KRy39a86dgloX7SYP5dVTnQXjv/jacob.wav",
 	}
 
-	output, err := rs.client.Run(ctx, model, input, nil)
+	output, err := rs.Client.Run(ctx, model, input, nil)
 
 	if err != nil {
 		return "", err
@@ -106,7 +107,7 @@ func (rs *ReplicateService) GetTranscription(audio string, initial string) (*mod
 		"align_output": true,
 	}
 
-	output, err := rs.client.Run(ctx, model, input, nil)
+	output, err := rs.Client.Run(ctx, model, input, nil)
 
 	if err != nil {
 		println(err.Error())
@@ -162,17 +163,58 @@ func outputToStrings[T any](output T) []string {
 func (rs *ReplicateService) RunWithModel(ctx context.Context, identifier string, input replicate.PredictionInput, webhook *replicate.Webhook) (replicate.PredictionOutput, error) {
 	id, err := replicate.ParseIdentifier(identifier)
 
-	prediction, err := rs.client.CreatePredictionWithModel(ctx, id.Owner, id.Name, input, nil, false)
+	prediction, err := rs.Client.CreatePredictionWithModel(ctx, id.Owner, id.Name, input, nil, false)
 
 	if err != nil {
 		return nil, err
 	}
 
-	err = rs.client.Wait(ctx, prediction)
+	err = rs.Client.Wait(ctx, prediction)
 
 	if err != nil {
 		return nil, err
 	}
 
 	return prediction.Output, nil
+}
+
+func (rs *ReplicateService) GetVoiceLarge(prompt string) ([]string, error) {
+	const maxTokens = 600 // Adjust this value based on your specific requirements
+	var result []string
+
+	words := strings.Fields(prompt)
+	var currentChunk []string
+	var tokenCount int
+
+	for _, word := range words {
+		wordTokens := estimateTokens(word)
+		if tokenCount+wordTokens > maxTokens && len(currentChunk) > 0 {
+			voice, err := rs.GetVoice(strings.Join(currentChunk, " "))
+			if err != nil {
+				return nil, err
+			}
+			result = append(result, voice)
+			currentChunk = nil
+			tokenCount = 0
+		}
+
+		currentChunk = append(currentChunk, word)
+		tokenCount += wordTokens
+	}
+
+	if len(currentChunk) > 0 {
+		voice, err := rs.GetVoice(strings.Join(currentChunk, " "))
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, voice)
+	}
+
+	return result, nil
+}
+
+// estimateTokens is a simple function to estimate the number of tokens in a word
+// You may need to implement a more sophisticated tokenization method based on your specific requirements
+func estimateTokens(word string) int {
+	return len(word)/4 + 1 // A simple estimation, assuming on average 4 characters per token
 }

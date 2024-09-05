@@ -8,9 +8,11 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/minio/minio-go/v7"
+	"github.com/thedekerone/shorts-maker/models"
 	"github.com/thedekerone/shorts-maker/pkg"
 	"github.com/thedekerone/shorts-maker/services"
 )
@@ -23,7 +25,6 @@ func HandleReplicateRequest(m *http.ServeMux, minioClient *services.MinioService
 	m.HandleFunc(prefix+"/generate-ai-short", generateAIShort)
 	m.HandleFunc(prefix+"/get-completition", handleCompletition)
 	m.HandleFunc(prefix+"/get-voice", handleGetVoice)
-	m.HandleFunc(prefix+"/get-transcription", handleGetTranscription)
 	m.HandleFunc(prefix+"/get-images", handleGetImages)
 	m.HandleFunc(prefix, handleIndex)
 
@@ -38,34 +39,6 @@ func handleIndex(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("replicate responded"))
 }
-
-func handleGetTranscription(w http.ResponseWriter, r *http.Request) {
-	rs, err := services.NewReplicateService()
-
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("error creating replicate service"))
-		return
-	}
-
-	transcript, err := rs.GetTranscription("https://replicate.delivery/yhqm/0GnXQ1h0wZaEEdCw9NDyTNTsYV5Px4MZUDVef8e9fiU6eXMbC/output.wav", "")
-
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("error getting transcription"))
-		fmt.Print(err.Error())
-		return
-	}
-
-	print(os.TempDir() + "testing.ass")
-
-	err = pkg.CreateAssFile(os.TempDir()+"testing.ass", *transcript)
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(transcript)
-}
-
 func handleCompletition(w http.ResponseWriter, r *http.Request) {
 	rs, err := services.NewReplicateService()
 
@@ -208,10 +181,7 @@ func generateAIShort(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	println(voice)
-
 	transcript, err := rs.GetTranscription(voice, predictions)
-
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte("error getting transcription"))
@@ -221,7 +191,7 @@ func generateAIShort(w http.ResponseWriter, r *http.Request) {
 
 	lastSegment := transcript.Segments[len(transcript.Segments)-1]
 
-	images, err := rs.GetImages(predictions, 4)
+	images, err := getImagesWithTimestamps(transcript)
 
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -239,9 +209,7 @@ func generateAIShort(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	audioPath := voice
-
-	outputPath, err := pkg.AddAudioToVideo(path, audioPath, os.TempDir())
+	outputPath, err := pkg.AddAudioToVideo(path, voice, os.TempDir())
 
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -249,7 +217,6 @@ func generateAIShort(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	println("finished")
 	println(outputPath)
 
 	file, err := os.Open(outputPath)
@@ -268,7 +235,7 @@ func generateAIShort(w http.ResponseWriter, r *http.Request) {
 	}
 	fileSize := fileInfo.Size()
 	fileExt := filepath.Ext(fileInfo.Name())
-	generatedFileName := fmt.Sprintf("generated_short_%d.%s", time.Now().Unix(), fileExt)
+	generatedFileName := fmt.Sprintf("shorts/generated_short_%d%s", time.Now().Unix(), fileExt)
 
 	_, err = minioClient.Client.PutObject(context.Background(), "shorts-maker", generatedFileName, file, fileSize, minio.PutObjectOptions{ContentType: "video/mp4"})
 	if err != nil {
@@ -279,4 +246,63 @@ func generateAIShort(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(fmt.Sprintf("File uploaded successfully: %s", generatedFileName)))
+}
+
+func getImagesWithTimestamps(transcript *models.TranscriptionOutput) ([]models.ImageWithTimestamp, error) {
+	rs, err := services.NewReplicateService()
+	if err != nil {
+		return nil, fmt.Errorf("error creating replicate service: %w", err)
+	}
+
+	totalDuration := transcript.Segments[len(transcript.Segments)-1].End
+	interval := totalDuration / 4
+
+	var imagesWithTimestamps []models.ImageWithTimestamp
+
+	for i := 0; i < 4; i++ {
+		timestamp := float64(i) * interval
+		relevantText := getRelevantText(transcript, timestamp)
+
+		// If relevantText is empty, use the text from the first segment
+		if relevantText == "" && len(transcript.Segments) > 0 {
+			relevantText = transcript.Segments[0].Text
+		}
+
+		images, err := rs.GetImages(relevantText, 1)
+		if err != nil {
+			return nil, fmt.Errorf("error getting image %d: %w", i+1, err)
+		}
+
+		if len(images) > 0 {
+			imagesWithTimestamps = append(imagesWithTimestamps, models.ImageWithTimestamp{
+				URL:       images[0],
+				Timestamp: timestamp,
+			})
+		}
+	}
+
+	return imagesWithTimestamps, nil
+}
+
+func getRelevantText(transcript *models.TranscriptionOutput, timestamp float64) string {
+	var relevantText string
+	var currentSegmentIndex int
+
+	// Find the current segment
+	for i, segment := range transcript.Segments {
+		if segment.Start <= timestamp && segment.End > timestamp {
+			currentSegmentIndex = i
+			break
+		}
+	}
+
+	// Get text from the current segment to the start of the next segment (or end of transcript)
+	for i := currentSegmentIndex; i < len(transcript.Segments); i++ {
+		relevantText += transcript.Segments[i].Text + " "
+		if i < len(transcript.Segments)-1 && transcript.Segments[i+1].Start > timestamp {
+			break
+		}
+	}
+
+	return strings.TrimSpace(relevantText)
 }

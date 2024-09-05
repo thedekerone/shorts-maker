@@ -32,6 +32,8 @@ type PredictionOutputFormat struct {
 type TranscriptionOutput struct {
 	Segments         []Segment `json:"segments"`
 	DetectedLanguage string    `json:"detected_language"`
+	End              float64   `json:"end"`
+	Start            float64   `json:"start"`
 }
 
 type Segment struct {
@@ -46,4 +48,9 @@ type Word struct {
 	Start float64 `json:"start"`
 	Word  string  `json:"word"`
 	Score float64 `json:"score"`
+}
+
+type ImageWithTimestamp struct {
+	URL       string
+	Timestamp float64
 }
