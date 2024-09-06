@@ -30,10 +30,8 @@ type PredictionOutputFormat struct {
 }
 
 type TranscriptionOutput struct {
-	Segments         []Segment `json:"segments"`
-	DetectedLanguage string    `json:"detected_language"`
-	End              float64   `json:"end"`
-	Start            float64   `json:"start"`
+	Segments []Segment `json:"segments"`
+	Language string    `json:"language"`
 }
 
 type Segment struct {
@@ -44,10 +42,10 @@ type Segment struct {
 }
 
 type Word struct {
-	End   float64 `json:"end"`
-	Start float64 `json:"start"`
-	Word  string  `json:"word"`
-	Score float64 `json:"score"`
+	End         float64 `json:"end"`
+	Start       float64 `json:"start"`
+	Word        string  `json:"word"`
+	Probability float64 `json:"probability"`
 }
 
 type ImageWithTimestamp struct {

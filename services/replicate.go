@@ -100,11 +100,15 @@ func (rs *ReplicateService) GetVoice(text string) (string, error) {
 
 func (rs *ReplicateService) GetTranscription(audio string, initial string) (*models.TranscriptionOutput, error) {
 	ctx := context.TODO()
-	model := "victor-upmeet/whisperx:77505c700514deed62ab3891c0011e307f905ee527458afc15de7d9e2a3034e8"
+	model := "thomasmol/whisper-diarization:aae6db69a923a6eab6bc3ec098148a8c9c999685be89f428a4a6072fca544d26"
 
 	input := replicate.PredictionInput{
-		"audio_file":   audio,
-		"align_output": true,
+		"file":           audio,
+		"language":       "en",
+		"num_speakers":   1,
+		"group_segments": false,
+		"align_output":   true,
+		"offset_seconds": 0,
 	}
 
 	output, err := rs.Client.Run(ctx, model, input, nil)

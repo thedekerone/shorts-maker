@@ -9,12 +9,26 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/minio/minio-go/v7"
 	"github.com/thedekerone/shorts-maker/models"
 	"github.com/thedekerone/shorts-maker/pkg"
 	"github.com/thedekerone/shorts-maker/services"
+)
+
+type Job struct {
+	ID     string
+	Status string
+	URL    string
+	Error  string
+}
+
+var (
+	jobs      = make(map[string]*Job)
+	jobsMutex sync.RWMutex
 )
 
 func HandleReplicateRequest(m *http.ServeMux, minioClient *services.MinioService) {
@@ -22,7 +36,9 @@ func HandleReplicateRequest(m *http.ServeMux, minioClient *services.MinioService
 
 	println("registering handlers")
 
-	m.HandleFunc(prefix+"/generate-ai-short", generateAIShort)
+	m.HandleFunc(prefix+"/generate-ai-short", enableCORS(generateAIShort))
+	m.HandleFunc(prefix+"/job-status", enableCORS(getJobStatus))
+
 	m.HandleFunc(prefix+"/get-completition", handleCompletition)
 	m.HandleFunc(prefix+"/get-voice", handleGetVoice)
 	m.HandleFunc(prefix+"/get-images", handleGetImages)
@@ -140,112 +156,160 @@ func handleGetImages(w http.ResponseWriter, r *http.Request) {
 }
 
 func generateAIShort(w http.ResponseWriter, r *http.Request) {
+	// Check if the request method is GET
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Get the text query parameter
 	text := r.URL.Query().Get("text")
 
+	// Validate the text parameter
 	if text == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("text is required"))
+		http.Error(w, "text parameter is required", http.StatusBadRequest)
 		return
 	}
 
+	// Generate a unique job ID
+	jobID := uuid.New().String()
+
+	// Create a new job and store it in the jobs map
+	job := &Job{
+		ID:     jobID,
+		Status: "initialized",
+	}
+
+	jobsMutex.Lock()
+	jobs[jobID] = job
+	jobsMutex.Unlock()
+
+	// Start the video generation process in a goroutine
+	go processVideoGeneration(jobID, text)
+
+	// Prepare the response
+	response := map[string]string{
+		"jobId": jobID,
+	}
+
+	// Set the content type header
+	w.Header().Set("Content-Type", "application/json")
+
+	// Write the response
+	w.WriteHeader(http.StatusAccepted)
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		http.Error(w, "Error encoding response", http.StatusInternalServerError)
+		return
+	}
+}
+
+func processVideoGeneration(jobID string, text string) {
+
+	updateJobStatus(jobID, "connecting_to_minio", "", "")
 	minioClient, err := services.ConnectToMinio()
-
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("couldn't connect to minio"))
+		updateJobStatus(jobID, "failed", "", "Couldn't connect to minio: "+err.Error())
+		return
 	}
 
+	updateJobStatus(jobID, "creating_replicate_service", "", "")
 	rs, err := services.NewReplicateService()
-
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("error creating replicate service"))
+		updateJobStatus(jobID, "failed", "", "Error creating replicate service: "+err.Error())
 		return
 	}
 
+	updateJobStatus(jobID, "generating_script", "", "")
 	predictions, err := rs.GetCompletition(text)
-
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("error getting completition"))
+		updateJobStatus(jobID, "failed", "", "Error getting completition: "+err.Error())
 		return
 	}
 
-	println(predictions)
-
+	updateJobStatus(jobID, "generating_voice", "", "")
 	voice, err := rs.GetVoice(predictions)
-
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("error getting voice"))
+		updateJobStatus(jobID, "failed", "", "Error getting voice: "+err.Error())
 		return
 	}
 
+	updateJobStatus(jobID, "generating_transcription", "", "")
 	transcript, err := rs.GetTranscription(voice, predictions)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("error getting transcription"))
-		fmt.Print(err.Error())
+		updateJobStatus(jobID, "failed", "", "Error getting transcription: "+err.Error())
 		return
 	}
 
 	lastSegment := transcript.Segments[len(transcript.Segments)-1]
 
+	updateJobStatus(jobID, "generating_images", "", "")
 	images, err := getImagesWithTimestamps(transcript)
-
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("error getting images"))
+		updateJobStatus(jobID, "failed", "", "Error getting images: "+err.Error())
 		return
 	}
 
+	updateJobStatus(jobID, "creating_subtitle_file", "", "")
 	err = pkg.CreateAssFile(os.TempDir()+"testing.ass", *transcript)
-
-	path, err := pkg.MakeVideoOfImages(images, int(lastSegment.End), os.TempDir())
-
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("error making video"))
+		updateJobStatus(jobID, "failed", "", "Error creating subtitle file: "+err.Error())
 		return
 	}
 
+	updateJobStatus(jobID, "creating_video_from_images", "", "")
+	path, err := pkg.MakeVideoOfImages(images, float32(lastSegment.End), os.TempDir())
+
+	if err != nil {
+		updateJobStatus(jobID, "failed", "", "Error making video: "+err.Error())
+		return
+	}
+
+	updateJobStatus(jobID, "adding_audio_to_video", "", "")
 	outputPath, err := pkg.AddAudioToVideo(path, voice, os.TempDir())
-
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("error adding audio to video"))
+		updateJobStatus(jobID, "failed", "", "Error adding audio to video: "+err.Error())
 		return
 	}
 
-	println(outputPath)
-
+	updateJobStatus(jobID, "preparing_file_for_upload", "", "")
 	file, err := os.Open(outputPath)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("error opening file"))
+		print(err.Error())
+		updateJobStatus(jobID, "failed", "", "Error opening file: "+err.Error())
 		return
 	}
 	defer file.Close()
 
 	fileInfo, err := file.Stat()
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("error getting file info"))
+		updateJobStatus(jobID, "failed", "", "Error getting file info: "+err.Error())
 		return
 	}
 	fileSize := fileInfo.Size()
 	fileExt := filepath.Ext(fileInfo.Name())
-	generatedFileName := fmt.Sprintf("shorts/generated_short_%d%s", time.Now().Unix(), fileExt)
+	generatedFileName := fmt.Sprintf("shorts/generated_short_%s%s", jobID, fileExt)
 
+	updateJobStatus(jobID, "uploading_to_minio", "", "")
 	_, err = minioClient.Client.PutObject(context.Background(), "shorts-maker", generatedFileName, file, fileSize, minio.PutObjectOptions{ContentType: "video/mp4"})
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("error uploading file to Minio"))
+		updateJobStatus(jobID, "failed", "", "Error uploading file to Minio: "+err.Error())
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(fmt.Sprintf("File uploaded successfully: %s", generatedFileName)))
+	updateJobStatus(jobID, "generating_presigned_url", "", "")
+	object, err := minioClient.Client.PresignedGetObject(context.Background(), "shorts-maker", generatedFileName, time.Hour, nil)
+	if err != nil {
+		updateJobStatus(jobID, "failed", "", "Error getting presigned url: "+err.Error())
+		return
+	}
+
+	updateJobStatus(jobID, "completed", object.String(), "")
+
+	print(object.String())
+	// Clean up temporary files
+	os.Remove(outputPath)
+	os.Remove(path)
+	os.Remove(os.TempDir() + "testing.ass")
 }
 
 func getImagesWithTimestamps(transcript *models.TranscriptionOutput) ([]models.ImageWithTimestamp, error) {
@@ -305,4 +369,58 @@ func getRelevantText(transcript *models.TranscriptionOutput, timestamp float64) 
 	}
 
 	return strings.TrimSpace(relevantText)
+}
+
+func enableCORS(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Set CORS headers
+		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
+
+		// Handle preflight requests
+		if r.Method == "OPTIONS" {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		// Call the next handler
+		next.ServeHTTP(w, r)
+	}
+}
+
+func getJobStatus(w http.ResponseWriter, r *http.Request) {
+	jobID := r.URL.Query().Get("jobId")
+
+	if jobID == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("jobId is required"))
+		return
+	}
+
+	jobsMutex.RLock()
+	job, exists := jobs[jobID]
+	jobsMutex.RUnlock()
+
+	if !exists {
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("Job not found"))
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(job)
+}
+
+func updateJobStatus(jobID, status, url, errorMsg string) {
+	jobsMutex.Lock()
+	defer jobsMutex.Unlock()
+
+	if job, exists := jobs[jobID]; exists {
+		job.Status = status
+		job.URL = url
+		job.Error = errorMsg
+	}
 }

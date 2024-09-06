@@ -11,7 +11,7 @@ import (
 	"github.com/thedekerone/shorts-maker/models"
 )
 
-func MakeVideoOfImages(imagesWithTS []models.ImageWithTimestamp, duration int, outputFolder string) (string, error) {
+func MakeVideoOfImages(imagesWithTS []models.ImageWithTimestamp, duration float32, outputFolder string) (string, error) {
 	images := make([]string, len(imagesWithTS))
 	for i, image := range imagesWithTS {
 		fileName := fmt.Sprintf("%simage_%d.jpg", outputFolder, i)
@@ -33,10 +33,10 @@ func MakeVideoOfImages(imagesWithTS []models.ImageWithTimestamp, duration int, o
 		AspectRatio: 9.0 / 16.0,
 	}
 
-	interval := float64(duration) / 4
+	interval := float32(duration) / 4
 
 	for _, image := range images {
-		currentVideo := gobra.NewZoomPanVideoFromImage(image, int(interval), 1.5, config)
+		currentVideo := gobra.NewZoomPanVideoFromImage(image, interval, 1.5, config)
 		currentVideo = currentVideo.AddFadeIn(1)
 		currentVideo = currentVideo.AddFadeOut(1)
 		video = append(video, currentVideo)
