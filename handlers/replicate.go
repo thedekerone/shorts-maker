@@ -303,9 +303,10 @@ func processVideoGeneration(jobID string, text string) {
 		return
 	}
 
-	videoWithoutHost := strings.Replace(object.String(), "http://minio:9000/", "", 1)
+	// put only the part from just before the bucket name until the end
+	videoSignedURL := object.String()[strings.Index(object.String(), "shorts-maker"):]
 
-	updateJobStatus(jobID, "completed", videoWithoutHost, "")
+	updateJobStatus(jobID, "completed", videoSignedURL, "")
 
 	//only path
 	// show only after the url
