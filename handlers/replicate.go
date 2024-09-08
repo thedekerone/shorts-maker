@@ -303,7 +303,7 @@ func processVideoGeneration(jobID string, text string) {
 		return
 	}
 
-	videoWithoutHost := strings.Replace(object.String(), "http://localhost:9000/", "", 1)
+	videoWithoutHost := strings.Replace(object.String(), "http://minio:9000/", "", 1)
 
 	updateJobStatus(jobID, "completed", videoWithoutHost, "")
 
