@@ -303,9 +303,13 @@ func processVideoGeneration(jobID string, text string) {
 		return
 	}
 
-	updateJobStatus(jobID, "completed", object.String(), "")
+	videoWithoutHost := strings.Replace(object.String(), "http://localhost:9000/", "", 1)
 
-	print(object.String())
+	updateJobStatus(jobID, "completed", videoWithoutHost, "")
+
+	//only path
+	// show only after the url
+
 	// Clean up temporary files
 	os.Remove(outputPath)
 	os.Remove(path)
