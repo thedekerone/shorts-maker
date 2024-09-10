@@ -90,7 +90,7 @@ func testSignURL(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	object, err := minioClient.Client.PresignedGetObject(context.Background(), "shorts-maker", "generated_short_7880c0d7-b8bd-46b3-b75c-94c4b7545202.mp4", time.Hour, nil)
+	object, err := minioClient.Client.PresignedGetObject(context.Background(), "shorts-maker", "shorts/generated_short_7880c0d7-b8bd-46b3-b75c-94c4b7545202.mp4", time.Hour, nil)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte("error getting presigned url"))
