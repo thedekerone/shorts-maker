@@ -9,14 +9,12 @@ import (
 )
 
 type MinioService struct {
-	Client    *minio.Client
-	publicURL string
+	Client *minio.Client
 }
 
 func NewMinioService(client *minio.Client) *MinioService {
 	return &MinioService{
-		Client:    client,
-		publicURL: os.Getenv("MINIO_PUBLIC_URL"),
+		Client: client,
 	}
 }
 

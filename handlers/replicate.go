@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -93,6 +94,9 @@ func testSignURL(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("error connecting to minio"))
 		return
 	}
+
+	reqParams := make(url.Values)
+	reqParams.Set("response-content-disposition", "attachment; filename=\"test.mp4\"")
 
 	object, err := minioClient.Client.PresignedGetObject(context.Background(), "shorts-maker", "shorts/test.mp4", time.Second*60*60*24, nil)
 	if err != nil {
