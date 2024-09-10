@@ -98,7 +98,7 @@ func testSignURL(w http.ResponseWriter, r *http.Request) {
 	reqParams := make(url.Values)
 	reqParams.Set("response-content-disposition", "attachment; filename=\"test.mp4\"")
 
-	object, err := minioClient.Client.PresignedGetObject(context.Background(), "shorts-maker", "shorts/test.mp4", time.Second*60*60*24, nil)
+	object, err := minioClient.Client.PresignedGetObject(context.Background(), "shorts-maker", "shorts/test.mp4", time.Second*60*60*24, reqParams)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte("error getting presigned url"))
