@@ -9,17 +9,19 @@ import (
 )
 
 type MinioService struct {
-	Client *minio.Client
+	Client    *minio.Client
+	publicURL string
 }
 
 func NewMinioService(client *minio.Client) *MinioService {
 	return &MinioService{
-		Client: client,
+		Client:    client,
+		publicURL: os.Getenv("MINIO_PUBLIC_URL"),
 	}
 }
 
 func ConnectToMinio() (*MinioService, error) {
-	endpoint := "127.0.0.1:9002"
+	endpoint := os.Getenv("MINIO_ENDPOINT")
 	accessKeyID := os.Getenv("MINIO_ACCESS_KEY")
 	secretAccessKey := os.Getenv("MINIO_SECRET_KEY")
 

@@ -303,8 +303,10 @@ func processVideoGeneration(jobID string, text string) {
 		return
 	}
 
+	publicURL := os.Getenv("MINIO_PUBLIC_URL")
+
 	// put only the part from just before the bucket name until the end
-	videoSignedURL := object.String()[strings.Index(object.String(), "shorts-maker"):]
+	videoSignedURL := publicURL + object.String()[strings.Index(object.String(), "/shorts-maker"):]
 
 	updateJobStatus(jobID, "completed", videoSignedURL, "")
 
