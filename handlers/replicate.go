@@ -38,6 +38,7 @@ func HandleReplicateRequest(m *http.ServeMux, minioClient *services.MinioService
 
 	m.HandleFunc(prefix+"/generate-ai-short", enableCORS(generateAIShort))
 	m.HandleFunc(prefix+"/job-status", enableCORS(getJobStatus))
+	m.HandleFunc(prefix+"/test-sign-url", testSignURL)
 
 	m.HandleFunc(prefix+"/get-completition", handleCompletition)
 	m.HandleFunc(prefix+"/get-voice", handleGetVoice)
@@ -79,6 +80,26 @@ func handleCompletition(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(predictions))
 
+}
+
+func testSignURL(w http.ResponseWriter, r *http.Request) {
+	minioClient, err := services.ConnectToMinio()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("error connecting to minio"))
+		return
+	}
+
+	object, err := minioClient.Client.PresignedGetObject(context.Background(), "shorts-maker", "generated_short_7880c0d7-b8bd-46b3-b75c-94c4b7545202.mp4", time.Hour, nil)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("error getting presigned url"))
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(object)
 }
 
 func handleGetVoice(w http.ResponseWriter, r *http.Request) {
