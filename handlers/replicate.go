@@ -20,10 +20,14 @@ import (
 )
 
 type Job struct {
-	ID     string
-	Status string
-	URL    string
-	Error  string
+	ID     string `json:"id"`
+	Status string `json:"status"`
+	URL    string `json:"url"`
+	Error  string `json:"error,omitempty"`
+}
+
+func (j Job) FormattedURL() string {
+	return strings.ReplaceAll(j.URL, `\u0026`, "&")
 }
 
 var (
@@ -90,7 +94,7 @@ func testSignURL(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	object, err := minioClient.Client.PresignedGetObject(context.Background(), "shorts-maker", "shorts/generated_short_7880c0d7-b8bd-46b3-b75c-94c4b7545202.mp4", time.Hour, nil)
+	object, err := minioClient.Client.PresignedGetObject(context.Background(), "shorts-maker", "shorts/test.mp4", time.Second*60*60*24, nil)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte("error getting presigned url"))
@@ -99,7 +103,7 @@ func testSignURL(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(object.String())
+	w.Write([]byte(object.String()))
 }
 
 func handleGetVoice(w http.ResponseWriter, r *http.Request) {
@@ -318,7 +322,7 @@ func processVideoGeneration(jobID string, text string) {
 	}
 
 	updateJobStatus(jobID, "generating_presigned_url", "", "")
-	object, err := minioClient.Client.PresignedGetObject(context.Background(), "shorts-maker", generatedFileName, time.Hour, nil)
+	object, err := minioClient.Client.PresignedGetObject(context.Background(), "shorts-maker", generatedFileName, time.Hour*12, nil)
 	if err != nil {
 		updateJobStatus(jobID, "failed", "", "Error getting presigned url: "+err.Error())
 		return
@@ -435,9 +439,22 @@ func getJobStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Create a new struct for the response
+	response := struct {
+		ID     string `json:"id"`
+		Status string `json:"status"`
+		URL    string `json:"url"`
+		Error  string `json:"error,omitempty"`
+	}{
+		ID:     job.ID,
+		Status: job.Status,
+		URL:    job.FormattedURL(),
+		Error:  job.Error,
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(job)
+	json.NewEncoder(w).Encode(response)
 }
 
 func updateJobStatus(jobID, status, url, errorMsg string) {
@@ -446,7 +463,7 @@ func updateJobStatus(jobID, status, url, errorMsg string) {
 
 	if job, exists := jobs[jobID]; exists {
 		job.Status = status
-		job.URL = url
+		job.URL = url // Store the original URL
 		job.Error = errorMsg
 	}
 }
