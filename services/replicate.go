@@ -77,6 +77,7 @@ func (rs *ReplicateService) GetImages(prompt string, quantity int64) ([]string, 
 		"prompt":                 prompt,
 		"num_outputs":            quantity,
 		"disable_safety_checker": true,
+		"aspect_ratio":           "9:16",
 	}
 
 	output, err := rs.RunWithModel(ctx, model, input, nil)
