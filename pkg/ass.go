@@ -19,8 +19,7 @@ func GetWordsFromSentence(sentence models.Segment) string {
 
 	words := ""
 
-	for _, word := range sentence.Words {
-		/**
+	for i, word := range sentence.Words {
 		if i != len(sentence.Words)-1 {
 			words = words + getWordTiming(word, sentence.Words[i+1].Start-word.End) + " "
 		} else if i == 0 {
@@ -28,7 +27,6 @@ func GetWordsFromSentence(sentence models.Segment) string {
 		} else {
 			words = words + getWordTiming(word, 0) + " "
 		}
-		**/
 
 		words = words + getWordTiming(word, 0) + " "
 	}
