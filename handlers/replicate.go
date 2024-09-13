@@ -295,7 +295,7 @@ func processVideoGeneration(jobID string, text string) {
 	}
 
 	updateJobStatus(jobID, "adding_audio_to_video", "", "")
-	outputPath, err := pkg.AddAudioToVideo(path, voice, os.TempDir(), subtitlesPath)
+	outputPath, err := pkg.AddAudioToVideo(path, voice, subtitlesPath, os.TempDir())
 	if err != nil {
 		updateJobStatus(jobID, "failed", "", "Error adding audio to video: "+err.Error())
 		return
@@ -344,7 +344,7 @@ func processVideoGeneration(jobID string, text string) {
 	// Clean up temporary files
 	os.Remove(outputPath)
 	os.Remove(path)
-	os.Remove(filepath.Join(os.TempDir(), "/testing.ass"))
+	os.Remove(subtitlesPath)
 }
 
 func getImagesWithTimestamps(transcript *models.TranscriptionOutput, script string) ([]models.ImageWithTimestamp, error) {
