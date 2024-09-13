@@ -279,7 +279,7 @@ func processVideoGeneration(jobID string, text string) {
 	}
 
 	updateJobStatus(jobID, "creating_subtitle_file", "", "")
-	subtitlesPath := os.TempDir() + fmt.Sprintf("%s.ass", pkg.GenerateRandomString(7))
+	subtitlesPath := filepath.Join(os.TempDir(), fmt.Sprintf("%s.ass", pkg.GenerateRandomString(7)))
 	err = pkg.CreateAssFile(subtitlesPath, *transcript)
 	if err != nil {
 		updateJobStatus(jobID, "failed", "", "Error creating subtitle file: "+err.Error())
@@ -344,7 +344,7 @@ func processVideoGeneration(jobID string, text string) {
 	// Clean up temporary files
 	os.Remove(outputPath)
 	os.Remove(path)
-	os.Remove(os.TempDir() + "testing.ass")
+	os.Remove(filepath.Join(os.TempDir(), "/testing.ass"))
 }
 
 func getImagesWithTimestamps(transcript *models.TranscriptionOutput, script string) ([]models.ImageWithTimestamp, error) {
