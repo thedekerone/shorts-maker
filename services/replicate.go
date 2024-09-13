@@ -65,7 +65,7 @@ Remember to generate only the story text, without any additional elements like t
 
 	stringOutput := outputToStrings(output)
 
-	return strings.Join(stringOutput, ""), nil
+	return strings.Join(stringOutput, " "), nil
 
 }
 

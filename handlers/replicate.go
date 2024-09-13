@@ -279,7 +279,8 @@ func processVideoGeneration(jobID string, text string) {
 	}
 
 	updateJobStatus(jobID, "creating_subtitle_file", "", "")
-	err = pkg.CreateAssFile(os.TempDir()+"testing.ass", *transcript)
+	subtitlesPath := os.TempDir() + fmt.Sprintf("%s.ass", pkg.GenerateRandomString(7))
+	err = pkg.CreateAssFile(subtitlesPath, *transcript)
 	if err != nil {
 		updateJobStatus(jobID, "failed", "", "Error creating subtitle file: "+err.Error())
 		return
@@ -294,7 +295,7 @@ func processVideoGeneration(jobID string, text string) {
 	}
 
 	updateJobStatus(jobID, "adding_audio_to_video", "", "")
-	outputPath, err := pkg.AddAudioToVideo(path, voice, os.TempDir())
+	outputPath, err := pkg.AddAudioToVideo(path, voice, os.TempDir(), subtitlesPath)
 	if err != nil {
 		updateJobStatus(jobID, "failed", "", "Error adding audio to video: "+err.Error())
 		return

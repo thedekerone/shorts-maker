@@ -15,7 +15,7 @@ require (
 	github.com/minio/minio-go/v7 v7.0.76 // indirect
 	github.com/replicate/replicate-go v0.23.0 // indirect
 	github.com/rs/xid v1.6.0 // indirect
-	github.com/thedekerone/gobra v1.0.10 // indirect
+	github.com/thedekerone/gobra v1.0.11 // indirect
 	github.com/u2takey/ffmpeg-go v0.5.0 // indirect
 	github.com/u2takey/go-utils v0.3.1 // indirect
 	golang.org/x/crypto v0.26.0 // indirect
