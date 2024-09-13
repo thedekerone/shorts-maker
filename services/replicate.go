@@ -24,7 +24,7 @@ func NewReplicateService() (*ReplicateService, error) {
 
 func (rs *ReplicateService) GetCompletition(prompt string) (string, error) {
 	ctx := context.TODO()
-	model := "meta/llama-2-70b-chat:2d19859030ff705a87c746f7e96eea03aefb71f166725aee39692f1476566d48"
+	model := "meta/meta-llama-3-70b:83c5bdea9941e83be68480bd06ad792f3f295612a24e4678baed34083083a87f"
 
 	const systemPrompt = `
 		You are a creative storytelling AI designed to generate engaging, short-form stories suitable for TikTok's text-to-speech feature. Your task is to create captivating stories based on simple text prompts.
