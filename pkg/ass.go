@@ -30,7 +30,7 @@ func GetWordsFromSentence(sentence models.Segment) string {
 		}
 		**/
 
-		words = words + getWordTiming(word, 0)
+		words = words + getWordTiming(word, 0) + " "
 	}
 
 	return words
