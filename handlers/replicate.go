@@ -272,7 +272,7 @@ func processVideoGeneration(jobID string, text string) {
 	lastSegment := transcript.Segments[len(transcript.Segments)-1]
 
 	updateJobStatus(jobID, "generating_images", "", "")
-	images, err := getImagesWithTimestamps(transcript)
+	images, err := getImagesWithTimestamps(transcript, predictions)
 	if err != nil {
 		updateJobStatus(jobID, "failed", "", "Error getting images: "+err.Error())
 		return
@@ -346,7 +346,7 @@ func processVideoGeneration(jobID string, text string) {
 	os.Remove(os.TempDir() + "testing.ass")
 }
 
-func getImagesWithTimestamps(transcript *models.TranscriptionOutput) ([]models.ImageWithTimestamp, error) {
+func getImagesWithTimestamps(transcript *models.TranscriptionOutput, script string) ([]models.ImageWithTimestamp, error) {
 	rs, err := services.NewReplicateService()
 	if err != nil {
 		return nil, fmt.Errorf("error creating replicate service: %w", err)
@@ -359,6 +359,7 @@ func getImagesWithTimestamps(transcript *models.TranscriptionOutput) ([]models.I
 
 	for i := 0; i < 4; i++ {
 		timestamp := float64(i) * interval
+		system := "I have the following story: \n" + script + "\n" + "Generate an image for this specific part"
 		relevantText := getRelevantText(transcript, timestamp)
 
 		// If relevantText is empty, use the text from the first segment
@@ -366,7 +367,7 @@ func getImagesWithTimestamps(transcript *models.TranscriptionOutput) ([]models.I
 			relevantText = transcript.Segments[0].Text
 		}
 
-		images, err := rs.GetImages(relevantText, 1)
+		images, err := rs.GetImages(system+relevantText, 1)
 		if err != nil {
 			return nil, fmt.Errorf("error getting image %d: %w", i+1, err)
 		}

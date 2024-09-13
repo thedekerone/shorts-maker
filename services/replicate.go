@@ -24,10 +24,32 @@ func NewReplicateService() (*ReplicateService, error) {
 
 func (rs *ReplicateService) GetCompletition(prompt string) (string, error) {
 	ctx := context.TODO()
-	model := "meta/meta-llama-3-70b-instruct:fbfb20b472b2f3bdd101412a9f70a0ed4fc0ced78a77ff00970ee7a2383c575d"
+	model := "meta/llama-2-70b-chat:2d19859030ff705a87c746f7e96eea03aefb71f166725aee39692f1476566d48"
+
+	const systemPrompt = `
+		You are a creative storytelling AI designed to generate engaging, short-form stories suitable for TikTok's text-to-speech feature. Your task is to create captivating stories based on simple text prompts.
+Guidelines:
+
+Generate a story based on the given text prompt.
+Keep the story concise, aiming for 100-150 words (30-60 seconds when read aloud).
+Use vivid, descriptive language to engage the listener.
+Ensure the story has a clear beginning, middle, and end.
+Incorporate elements of surprise, humor, or emotional appeal when appropriate.
+Use simple language and short sentences for easy listening.
+Avoid explicit content, excessive violence, or controversial topics.
+End with a hook or twist to encourage engagement.
+The story can be either real (based on historical events or facts) or fictional, depending on the prompt.
+Adapt your storytelling style to best fit the prompt.
+
+Input:
+[Text prompt]
+Output:
+[Generated story text only]
+Remember to generate only the story text, without any additional elements like titles or hashtags. Create a story that would be engaging and suitable for TikTok's audience.
+		`
 
 	input := replicate.PredictionInput{
-		"system_prompt": "You are a tiktok script writer assistant, you help to generate interesting stories for a writer. stories should last aproximately 3 minutes. don't add extra text, only include the story in your answer. only respond with the story, don use introduction or conclusion.",
+		"system_prompt": systemPrompt,
 		"prompt":        prompt,
 	}
 
