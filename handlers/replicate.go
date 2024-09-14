@@ -360,7 +360,7 @@ func getImagesWithTimestamps(transcript *models.TranscriptionOutput, script stri
 
 	for i := 0; i < 4; i++ {
 		timestamp := float64(i) * interval
-		system := "I have the following story: \n" + script + "\n" + "Generate an image for this specific part"
+		system := "I have the following story: \n" + script + "\n" + "Generate an image for this specific part: "
 		relevantText := getRelevantText(transcript, timestamp)
 
 		// If relevantText is empty, use the text from the first segment

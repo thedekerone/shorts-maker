@@ -71,7 +71,7 @@ Remember to generate only the story text, without any additional elements like t
 
 func (rs *ReplicateService) GetImages(prompt string, quantity int64) ([]string, error) {
 	ctx := context.TODO()
-	model := "black-forest-labs/flux-dev"
+	model := "black-forest-labs/flux-schnell"
 
 	input := replicate.PredictionInput{
 		"prompt":                 prompt,
