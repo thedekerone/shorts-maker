@@ -27,7 +27,7 @@ func (rs *ReplicateService) GetCompletition(prompt string) (string, error) {
 	model := "meta/meta-llama-3-70b-instruct:fbfb20b472b2f3bdd101412a9f70a0ed4fc0ced78a77ff00970ee7a2383c575d"
 
 	const systemPrompt = `
-		You are a creative storytelling AI designed to generate engaging, short-form stories suitable for TikTok's text-to-speech feature. Your task is to create captivating stories based on simple text prompts.
+		You are a creative storytelling AI designed to generate engaging, you create stories on the same language as the input, short-form stories suitable for TikTok's text-to-speech feature. Your task is to create captivating stories based on simple text prompts.
 Guidelines:
 
 Generate a story based on the given text prompt.
