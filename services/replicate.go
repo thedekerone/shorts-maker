@@ -31,7 +31,7 @@ func (rs *ReplicateService) GetCompletition(prompt string) (string, error) {
 Guidelines:
 
 Generate a story based on the given text prompt.
-Keep the story concise, aiming for 100-150 words (30-60 seconds when read aloud).
+Keep the story concise, aiming for 60-120 seconds when read aloud.
 Use vivid, descriptive language to engage the listener.
 Ensure the story has a clear beginning, middle, and end.
 Incorporate elements of surprise, humor, or emotional appeal when appropriate.
