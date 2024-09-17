@@ -22,11 +22,12 @@ func NewReplicateService() (*ReplicateService, error) {
 	return &ReplicateService{Client: client}, nil
 }
 
-func (rs *ReplicateService) GetCompletition(prompt string) (string, error) {
+func (rs *ReplicateService) GetCompletition(prompt string, systemPrompt string) (string, error) {
 	ctx := context.TODO()
 	model := "meta/meta-llama-3-70b-instruct:fbfb20b472b2f3bdd101412a9f70a0ed4fc0ced78a77ff00970ee7a2383c575d"
 
-	const systemPrompt = `
+	if systemPrompt == "" {
+		systemPrompt = `
 		You are a creative storytelling AI designed to generate engaging, you create stories on the same language as the input, short-form stories suitable for TikTok's text-to-speech feature. Your task is to create captivating stories based on simple text prompts.
 Guidelines:
 
@@ -47,6 +48,7 @@ Output:
 [Generated story text only]
 Remember to generate only the story text, without any additional elements like titles or hashtags. Create a story that would be engaging and suitable for TikTok's audience.
 		`
+	}
 
 	input := replicate.PredictionInput{
 		"system_prompt": systemPrompt,
@@ -128,7 +130,7 @@ func (rs *ReplicateService) GetTranscription(audio string, initial string) (*mod
 	input := replicate.PredictionInput{
 		"audio_file":     audio,
 		"align_output":   true,
-		"batch_size":     16,
+		"batch_size":     128,
 		"offset_seconds": 0,
 	}
 

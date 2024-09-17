@@ -78,7 +78,7 @@ func handleCompletition(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	predictions, err := rs.GetCompletition(prompt)
+	predictions, err := rs.GetCompletition(prompt, "")
 
 	print(predictions)
 
@@ -255,7 +255,7 @@ func processVideoGeneration(jobID string, text string, script string) {
 	var predictions string
 
 	if script == "" {
-		predictions, err = rs.GetCompletition(text)
+		predictions, err = rs.GetCompletition(text, "")
 	} else {
 		predictions = script
 	}
@@ -370,6 +370,7 @@ func getImagesWithTimestamps(transcript *models.TranscriptionOutput, script stri
 	for i := 0; i < int(numImages); i++ {
 		timestamp := float64(i) * interval
 		system := "I have the following story: \n" + script + "\n" + "Generate an image for this specific part: "
+
 		relevantText := getRelevantText(transcript, timestamp)
 
 		// If relevantText is empty, use the text from the first segment
@@ -377,7 +378,13 @@ func getImagesWithTimestamps(transcript *models.TranscriptionOutput, script stri
 			relevantText = transcript.Segments[0].Text
 		}
 
-		images, err := rs.GetImages(system+relevantText, 1)
+		promptForImage, err := rs.GetCompletition(system+relevantText, "generate a prompt for this part of the story")
+
+		if err != nil {
+			promptForImage = system + relevantText
+		}
+
+		images, err := rs.GetImages(promptForImage, 1)
 		if err != nil {
 			return nil, fmt.Errorf("error getting image %d: %w", i+1, err)
 		}
