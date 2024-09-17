@@ -42,11 +42,11 @@ func MakeVideoOfImages(imagesWithTS []models.ImageWithTimestamp, duration float3
 		Fps:         30,
 		AspectRatio: 9.0 / 16.0,
 	}
-	interval := float32(duration) / 4
+	interval := float32(duration)/float32(len(images)) + 0.2
 	for _, image := range images {
-		currentVideo := gobra.NewZoomPanVideoFromImage(image, interval, 1.5, config)
-		currentVideo = currentVideo.AddFadeIn(1)
-		currentVideo = currentVideo.AddFadeOut(1)
+		currentVideo := gobra.NewZoomPanVideoFromImage(image, interval, 1.3, config)
+		currentVideo = currentVideo.AddFadeIn(0.2)
+		currentVideo = currentVideo.AddFadeOut(0.2)
 		video = append(video, currentVideo)
 	}
 	merged := gobra.MergeVideos(video...)

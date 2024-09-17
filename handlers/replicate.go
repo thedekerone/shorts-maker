@@ -194,8 +194,10 @@ func generateAIShort(w http.ResponseWriter, r *http.Request) {
 	// Get the text query parameter
 	text := r.URL.Query().Get("text")
 
+	script := r.URL.Query().Get("script")
+
 	// Validate the text parameter
-	if text == "" {
+	if text == "" && script == "" {
 		http.Error(w, "text parameter is required", http.StatusBadRequest)
 		return
 	}
@@ -214,7 +216,7 @@ func generateAIShort(w http.ResponseWriter, r *http.Request) {
 	jobsMutex.Unlock()
 
 	// Start the video generation process in a goroutine
-	go processVideoGeneration(jobID, text)
+	go processVideoGeneration(jobID, text, script)
 
 	// Prepare the response
 	response := map[string]string{
@@ -232,7 +234,7 @@ func generateAIShort(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func processVideoGeneration(jobID string, text string) {
+func processVideoGeneration(jobID string, text string, script string) {
 
 	updateJobStatus(jobID, "connecting_to_minio", "", "")
 	minioClient, err := services.ConnectToMinio()
@@ -249,7 +251,14 @@ func processVideoGeneration(jobID string, text string) {
 	}
 
 	updateJobStatus(jobID, "generating_script", "", "")
-	predictions, err := rs.GetCompletition(text)
+
+	var predictions string
+
+	if script == "" {
+		predictions, err = rs.GetCompletition(text)
+	} else {
+		predictions = script
+	}
 	if err != nil {
 		updateJobStatus(jobID, "failed", "", "Error getting completition: "+err.Error())
 		return
@@ -272,7 +281,7 @@ func processVideoGeneration(jobID string, text string) {
 	lastSegment := transcript.Segments[len(transcript.Segments)-1]
 
 	updateJobStatus(jobID, "generating_images", "", "")
-	images, err := getImagesWithTimestamps(transcript, predictions)
+	images, err := getImagesWithTimestamps(transcript, predictions, 6)
 	if err != nil {
 		updateJobStatus(jobID, "failed", "", "Error getting images: "+err.Error())
 		return
@@ -347,18 +356,18 @@ func processVideoGeneration(jobID string, text string) {
 	os.Remove(subtitlesPath)
 }
 
-func getImagesWithTimestamps(transcript *models.TranscriptionOutput, script string) ([]models.ImageWithTimestamp, error) {
+func getImagesWithTimestamps(transcript *models.TranscriptionOutput, script string, numImages int32) ([]models.ImageWithTimestamp, error) {
 	rs, err := services.NewReplicateService()
 	if err != nil {
 		return nil, fmt.Errorf("error creating replicate service: %w", err)
 	}
 
 	totalDuration := transcript.Segments[len(transcript.Segments)-1].End
-	interval := totalDuration / 4
+	interval := totalDuration / float64(numImages)
 
 	var imagesWithTimestamps []models.ImageWithTimestamp
 
-	for i := 0; i < 4; i++ {
+	for i := 0; i < int(numImages); i++ {
 		timestamp := float64(i) * interval
 		system := "I have the following story: \n" + script + "\n" + "Generate an image for this specific part: "
 		relevantText := getRelevantText(transcript, timestamp)
