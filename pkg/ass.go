@@ -10,7 +10,7 @@ import (
 )
 
 func CreateDialog(segment models.Segment) (string, error) {
-	baseAssDialog := fmt.Sprintf("\nDialogue: 0,%s,%s,Ashita,,0000,0000,0000,karaoke,%s", floatToAssTimeStamp(segment.Start), floatToAssTimeStamp(segment.End), GetWordsFromSentence(segment))
+	baseAssDialog := fmt.Sprintf("\nDialogue: 0,%s,%s,Default,,0000,0000,0000,,%s", floatToAssTimeStamp(segment.Start), floatToAssTimeStamp(segment.End), GetWordsFromSentence(segment))
 
 	return baseAssDialog, nil
 }
