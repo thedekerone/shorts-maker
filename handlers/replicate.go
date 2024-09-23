@@ -366,21 +366,21 @@ func getImagesWithTimestamps(transcript *models.TranscriptionOutput, script stri
 
 	//backticks
 	instructions := fmt.Sprintf(`
-      return prompts for image generation, your response should be in the format:
-      { prompt: string; section: string}[]
-      Return only the array, NO INTRODUCTION TEXT
+    return prompts for image generation for this story, the images should be evenly divided across the story and it should start with the first sentence, your response should be in the format:
+    { prompt: string; section: string}[]
+    Return only the array, NO INTRODUCTION TEXT
+    section should be the part of the text where the image should show
 
-      the prompt should include:
-      - style of image or type of art and be consistant with the rest of image
-      - what appears in the image
-      - if it applies, camera settings for the photo
-      `)
+    the prompt should include:
+    - style of image or type of art and be consistant with the rest of image
+    - what appears in the image
+    - if it applies, camera settings for the photo
+    `)
 
 	system := fmt.Sprintf("%s \n\n %s", script, instructions)
 
 	promptForImagesRequest, err := rs.
-		GetCompletition(system,
-			"generate a prompt for flux image generation for this  story; the prompt should describe exactly what should be in the image, and also the camera settings and style")
+		GetCompletition(system, "")
 
 	promptsForImages := []models.ImagePrompt{}
 
