@@ -362,31 +362,43 @@ func getImagesWithTimestamps(transcript *models.TranscriptionOutput, script stri
 		return nil, fmt.Errorf("error creating replicate service: %w", err)
 	}
 
-	totalDuration := transcript.Segments[len(transcript.Segments)-1].End
-	interval := totalDuration / float64(numImages)
-
 	var imagesWithTimestamps []models.ImageWithTimestamp
 
+	//backticks
+	instructions := fmt.Sprintf(`
+      return prompts for image generation, your response should be in the format:
+      { prompt: string; section: string}[]
+      Return only the array, NO INTRODUCTION TEXT
+
+      the prompt should include:
+      - style of image or type of art and be consistant with the rest of image
+      - what appears in the image
+      - if it applies, camera settings for the photo
+      `)
+
+	system := fmt.Sprintf("%s \n\n %s", script, instructions)
+
+	promptForImagesRequest, err := rs.
+		GetCompletition(system,
+			"generate a prompt for flux image generation for this  story; the prompt should describe exactly what should be in the image, and also the camera settings and style")
+
+	promptsForImages := []models.ImagePrompt{}
+
+	err = json.Unmarshal([]byte(promptForImagesRequest), &promptsForImages)
+
+	if err != nil {
+		return nil, fmt.Errorf("error unmarshalling prompt for images: %w", err)
+	}
+
 	for i := 0; i < int(numImages); i++ {
-		timestamp := float64(i) * interval
-		system := "I have the following story: \n" + script + "\n" + "Generate an image for this specific part: "
 
-		relevantText := getRelevantText(transcript, timestamp)
-
-		// If relevantText is empty, use the text from the first segment
-		if relevantText == "" && len(transcript.Segments) > 0 {
-			relevantText = transcript.Segments[0].Text
-		}
-
-		promptForImage, err := rs.
-			GetCompletition(system+relevantText,
-				"generate a prompt for flux image generation for this part of the story; the prompt should describe exactly what should be in the image, and also the camera settings and style")
+		timestamp, err := findTimestampForText(transcript, promptsForImages[i].Section)
 
 		if err != nil {
-			promptForImage = system + relevantText
+			return nil, fmt.Errorf("error finding timestamp for text: %w", err)
 		}
 
-		images, err := rs.GetImages(promptForImage, 1)
+		images, err := rs.GetImages(promptsForImages[i].Prompt, 1)
 		if err != nil {
 			return nil, fmt.Errorf("error getting image %d: %w", i+1, err)
 		}
@@ -400,6 +412,19 @@ func getImagesWithTimestamps(transcript *models.TranscriptionOutput, script stri
 	}
 
 	return imagesWithTimestamps, nil
+}
+
+func findTimestampForText(transcript *models.TranscriptionOutput, text string) (float64, error) {
+	for _, segment := range transcript.Segments {
+		if strings.Contains(segment.Text, text) {
+			for _, word := range segment.Words {
+				if strings.Contains(word.Word, text) {
+					return word.Start, nil
+				}
+			}
+		}
+	}
+	return 0, fmt.Errorf("text not found in transcript: %s", text)
 }
 
 func getRelevantText(transcript *models.TranscriptionOutput, timestamp float64) string {

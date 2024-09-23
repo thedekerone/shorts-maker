@@ -52,3 +52,8 @@ type ImageWithTimestamp struct {
 	URL       string
 	Timestamp float64
 }
+
+type ImagePrompt struct {
+	Prompt  string `json:"prompt"`
+	Section string `json:"section"`
+}
