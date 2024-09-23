@@ -378,7 +378,9 @@ func getImagesWithTimestamps(transcript *models.TranscriptionOutput, script stri
 			relevantText = transcript.Segments[0].Text
 		}
 
-		promptForImage, err := rs.GetCompletition(system+relevantText, "generate a prompt for this part of the story")
+		promptForImage, err := rs.
+			GetCompletition(system+relevantText,
+				"generate a prompt for flux image generation for this part of the story; the prompt should describe exactly what should be in the image, and also the camera settings and style")
 
 		if err != nil {
 			promptForImage = system + relevantText

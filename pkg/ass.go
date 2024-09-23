@@ -9,6 +9,24 @@ import (
 	"github.com/thedekerone/shorts-maker/models"
 )
 
+func CreteDialogFromWords(segment models.Segment) (string, error) {
+	var dialog string
+
+	for i, word := range segment.Words {
+		var start float64 = float64(word.Start)
+		var end float64 = float64(word.End)
+		if i == 0 {
+			start = float64(segment.Start)
+		} else if i == len(segment.Words)-1 {
+			end = float64(segment.End)
+		}
+
+		dialog = fmt.Sprintf("\nDialogue: 0,%s,%s,Default,,0000,0000,0000,,%s\n", floatToAssTimeStamp(start), floatToAssTimeStamp(end), word.Word)
+	}
+
+	return dialog, nil
+}
+
 func CreateDialog(segment models.Segment) (string, error) {
 	baseAssDialog := fmt.Sprintf("\nDialogue: 0,%s,%s,Default,,0000,0000,0000,,%s", floatToAssTimeStamp(segment.Start), floatToAssTimeStamp(segment.End), GetWordsFromSentence(segment))
 
@@ -82,7 +100,7 @@ func CreateAssFile(fileName string, transcription models.TranscriptionOutput) er
 	}
 
 	for _, segment := range segments {
-		dialog, err := CreateDialog(segment)
+		dialog, err := CreteDialogFromWords(segment)
 
 		if err != nil {
 			return errors.New("failed to create dialog format")
