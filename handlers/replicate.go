@@ -380,7 +380,7 @@ func getImagesWithTimestamps(transcript *models.TranscriptionOutput, script stri
 	system := fmt.Sprintf("%s \n\n %s", script, instructions)
 
 	promptForImagesRequest, err := rs.
-		GetCompletition(system, "")
+		GetCompletition(system, "return prompts for image generation, your response should be in the format: { prompt: string; section: string}[]")
 
 	promptsForImages := []models.ImagePrompt{}
 
