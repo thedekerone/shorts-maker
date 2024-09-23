@@ -367,7 +367,11 @@ func getImagesWithTimestamps(transcript *models.TranscriptionOutput, script stri
 	//backticks
 	instructions := fmt.Sprintf(`
     return prompts for image generation for this story, the images should be evenly divided across the story and it should start with the first sentence, your response should be in the format:
-    { prompt: string; section: string}[]
+    { 
+      prompt: string,
+      section: string
+    }[]
+
     Return only the array, NO INTRODUCTION TEXT
     section should be the part of the text where the image should show
 
