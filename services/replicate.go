@@ -53,6 +53,7 @@ Remember to generate only the story text, without any additional elements like t
 	input := replicate.PredictionInput{
 		"system_prompt": systemPrompt,
 		"prompt":        prompt,
+		"max_tokens":    2000,
 	}
 
 	output, err := rs.Client.Run(ctx, model, input, nil)
