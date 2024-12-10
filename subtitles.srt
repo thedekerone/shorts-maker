@@ -1,0 +1,19 @@
+1
+00:00:01,000 --> 00:00:04,000
+<style color="yellow" font-size="72" animation="fadeIn">
+Welcome to our video!
+
+2
+00:00:04,500 --> 00:00:07,500
+<style color="white" border-color="black" animation="slideLeft">
+This is a sliding subtitle
+
+3
+00:00:08,000 --> 00:00:11,000
+<style color="cyan" font-size="80" animation="scaleUp">
+Getting bigger and bigger!
+
+4
+00:00:11,500 --> 00:00:14,500
+<style color="orange" animation="fadeOut">
+Goodbye!

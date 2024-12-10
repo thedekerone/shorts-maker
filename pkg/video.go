@@ -62,7 +62,7 @@ func generateUniqueName() string {
 	return fmt.Sprintf("%d_%s", timestamp, uuid)
 }
 
-func AddAudioToVideo(videoPath, audioPath, subtitlesPath, outputFolder string) (string, error) {
+func AddAudioToVideo(videoPath, audioPath, outputFolder string) (string, error) {
 	// Generate unique names for temporary audio file and output video file
 	audioFileName := fmt.Sprintf("%s.mp3", generateUniqueName())
 	outputFileName := fmt.Sprintf("%s.mp4", generateUniqueName())
@@ -92,7 +92,7 @@ func AddAudioToVideo(videoPath, audioPath, subtitlesPath, outputFolder string) (
 	})
 
 	// Save video with subtitles
-	if err := video.SaveWithSubtitles(outputFilePath, subtitlesPath); err != nil {
+	if err := video.Save(outputFilePath); err != nil {
 		return "", fmt.Errorf("failed to save video with subtitles: %v", err)
 	}
 

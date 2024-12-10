@@ -18,7 +18,14 @@ import (
 	"github.com/thedekerone/shorts-maker/models"
 	"github.com/thedekerone/shorts-maker/pkg"
 	"github.com/thedekerone/shorts-maker/services"
+	"github.com/thedekerone/shorts-maker/subtitles"
 )
+
+func generateUniqueName() string {
+	timestamp := time.Now().UnixNano()
+	uuid := uuid.New().String()
+	return fmt.Sprintf("%d_%s", timestamp, uuid)
+}
 
 type Job struct {
 	ID     string `json:"id"`
@@ -235,10 +242,12 @@ func generateAIShort(w http.ResponseWriter, r *http.Request) {
 }
 
 func processVideoGeneration(jobID string, text string, script string) {
+	print("dasdasads")
 
 	updateJobStatus(jobID, "connecting_to_minio", "", "")
 	minioClient, err := services.ConnectToMinio()
 	if err != nil {
+
 		updateJobStatus(jobID, "failed", "", "Couldn't connect to minio: "+err.Error())
 		return
 	}
@@ -246,6 +255,7 @@ func processVideoGeneration(jobID string, text string, script string) {
 	updateJobStatus(jobID, "creating_replicate_service", "", "")
 	rs, err := services.NewReplicateService()
 	if err != nil {
+		fmt.Printf("%s", err)
 		updateJobStatus(jobID, "failed", "", "Error creating replicate service: "+err.Error())
 		return
 	}
@@ -288,12 +298,6 @@ func processVideoGeneration(jobID string, text string, script string) {
 	}
 
 	updateJobStatus(jobID, "creating_subtitle_file", "", "")
-	subtitlesPath := filepath.Join(os.TempDir(), fmt.Sprintf("%s.ass", pkg.GenerateRandomString(7)))
-	err = pkg.CreateAssFile(subtitlesPath, *transcript)
-	if err != nil {
-		updateJobStatus(jobID, "failed", "", "Error creating subtitle file: "+err.Error())
-		return
-	}
 
 	updateJobStatus(jobID, "creating_video_from_images", "", "")
 	path, err := pkg.MakeVideoOfImages(images, float32(lastSegment.End), os.TempDir())
@@ -304,14 +308,31 @@ func processVideoGeneration(jobID string, text string, script string) {
 	}
 
 	updateJobStatus(jobID, "adding_audio_to_video", "", "")
-	outputPath, err := pkg.AddAudioToVideo(path, voice, subtitlesPath, os.TempDir())
+	outputPath, err := pkg.AddAudioToVideo(path, voice, os.TempDir())
 	if err != nil {
 		updateJobStatus(jobID, "failed", "", "Error adding audio to video: "+err.Error())
 		return
 	}
 
+	outputFileName := fmt.Sprintf("%s.mp4", generateUniqueName())
+	outputFilePath := filepath.Join(os.TempDir(), outputFileName)
+
+	animationSubs, err := subtitles.TransformTranscription(transcript)
+	if err != nil {
+		updateJobStatus(jobID, "failed", "", "Error transforming transcript to subs: "+err.Error())
+	}
+
+	print("animationsSubs=====================================================\n\n\n\n")
+	print(animationSubs)
+
+	err = subtitles.ApplySubtitlesToVideo(outputPath, outputFilePath, animationSubs)
+	if err != nil {
+		fmt.Println(err)
+		updateJobStatus(jobID, "failed", "", "Error transforming transcript to subs: "+err.Error())
+	}
+
 	updateJobStatus(jobID, "preparing_file_for_upload", "", "")
-	file, err := os.Open(outputPath)
+	file, err := os.Open(outputFilePath)
 	if err != nil {
 		print(err.Error())
 		updateJobStatus(jobID, "failed", "", "Error opening file: "+err.Error())
@@ -347,13 +368,9 @@ func processVideoGeneration(jobID string, text string, script string) {
 
 	updateJobStatus(jobID, "completed", videoSignedURL, "")
 
-	//only path
-	// show only after the url
-
 	// Clean up temporary files
-	os.Remove(outputPath)
+	os.Remove(outputFilePath)
 	os.Remove(path)
-	os.Remove(subtitlesPath)
 }
 
 func getImagesWithTimestamps(transcript *models.TranscriptionOutput, script string, numImages int32) ([]models.ImageWithTimestamp, error) {
