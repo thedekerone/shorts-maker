@@ -44,7 +44,7 @@ func RenderText(text string, path string, filename string) error {
 		"-fill", "blue",
 		"-font", "Candice",
 		"-gravity", "center",
-		"-pointsize", "36",
+		"-pointsize", "108",
 		"-size", "1080x1920",
 		label,
 		fullPath,
@@ -76,7 +76,7 @@ func CreateSubtitleImage(subs *subtitles.Subtitle, subtitlesPath string) (Subtit
 	return subImage, nil
 }
 
-func AddSubtitlesToVideo(videoPath string, subImages []SubtitleImage) (string, error) {
+func AddSubtitlesToVideo(videoPath string, subImages []SubtitleImage, outputPath string) (string, error) {
 	var imageAdditionFilter string
 	var imageInputs []string
 
@@ -89,7 +89,7 @@ func AddSubtitlesToVideo(videoPath string, subImages []SubtitleImage) (string, e
 	}
 
 	cmdArgs := append([]string{"-i", videoPath}, imageInputs...)
-	cmdArgs = append(cmdArgs, "-filter_complex", imageAdditionFilter, "-pix_fmt", "yuv420p", "-c:a", "copy", "output.mp4", "-y")
+	cmdArgs = append(cmdArgs, "-filter_complex", imageAdditionFilter, "-pix_fmt", "yuv420p", "-c:a", "copy", outputPath, "-y")
 
 	cmd := exec.Command("ffmpeg", cmdArgs...)
 

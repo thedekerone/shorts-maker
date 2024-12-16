@@ -54,7 +54,7 @@ func TestAddSubsToImage(t *testing.T) {
 		t.Fatalf("failed to render sub")
 	}
 
-	result, err := engine.AddSubtitlesToVideo("../input.mp4", []engine.SubtitleImage{image})
+	result, err := engine.AddSubtitlesToVideo("../input.mp4", []engine.SubtitleImage{image}, "output.mp4")
 
 	if err != nil {
 		t.Log(err)
