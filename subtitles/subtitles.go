@@ -11,11 +11,11 @@ type SubtitleStyles struct {
 type Subtitle struct {
 	Text      string
 	Style     *SubtitleStyles
-	StartTime int
-	EndTime   int
+	StartTime float32
+	EndTime   float32
 }
 
-func CreateSubtitle(text string, style *SubtitleStyles, startTime int, endTime int) Subtitle {
+func CreateSubtitle(text string, style *SubtitleStyles, startTime float32, endTime float32) Subtitle {
 	subtitle := Subtitle{
 		Text:      text,
 		Style:     style,

@@ -3,6 +3,10 @@
 #
 # Binaries for programs and plugins
 *.exe
+*.mp4
+*.png
+*.jpg
+*.jpeg
 *.exe~
 *.dll
 *.so
