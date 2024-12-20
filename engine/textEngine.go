@@ -5,9 +5,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-
-	"github.com/google/uuid"
-	"github.com/thedekerone/shorts-maker/subtitles"
 )
 
 type SubtitleImage struct {
@@ -55,25 +52,6 @@ func RenderText(text string, path string, filename string) error {
 	}
 
 	return nil
-}
-
-func CreateSubtitleImage(subs *subtitles.Subtitle, subtitlesPath string) (SubtitleImage, error) {
-	var subImage SubtitleImage
-
-	subtitlesId := uuid.New().String()
-
-	imageName := fmt.Sprintf("%s.png", subtitlesId)
-	err := RenderText(subs.Text, subtitlesPath, imageName)
-
-	if err != nil {
-		return subImage, errors.New("Failed to render text")
-	}
-
-	subImage.ImagePath = fmt.Sprintf("./%s/%s", subtitlesPath, imageName)
-	subImage.StartTime = subs.StartTime
-	subImage.EndTime = subs.EndTime
-
-	return subImage, nil
 }
 
 func AddSubtitlesToVideo(videoPath string, subImages []SubtitleImage, outputPath string) (string, error) {

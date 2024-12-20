@@ -15,6 +15,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/minio/minio-go/v7"
+	"github.com/thedekerone/shorts-maker/engine"
 	"github.com/thedekerone/shorts-maker/models"
 	"github.com/thedekerone/shorts-maker/pkg"
 	"github.com/thedekerone/shorts-maker/services"
@@ -244,25 +245,75 @@ func generateAIShort(w http.ResponseWriter, r *http.Request) {
 func processVideoGeneration(jobID string, text string, script string) {
 	print("dasdasads")
 
+	minioClient, err := connectToMinio(jobID)
+	if err != nil {
+		return
+	}
+
+	rs, err := createReplicateService(jobID)
+	if err != nil {
+		return
+	}
+
+	predictions, err := generateScript(jobID, rs, text, script)
+	if err != nil {
+		return
+	}
+
+	voice, err := generateVoice(jobID, rs, predictions)
+	if err != nil {
+		return
+	}
+
+	transcript, err := generateTranscription(jobID, rs, voice, predictions)
+	if err != nil {
+		return
+	}
+
+	images, err := generateImages(jobID, transcript, predictions)
+	if err != nil {
+		return
+	}
+
+	outputFilePath, err := createVideo(jobID, transcript, images, voice)
+	if err != nil {
+		return
+	}
+
+	err = uploadToMinio(jobID, minioClient, outputFilePath)
+	if err != nil {
+		return
+	}
+
+	// Clean up temporary files
+	os.Remove(outputFilePath)
+}
+
+func connectToMinio(jobID string) (*services.MinioService, error) {
 	updateJobStatus(jobID, "connecting_to_minio", "", "")
 	minioClient, err := services.ConnectToMinio()
 	if err != nil {
-
 		updateJobStatus(jobID, "failed", "", "Couldn't connect to minio: "+err.Error())
-		return
+		return nil, err
 	}
+	return minioClient, nil
+}
 
+func createReplicateService(jobID string) (*services.ReplicateService, error) {
 	updateJobStatus(jobID, "creating_replicate_service", "", "")
 	rs, err := services.NewReplicateService()
 	if err != nil {
-		fmt.Printf("%s", err)
 		updateJobStatus(jobID, "failed", "", "Error creating replicate service: "+err.Error())
-		return
+		return nil, err
 	}
+	return rs, nil
+}
 
+func generateScript(jobID string, rs *services.ReplicateService, text string, script string) (string, error) {
 	updateJobStatus(jobID, "generating_script", "", "")
 
 	var predictions string
+	var err error
 
 	if script == "" {
 		predictions, err = rs.GetCompletition(text, "")
@@ -271,53 +322,64 @@ func processVideoGeneration(jobID string, text string, script string) {
 	}
 	if err != nil {
 		updateJobStatus(jobID, "failed", "", "Error getting completition: "+err.Error())
-		return
+		return "", err
 	}
+	return predictions, nil
+}
 
+func generateVoice(jobID string, rs *services.ReplicateService, predictions string) (string, error) {
 	updateJobStatus(jobID, "generating_voice", "", "")
 	voice, err := rs.GetVoice(predictions)
 	if err != nil {
 		updateJobStatus(jobID, "failed", "", "Error getting voice: "+err.Error())
-		return
+		return "", err
 	}
+	return voice, nil
+}
 
+func generateTranscription(jobID string, rs *services.ReplicateService, voice string, predictions string) (*models.TranscriptionOutput, error) {
 	updateJobStatus(jobID, "generating_transcription", "", "")
 	transcript, err := rs.GetTranscription(voice, predictions)
 	if err != nil {
 		updateJobStatus(jobID, "failed", "", "Error getting transcription: "+err.Error())
-		return
+		return nil, err
 	}
+	return transcript, nil
+}
 
-	lastSegment := transcript.Segments[len(transcript.Segments)-1]
-
+func generateImages(jobID string, transcript *models.TranscriptionOutput, predictions string) ([]models.ImageWithTimestamp, error) {
 	updateJobStatus(jobID, "generating_images", "", "")
 	images, err := getImagesWithTimestamps(transcript, predictions, 6)
 	if err != nil {
 		updateJobStatus(jobID, "failed", "", "Error getting images: "+err.Error())
-		return
+		return nil, err
 	}
+	return images, nil
+}
 
+func createVideo(jobID string, transcript *models.TranscriptionOutput, images []models.ImageWithTimestamp, voice string) (string, error) {
 	updateJobStatus(jobID, "creating_subtitle_file", "", "")
+
+	lastSegment := transcript.Segments[len(transcript.Segments)-1]
 
 	updateJobStatus(jobID, "creating_video_from_images", "", "")
 	path, err := pkg.MakeVideoOfImages(images, float32(lastSegment.End), os.TempDir())
-
 	if err != nil {
 		updateJobStatus(jobID, "failed", "", "Error making video: "+err.Error())
-		return
+		return "", err
 	}
 
 	updateJobStatus(jobID, "adding_audio_to_video", "", "")
 	outputPath, err := pkg.AddAudioToVideo(path, voice, os.TempDir())
 	if err != nil {
 		updateJobStatus(jobID, "failed", "", "Error adding audio to video: "+err.Error())
-		return
+		return "", err
 	}
 
 	outputFileName := fmt.Sprintf("%s.mp4", generateUniqueName())
 	outputFilePath := filepath.Join(os.TempDir(), outputFileName)
 
-	animationSubs, err := subtitles.TransformTranscription(transcript)
+	animationSubs := subtitles.CreateSubtitles(transcript)
 	if err != nil {
 		updateJobStatus(jobID, "failed", "", "Error transforming transcript to subs: "+err.Error())
 	}
@@ -325,25 +387,31 @@ func processVideoGeneration(jobID string, text string, script string) {
 	print("animationsSubs=====================================================\n\n\n\n")
 	print(animationSubs)
 
-	err = subtitles.ApplySubtitlesToVideo(outputPath, outputFilePath, animationSubs)
+	subtitleImages, err := subtitles.CreateSubtitleImages(animationSubs)
 	if err != nil {
 		fmt.Println(err)
 		updateJobStatus(jobID, "failed", "", "Error transforming transcript to subs: "+err.Error())
 	}
 
+	engine.AddSubtitlesToVideo(outputPath, subtitleImages, outputFilePath)
+
+	return outputFilePath, nil
+}
+
+func uploadToMinio(jobID string, minioClient *services.MinioService, outputFilePath string) error {
 	updateJobStatus(jobID, "preparing_file_for_upload", "", "")
 	file, err := os.Open(outputFilePath)
 	if err != nil {
 		print(err.Error())
 		updateJobStatus(jobID, "failed", "", "Error opening file: "+err.Error())
-		return
+		return err
 	}
 	defer file.Close()
 
 	fileInfo, err := file.Stat()
 	if err != nil {
 		updateJobStatus(jobID, "failed", "", "Error getting file info: "+err.Error())
-		return
+		return err
 	}
 	fileSize := fileInfo.Size()
 	fileExt := filepath.Ext(fileInfo.Name())
@@ -353,14 +421,14 @@ func processVideoGeneration(jobID string, text string, script string) {
 	_, err = minioClient.Client.PutObject(context.Background(), "shorts-maker", generatedFileName, file, fileSize, minio.PutObjectOptions{ContentType: "video/mp4"})
 	if err != nil {
 		updateJobStatus(jobID, "failed", "", "Error uploading file to Minio: "+err.Error())
-		return
+		return err
 	}
 
 	updateJobStatus(jobID, "generating_presigned_url", "", "")
 	object, err := minioClient.Client.PresignedGetObject(context.Background(), "shorts-maker", generatedFileName, time.Hour*12, nil)
 	if err != nil {
 		updateJobStatus(jobID, "failed", "", "Error getting presigned url: "+err.Error())
-		return
+		return err
 	}
 
 	// put only the part from just before the bucket name until the end
@@ -368,9 +436,7 @@ func processVideoGeneration(jobID string, text string, script string) {
 
 	updateJobStatus(jobID, "completed", videoSignedURL, "")
 
-	// Clean up temporary files
-	os.Remove(outputFilePath)
-	os.Remove(path)
+	return nil
 }
 
 func getImagesWithTimestamps(transcript *models.TranscriptionOutput, script string, numImages int32) ([]models.ImageWithTimestamp, error) {
