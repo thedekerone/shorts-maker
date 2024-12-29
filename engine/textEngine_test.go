@@ -28,7 +28,7 @@ func TestSubtitleImage(t *testing.T) {
 		StartTime: 1.0,
 		EndTime:   2.0,
 	}
-	image, err := engine.CreateSubtitleImage(&subs, "testsImages")
+	image, err := subtitles.CreateSubtitleImage(&subs, "testsImages")
 
 	if err != nil {
 		t.Log(err)
@@ -47,7 +47,7 @@ func TestAddSubsToImage(t *testing.T) {
 		StartTime: 1.0,
 		EndTime:   2.0,
 	}
-	image, err := engine.CreateSubtitleImage(&subs, "testsImages")
+	image, err := subtitles.CreateSubtitleImage(&subs, "testsImages")
 
 	if err != nil {
 		t.Log(err)

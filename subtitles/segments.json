@@ -1,0 +1,5054 @@
+{
+  "segments": [
+    {
+      "end": 2.65,
+      "text": " I didn't mean to destroy the most precious thing in the world to me.",
+      "start": 0.029,
+      "words": [
+        {
+          "end": 0.069,
+          "word": "I",
+          "score": 0.607,
+          "start": 0.029
+        },
+        {
+          "end": 0.309,
+          "word": "didn't",
+          "score": 0.755,
+          "start": 0.089
+        },
+        {
+          "end": 0.489,
+          "word": "mean",
+          "score": 0.805,
+          "start": 0.329
+        },
+        {
+          "end": 0.609,
+          "word": "to",
+          "score": 0.624,
+          "start": 0.529
+        },
+        {
+          "end": 1.129,
+          "word": "destroy",
+          "score": 0.878,
+          "start": 0.649
+        },
+        {
+          "end": 1.249,
+          "word": "the",
+          "score": 0.867,
+          "start": 1.169
+        },
+        {
+          "end": 1.409,
+          "word": "most",
+          "score": 0.996,
+          "start": 1.289
+        },
+        {
+          "end": 1.809,
+          "word": "precious",
+          "score": 0.808,
+          "start": 1.469
+        },
+        {
+          "end": 1.989,
+          "word": "thing",
+          "score": 0.947,
+          "start": 1.849
+        },
+        {
+          "end": 2.069,
+          "word": "in",
+          "score": 0.999,
+          "start": 2.029
+        },
+        {
+          "end": 2.17,
+          "word": "the",
+          "score": 0.834,
+          "start": 2.09
+        },
+        {
+          "end": 2.37,
+          "word": "world",
+          "score": 0.86,
+          "start": 2.19
+        },
+        {
+          "end": 2.49,
+          "word": "to",
+          "score": 0.974,
+          "start": 2.41
+        },
+        {
+          "end": 2.65,
+          "word": "me.",
+          "score": 0.832,
+          "start": 2.53
+        }
+      ]
+    },
+    {
+      "end": 9.591,
+      "text": "I leaned my head back against the wall in the emergency room at our local hospital, tears pouring down my face.",
+      "start": 3.35,
+      "words": [
+        {
+          "end": 3.41,
+          "word": "I",
+          "score": 0.954,
+          "start": 3.35
+        },
+        {
+          "end": 3.69,
+          "word": "leaned",
+          "score": 0.664,
+          "start": 3.45
+        },
+        {
+          "end": 3.83,
+          "word": "my",
+          "score": 0.818,
+          "start": 3.71
+        },
+        {
+          "end": 4.05,
+          "word": "head",
+          "score": 0.744,
+          "start": 3.87
+        },
+        {
+          "end": 4.31,
+          "word": "back",
+          "score": 0.911,
+          "start": 4.13
+        },
+        {
+          "end": 4.67,
+          "word": "against",
+          "score": 0.667,
+          "start": 4.37
+        },
+        {
+          "end": 4.81,
+          "word": "the",
+          "score": 0.672,
+          "start": 4.71
+        },
+        {
+          "end": 5.13,
+          "word": "wall",
+          "score": 0.819,
+          "start": 4.85
+        },
+        {
+          "end": 5.27,
+          "word": "in",
+          "score": 0.832,
+          "start": 5.19
+        },
+        {
+          "end": 5.37,
+          "word": "the",
+          "score": 0.822,
+          "start": 5.29
+        },
+        {
+          "end": 6.01,
+          "word": "emergency",
+          "score": 0.881,
+          "start": 5.43
+        },
+        {
+          "end": 6.251,
+          "word": "room",
+          "score": 0.774,
+          "start": 6.05
+        },
+        {
+          "end": 6.371,
+          "word": "at",
+          "score": 0.838,
+          "start": 6.291
+        },
+        {
+          "end": 6.531,
+          "word": "our",
+          "score": 0.975,
+          "start": 6.451
+        },
+        {
+          "end": 6.871,
+          "word": "local",
+          "score": 0.897,
+          "start": 6.571
+        },
+        {
+          "end": 7.431,
+          "word": "hospital,",
+          "score": 0.745,
+          "start": 6.931
+        },
+        {
+          "end": 8.431,
+          "word": "tears",
+          "score": 0.642,
+          "start": 8.091
+        },
+        {
+          "end": 8.851,
+          "word": "pouring",
+          "score": 0.686,
+          "start": 8.491
+        },
+        {
+          "end": 9.071,
+          "word": "down",
+          "score": 0.851,
+          "start": 8.911
+        },
+        {
+          "end": 9.251,
+          "word": "my",
+          "score": 0.794,
+          "start": 9.111
+        },
+        {
+          "end": 9.591,
+          "word": "face.",
+          "score": 0.837,
+          "start": 9.311
+        }
+      ]
+    },
+    {
+      "end": 11.752,
+      "text": "And it wasn't just from the pain either.",
+      "start": 10.251,
+      "words": [
+        {
+          "end": 10.352,
+          "word": "And",
+          "score": 0.896,
+          "start": 10.251
+        },
+        {
+          "end": 10.432,
+          "word": "it",
+          "score": 1,
+          "start": 10.392
+        },
+        {
+          "end": 10.712,
+          "word": "wasn't",
+          "score": 0.783,
+          "start": 10.472
+        },
+        {
+          "end": 10.892,
+          "word": "just",
+          "score": 0.992,
+          "start": 10.752
+        },
+        {
+          "end": 11.032,
+          "word": "from",
+          "score": 0.874,
+          "start": 10.912
+        },
+        {
+          "end": 11.152,
+          "word": "the",
+          "score": 0.831,
+          "start": 11.072
+        },
+        {
+          "end": 11.412,
+          "word": "pain",
+          "score": 0.899,
+          "start": 11.172
+        },
+        {
+          "end": 11.752,
+          "word": "either.",
+          "score": 0.842,
+          "start": 11.532
+        }
+      ]
+    },
+    {
+      "end": 20.094,
+      "text": "The swelling and rash had already gone down after several antihistamine and other anti-allergen shots, but my heart was breaking for my poor darling Cara.",
+      "start": 12.372,
+      "words": [
+        {
+          "end": 12.492,
+          "word": "The",
+          "score": 0.672,
+          "start": 12.372
+        },
+        {
+          "end": 12.872,
+          "word": "swelling",
+          "score": 0.894,
+          "start": 12.532
+        },
+        {
+          "end": 12.992,
+          "word": "and",
+          "score": 0.833,
+          "start": 12.912
+        },
+        {
+          "end": 13.312,
+          "word": "rash",
+          "score": 0.856,
+          "start": 13.052
+        },
+        {
+          "end": 13.452,
+          "word": "had",
+          "score": 0.968,
+          "start": 13.352
+        },
+        {
+          "end": 13.772,
+          "word": "already",
+          "score": 0.802,
+          "start": 13.492
+        },
+        {
+          "end": 13.972,
+          "word": "gone",
+          "score": 0.88,
+          "start": 13.812
+        },
+        {
+          "end": 14.272,
+          "word": "down",
+          "score": 0.766,
+          "start": 14.032
+        },
+        {
+          "end": 14.553,
+          "word": "after",
+          "score": 0.961,
+          "start": 14.372
+        },
+        {
+          "end": 14.873,
+          "word": "several",
+          "score": 0.843,
+          "start": 14.593
+        },
+        {
+          "end": 15.653,
+          "word": "antihistamine",
+          "score": 0.825,
+          "start": 14.953
+        },
+        {
+          "end": 15.793,
+          "word": "and",
+          "score": 0.78,
+          "start": 15.693
+        },
+        {
+          "end": 16.013,
+          "word": "other",
+          "score": 0.941,
+          "start": 15.833
+        },
+        {
+          "end": 16.733,
+          "word": "anti-allergen",
+          "score": 0.685,
+          "start": 16.073
+        },
+        {
+          "end": 17.073,
+          "word": "shots,",
+          "score": 0.722,
+          "start": 16.753
+        },
+        {
+          "end": 17.733,
+          "word": "but",
+          "score": 0.907,
+          "start": 17.633
+        },
+        {
+          "end": 17.953,
+          "word": "my",
+          "score": 0.834,
+          "start": 17.793
+        },
+        {
+          "end": 18.293,
+          "word": "heart",
+          "score": 0.744,
+          "start": 18.013
+        },
+        {
+          "end": 18.453,
+          "word": "was",
+          "score": 0.881,
+          "start": 18.353
+        },
+        {
+          "end": 18.854,
+          "word": "breaking",
+          "score": 0.825,
+          "start": 18.513
+        },
+        {
+          "end": 19.014,
+          "word": "for",
+          "score": 0.876,
+          "start": 18.894
+        },
+        {
+          "end": 19.154,
+          "word": "my",
+          "score": 0.972,
+          "start": 19.034
+        },
+        {
+          "end": 19.414,
+          "word": "poor",
+          "score": 0.824,
+          "start": 19.214
+        },
+        {
+          "end": 19.774,
+          "word": "darling",
+          "score": 0.892,
+          "start": 19.454
+        },
+        {
+          "end": 20.094,
+          "word": "Cara.",
+          "score": 0.926,
+          "start": 19.814
+        }
+      ]
+    },
+    {
+      "end": 21.534,
+      "text": " I didn't mean to.",
+      "start": 20.814,
+      "words": [
+        {
+          "end": 20.854,
+          "word": "I",
+          "score": 0.998,
+          "start": 20.814
+        },
+        {
+          "end": 21.094,
+          "word": "didn't",
+          "score": 0.838,
+          "start": 20.894
+        },
+        {
+          "end": 21.294,
+          "word": "mean",
+          "score": 0.64,
+          "start": 21.114
+        },
+        {
+          "end": 21.534,
+          "word": "to.",
+          "score": 0.673,
+          "start": 21.334
+        }
+      ]
+    },
+    {
+      "end": 24.696,
+      "text": "I can't believe I killed the most precious thing to me in the world.",
+      "start": 22.235,
+      "words": [
+        {
+          "end": 22.295,
+          "word": "I",
+          "score": 0.694,
+          "start": 22.235
+        },
+        {
+          "end": 22.555,
+          "word": "can't",
+          "score": 0.828,
+          "start": 22.335
+        },
+        {
+          "end": 22.815,
+          "word": "believe",
+          "score": 0.811,
+          "start": 22.595
+        },
+        {
+          "end": 22.935,
+          "word": "I",
+          "score": 0.757,
+          "start": 22.855
+        },
+        {
+          "end": 23.155,
+          "word": "killed",
+          "score": 0.991,
+          "start": 22.955
+        },
+        {
+          "end": 23.255,
+          "word": "the",
+          "score": 0.908,
+          "start": 23.175
+        },
+        {
+          "end": 23.416,
+          "word": "most",
+          "score": 0.946,
+          "start": 23.295
+        },
+        {
+          "end": 23.776,
+          "word": "precious",
+          "score": 0.824,
+          "start": 23.476
+        },
+        {
+          "end": 23.976,
+          "word": "thing",
+          "score": 0.72,
+          "start": 23.796
+        },
+        {
+          "end": 24.076,
+          "word": "to",
+          "score": 0.986,
+          "start": 24.016
+        },
+        {
+          "end": 24.236,
+          "word": "me",
+          "score": 0.83,
+          "start": 24.136
+        },
+        {
+          "end": 24.316,
+          "word": "in",
+          "score": 0.75,
+          "start": 24.256
+        },
+        {
+          "end": 24.436,
+          "word": "the",
+          "score": 0.837,
+          "start": 24.356
+        },
+        {
+          "end": 24.696,
+          "word": "world.",
+          "score": 0.845,
+          "start": 24.476
+        }
+      ]
+    },
+    {
+      "end": 28.098,
+      "text": "I looked at myself in the selfie view of my phone camera.",
+      "start": 25.357,
+      "words": [
+        {
+          "end": 25.417,
+          "word": "I",
+          "score": 0.999,
+          "start": 25.357
+        },
+        {
+          "end": 25.677,
+          "word": "looked",
+          "score": 0.812,
+          "start": 25.457
+        },
+        {
+          "end": 25.777,
+          "word": "at",
+          "score": 0.793,
+          "start": 25.717
+        },
+        {
+          "end": 26.237,
+          "word": "myself",
+          "score": 0.776,
+          "start": 25.817
+        },
+        {
+          "end": 26.397,
+          "word": "in",
+          "score": 0.835,
+          "start": 26.317
+        },
+        {
+          "end": 26.497,
+          "word": "the",
+          "score": 0.95,
+          "start": 26.417
+        },
+        {
+          "end": 26.877,
+          "word": "selfie",
+          "score": 0.574,
+          "start": 26.537
+        },
+        {
+          "end": 27.098,
+          "word": "view",
+          "score": 0.811,
+          "start": 26.937
+        },
+        {
+          "end": 27.218,
+          "word": "of",
+          "score": 0.69,
+          "start": 27.138
+        },
+        {
+          "end": 27.398,
+          "word": "my",
+          "score": 0.945,
+          "start": 27.278
+        },
+        {
+          "end": 27.718,
+          "word": "phone",
+          "score": 0.869,
+          "start": 27.458
+        },
+        {
+          "end": 28.098,
+          "word": "camera.",
+          "score": 0.85,
+          "start": 27.738
+        }
+      ]
+    },
+    {
+      "end": 29.819,
+      "text": "I still looked deadly ill.",
+      "start": 28.718,
+      "words": [
+        {
+          "end": 28.798,
+          "word": "I",
+          "score": 0.746,
+          "start": 28.718
+        },
+        {
+          "end": 29.059,
+          "word": "still",
+          "score": 0.852,
+          "start": 28.838
+        },
+        {
+          "end": 29.279,
+          "word": "looked",
+          "score": 0.944,
+          "start": 29.099
+        },
+        {
+          "end": 29.599,
+          "word": "deadly",
+          "score": 0.717,
+          "start": 29.319
+        },
+        {
+          "end": 29.819,
+          "word": "ill.",
+          "score": 0.923,
+          "start": 29.679
+        }
+      ]
+    },
+    {
+      "end": 35.962,
+      "text": "The police had questioned me, but there was nothing more than a squashed bloody spider in my bedroom, and they had to let me go.",
+      "start": 30.439,
+      "words": [
+        {
+          "end": 30.539,
+          "word": "The",
+          "score": 0.82,
+          "start": 30.439
+        },
+        {
+          "end": 30.82,
+          "word": "police",
+          "score": 0.894,
+          "start": 30.579
+        },
+        {
+          "end": 30.96,
+          "word": "had",
+          "score": 0.89,
+          "start": 30.86
+        },
+        {
+          "end": 31.4,
+          "word": "questioned",
+          "score": 0.767,
+          "start": 31
+        },
+        {
+          "end": 31.58,
+          "word": "me,",
+          "score": 0.788,
+          "start": 31.44
+        },
+        {
+          "end": 32,
+          "word": "but",
+          "score": 0.976,
+          "start": 31.9
+        },
+        {
+          "end": 32.14,
+          "word": "there",
+          "score": 0.902,
+          "start": 32.02
+        },
+        {
+          "end": 32.26,
+          "word": "was",
+          "score": 0.835,
+          "start": 32.18
+        },
+        {
+          "end": 32.581,
+          "word": "nothing",
+          "score": 0.794,
+          "start": 32.3
+        },
+        {
+          "end": 32.781,
+          "word": "more",
+          "score": 0.806,
+          "start": 32.641
+        },
+        {
+          "end": 32.921,
+          "word": "than",
+          "score": 0.881,
+          "start": 32.801
+        },
+        {
+          "end": 33.021,
+          "word": "a",
+          "score": 0.5,
+          "start": 32.981
+        },
+        {
+          "end": 33.401,
+          "word": "squashed",
+          "score": 0.718,
+          "start": 33.061
+        },
+        {
+          "end": 33.721,
+          "word": "bloody",
+          "score": 0.87,
+          "start": 33.461
+        },
+        {
+          "end": 34.161,
+          "word": "spider",
+          "score": 0.818,
+          "start": 33.761
+        },
+        {
+          "end": 34.241,
+          "word": "in",
+          "score": 0.782,
+          "start": 34.181
+        },
+        {
+          "end": 34.382,
+          "word": "my",
+          "score": 0.94,
+          "start": 34.281
+        },
+        {
+          "end": 34.782,
+          "word": "bedroom,",
+          "score": 0.823,
+          "start": 34.422
+        },
+        {
+          "end": 35.102,
+          "word": "and",
+          "score": 0.943,
+          "start": 35.022
+        },
+        {
+          "end": 35.242,
+          "word": "they",
+          "score": 0.987,
+          "start": 35.142
+        },
+        {
+          "end": 35.402,
+          "word": "had",
+          "score": 0.677,
+          "start": 35.282
+        },
+        {
+          "end": 35.502,
+          "word": "to",
+          "score": 0.746,
+          "start": 35.422
+        },
+        {
+          "end": 35.662,
+          "word": "let",
+          "score": 0.599,
+          "start": 35.542
+        },
+        {
+          "end": 35.762,
+          "word": "me",
+          "score": 0.988,
+          "start": 35.682
+        },
+        {
+          "end": 35.962,
+          "word": "go.",
+          "score": 0.833,
+          "start": 35.802
+        }
+      ]
+    },
+    {
+      "end": 40.225,
+      "text": "They said they would search for Kara as they helped the paramedics get me out of there.",
+      "start": 36.563,
+      "words": [
+        {
+          "end": 36.723,
+          "word": "They",
+          "score": 0.689,
+          "start": 36.563
+        },
+        {
+          "end": 36.943,
+          "word": "said",
+          "score": 0.806,
+          "start": 36.763
+        },
+        {
+          "end": 37.083,
+          "word": "they",
+          "score": 0.89,
+          "start": 36.963
+        },
+        {
+          "end": 37.263,
+          "word": "would",
+          "score": 0.885,
+          "start": 37.123
+        },
+        {
+          "end": 37.563,
+          "word": "search",
+          "score": 0.895,
+          "start": 37.303
+        },
+        {
+          "end": 37.703,
+          "word": "for",
+          "score": 0.753,
+          "start": 37.603
+        },
+        {
+          "end": 38.164,
+          "word": "Kara",
+          "score": 0.85,
+          "start": 37.723
+        },
+        {
+          "end": 38.364,
+          "word": "as",
+          "score": 0.997,
+          "start": 38.304
+        },
+        {
+          "end": 38.544,
+          "word": "they",
+          "score": 0.79,
+          "start": 38.404
+        },
+        {
+          "end": 38.764,
+          "word": "helped",
+          "score": 0.62,
+          "start": 38.584
+        },
+        {
+          "end": 38.864,
+          "word": "the",
+          "score": 0.832,
+          "start": 38.784
+        },
+        {
+          "end": 39.444,
+          "word": "paramedics",
+          "score": 0.873,
+          "start": 38.884
+        },
+        {
+          "end": 39.624,
+          "word": "get",
+          "score": 0.94,
+          "start": 39.504
+        },
+        {
+          "end": 39.744,
+          "word": "me",
+          "score": 0.756,
+          "start": 39.664
+        },
+        {
+          "end": 39.945,
+          "word": "out",
+          "score": 0.88,
+          "start": 39.804
+        },
+        {
+          "end": 40.025,
+          "word": "of",
+          "score": 0.998,
+          "start": 39.985
+        },
+        {
+          "end": 40.225,
+          "word": "there.",
+          "score": 0.786,
+          "start": 40.065
+        }
+      ]
+    },
+    {
+      "end": 45.347,
+      "text": " I heard them talking about mental breakdown and paranoid with the emerg intake.",
+      "start": 40.885,
+      "words": [
+        {
+          "end": 40.925,
+          "word": "I",
+          "score": 0.835,
+          "start": 40.885
+        },
+        {
+          "end": 41.105,
+          "word": "heard",
+          "score": 0.862,
+          "start": 40.965
+        },
+        {
+          "end": 41.265,
+          "word": "them",
+          "score": 0.838,
+          "start": 41.145
+        },
+        {
+          "end": 41.585,
+          "word": "talking",
+          "score": 0.863,
+          "start": 41.305
+        },
+        {
+          "end": 41.885,
+          "word": "about",
+          "score": 0.853,
+          "start": 41.625
+        },
+        {
+          "end": 42.606,
+          "word": "mental",
+          "score": 0.846,
+          "start": 42.346
+        },
+        {
+          "end": 43.126,
+          "word": "breakdown",
+          "score": 0.849,
+          "start": 42.626
+        },
+        {
+          "end": 43.306,
+          "word": "and",
+          "score": 0.819,
+          "start": 43.186
+        },
+        {
+          "end": 44.307,
+          "word": "paranoid",
+          "score": 0.838,
+          "start": 43.806
+        },
+        {
+          "end": 44.587,
+          "word": "with",
+          "score": 0.904,
+          "start": 44.467
+        },
+        {
+          "end": 44.687,
+          "word": "the",
+          "score": 0.844,
+          "start": 44.607
+        },
+        {
+          "end": 44.987,
+          "word": "emerg",
+          "score": 0.914,
+          "start": 44.727
+        },
+        {
+          "end": 45.347,
+          "word": "intake.",
+          "score": 0.861,
+          "start": 45.007
+        }
+      ]
+    },
+    {
+      "end": 48.448,
+      "text": "That day had been like most other days I spent with Kara.",
+      "start": 45.947,
+      "words": [
+        {
+          "end": 46.107,
+          "word": "That",
+          "score": 0.946,
+          "start": 45.947
+        },
+        {
+          "end": 46.347,
+          "word": "day",
+          "score": 0.807,
+          "start": 46.167
+        },
+        {
+          "end": 46.487,
+          "word": "had",
+          "score": 0.736,
+          "start": 46.387
+        },
+        {
+          "end": 46.647,
+          "word": "been",
+          "score": 0.788,
+          "start": 46.507
+        },
+        {
+          "end": 46.848,
+          "word": "like",
+          "score": 0.844,
+          "start": 46.687
+        },
+        {
+          "end": 47.108,
+          "word": "most",
+          "score": 0.866,
+          "start": 46.908
+        },
+        {
+          "end": 47.328,
+          "word": "other",
+          "score": 0.888,
+          "start": 47.168
+        },
+        {
+          "end": 47.568,
+          "word": "days",
+          "score": 0.855,
+          "start": 47.348
+        },
+        {
+          "end": 47.688,
+          "word": "I",
+          "score": 0.946,
+          "start": 47.628
+        },
+        {
+          "end": 47.948,
+          "word": "spent",
+          "score": 0.874,
+          "start": 47.728
+        },
+        {
+          "end": 48.068,
+          "word": "with",
+          "score": 0.884,
+          "start": 47.968
+        },
+        {
+          "end": 48.448,
+          "word": "Kara.",
+          "score": 0.867,
+          "start": 48.108
+        }
+      ]
+    },
+    {
+      "end": 50.989,
+      "text": "We were in bed, and it was her turn.",
+      "start": 49.089,
+      "words": [
+        {
+          "end": 49.189,
+          "word": "We",
+          "score": 0.871,
+          "start": 49.089
+        },
+        {
+          "end": 49.349,
+          "word": "were",
+          "score": 0.852,
+          "start": 49.229
+        },
+        {
+          "end": 49.429,
+          "word": "in",
+          "score": 1,
+          "start": 49.389
+        },
+        {
+          "end": 49.689,
+          "word": "bed,",
+          "score": 0.825,
+          "start": 49.469
+        },
+        {
+          "end": 50.149,
+          "word": "and",
+          "score": 0.825,
+          "start": 50.049
+        },
+        {
+          "end": 50.249,
+          "word": "it",
+          "score": 0.758,
+          "start": 50.189
+        },
+        {
+          "end": 50.389,
+          "word": "was",
+          "score": 0.626,
+          "start": 50.269
+        },
+        {
+          "end": 50.649,
+          "word": "her",
+          "score": 0.772,
+          "start": 50.449
+        },
+        {
+          "end": 50.989,
+          "word": "turn.",
+          "score": 0.879,
+          "start": 50.709
+        }
+      ]
+    },
+    {
+      "end": 56.772,
+      "text": "I slipped my fingers over her dazzling silken skin, feeling her soft and lovable under my hands.",
+      "start": 51.67,
+      "words": [
+        {
+          "end": 51.73,
+          "word": "I",
+          "score": 0.74,
+          "start": 51.67
+        },
+        {
+          "end": 52.03,
+          "word": "slipped",
+          "score": 0.87,
+          "start": 51.77
+        },
+        {
+          "end": 52.19,
+          "word": "my",
+          "score": 0.922,
+          "start": 52.09
+        },
+        {
+          "end": 52.59,
+          "word": "fingers",
+          "score": 0.704,
+          "start": 52.25
+        },
+        {
+          "end": 52.85,
+          "word": "over",
+          "score": 0.836,
+          "start": 52.67
+        },
+        {
+          "end": 53.01,
+          "word": "her",
+          "score": 0.827,
+          "start": 52.91
+        },
+        {
+          "end": 53.51,
+          "word": "dazzling",
+          "score": 0.897,
+          "start": 53.05
+        },
+        {
+          "end": 53.991,
+          "word": "silken",
+          "score": 0.83,
+          "start": 53.61
+        },
+        {
+          "end": 54.331,
+          "word": "skin,",
+          "score": 0.876,
+          "start": 54.051
+        },
+        {
+          "end": 54.871,
+          "word": "feeling",
+          "score": 0.929,
+          "start": 54.611
+        },
+        {
+          "end": 55.011,
+          "word": "her",
+          "score": 0.748,
+          "start": 54.911
+        },
+        {
+          "end": 55.311,
+          "word": "soft",
+          "score": 0.815,
+          "start": 55.051
+        },
+        {
+          "end": 55.451,
+          "word": "and",
+          "score": 0.858,
+          "start": 55.371
+        },
+        {
+          "end": 55.851,
+          "word": "lovable",
+          "score": 0.746,
+          "start": 55.471
+        },
+        {
+          "end": 56.252,
+          "word": "under",
+          "score": 0.895,
+          "start": 56.071
+        },
+        {
+          "end": 56.432,
+          "word": "my",
+          "score": 0.846,
+          "start": 56.292
+        },
+        {
+          "end": 56.772,
+          "word": "hands.",
+          "score": 0.891,
+          "start": 56.472
+        }
+      ]
+    },
+    {
+      "end": 62.515,
+      "text": " And then I tried to repress the familiar shudder as her limbs elongated and she sprouted four more.",
+      "start": 57.552,
+      "words": [
+        {
+          "end": 57.632,
+          "word": "And",
+          "score": 0.936,
+          "start": 57.552
+        },
+        {
+          "end": 57.872,
+          "word": "then",
+          "score": 0.77,
+          "start": 57.672
+        },
+        {
+          "end": 58.092,
+          "word": "I",
+          "score": 0.728,
+          "start": 58.032
+        },
+        {
+          "end": 58.353,
+          "word": "tried",
+          "score": 0.836,
+          "start": 58.132
+        },
+        {
+          "end": 58.453,
+          "word": "to",
+          "score": 0.759,
+          "start": 58.393
+        },
+        {
+          "end": 58.853,
+          "word": "repress",
+          "score": 0.879,
+          "start": 58.493
+        },
+        {
+          "end": 58.993,
+          "word": "the",
+          "score": 0.868,
+          "start": 58.893
+        },
+        {
+          "end": 59.373,
+          "word": "familiar",
+          "score": 0.872,
+          "start": 59.013
+        },
+        {
+          "end": 59.753,
+          "word": "shudder",
+          "score": 0.902,
+          "start": 59.433
+        },
+        {
+          "end": 59.953,
+          "word": "as",
+          "score": 0.999,
+          "start": 59.893
+        },
+        {
+          "end": 60.134,
+          "word": "her",
+          "score": 0.771,
+          "start": 60.013
+        },
+        {
+          "end": 60.394,
+          "word": "limbs",
+          "score": 0.697,
+          "start": 60.154
+        },
+        {
+          "end": 61.134,
+          "word": "elongated",
+          "score": 0.809,
+          "start": 60.474
+        },
+        {
+          "end": 61.294,
+          "word": "and",
+          "score": 0.775,
+          "start": 61.194
+        },
+        {
+          "end": 61.454,
+          "word": "she",
+          "score": 0.829,
+          "start": 61.334
+        },
+        {
+          "end": 61.975,
+          "word": "sprouted",
+          "score": 0.769,
+          "start": 61.514
+        },
+        {
+          "end": 62.255,
+          "word": "four",
+          "score": 0.767,
+          "start": 62.055
+        },
+        {
+          "end": 62.515,
+          "word": "more.",
+          "score": 0.874,
+          "start": 62.295
+        }
+      ]
+    },
+    {
+      "end": 67.838,
+      "text": "Bristles poked out of her smooth skin, her head grew large and her eyes multiplied.",
+      "start": 63.275,
+      "words": [
+        {
+          "end": 63.676,
+          "word": "Bristles",
+          "score": 0.786,
+          "start": 63.275
+        },
+        {
+          "end": 64.056,
+          "word": "poked",
+          "score": 0.788,
+          "start": 63.776
+        },
+        {
+          "end": 64.236,
+          "word": "out",
+          "score": 0.881,
+          "start": 64.116
+        },
+        {
+          "end": 64.336,
+          "word": "of",
+          "score": 0.75,
+          "start": 64.276
+        },
+        {
+          "end": 64.476,
+          "word": "her",
+          "score": 0.808,
+          "start": 64.376
+        },
+        {
+          "end": 64.896,
+          "word": "smooth",
+          "score": 0.926,
+          "start": 64.556
+        },
+        {
+          "end": 65.236,
+          "word": "skin,",
+          "score": 0.834,
+          "start": 64.936
+        },
+        {
+          "end": 65.597,
+          "word": "her",
+          "score": 0.692,
+          "start": 65.477
+        },
+        {
+          "end": 65.797,
+          "word": "head",
+          "score": 0.666,
+          "start": 65.637
+        },
+        {
+          "end": 66.037,
+          "word": "grew",
+          "score": 0.878,
+          "start": 65.837
+        },
+        {
+          "end": 66.457,
+          "word": "large",
+          "score": 0.901,
+          "start": 66.097
+        },
+        {
+          "end": 66.637,
+          "word": "and",
+          "score": 0.849,
+          "start": 66.537
+        },
+        {
+          "end": 66.777,
+          "word": "her",
+          "score": 0.869,
+          "start": 66.677
+        },
+        {
+          "end": 67.098,
+          "word": "eyes",
+          "score": 0.727,
+          "start": 66.937
+        },
+        {
+          "end": 67.838,
+          "word": "multiplied.",
+          "score": 0.834,
+          "start": 67.218
+        }
+      ]
+    },
+    {
+      "end": 69.359,
+      "text": "I rolled away from her.",
+      "start": 68.478,
+      "words": [
+        {
+          "end": 68.538,
+          "word": "I",
+          "score": 0.884,
+          "start": 68.478
+        },
+        {
+          "end": 68.779,
+          "word": "rolled",
+          "score": 0.897,
+          "start": 68.578
+        },
+        {
+          "end": 68.999,
+          "word": "away",
+          "score": 0.782,
+          "start": 68.819
+        },
+        {
+          "end": 69.179,
+          "word": "from",
+          "score": 0.889,
+          "start": 69.039
+        },
+        {
+          "end": 69.359,
+          "word": "her.",
+          "score": 0.675,
+          "start": 69.239
+        }
+      ]
+    },
+    {
+      "end": 76.203,
+      "text": "A spider as big as a beach ball stood quivering on the bed where Kara had been buckling and crying out in pleasure a second ago.",
+      "start": 70.019,
+      "words": [
+        {
+          "end": 70.079,
+          "word": "A",
+          "score": 0.67,
+          "start": 70.019
+        },
+        {
+          "end": 70.48,
+          "word": "spider",
+          "score": 0.933,
+          "start": 70.119
+        },
+        {
+          "end": 70.6,
+          "word": "as",
+          "score": 0.955,
+          "start": 70.54
+        },
+        {
+          "end": 70.8,
+          "word": "big",
+          "score": 0.751,
+          "start": 70.66
+        },
+        {
+          "end": 70.9,
+          "word": "as",
+          "score": 0.502,
+          "start": 70.82
+        },
+        {
+          "end": 70.98,
+          "word": "a",
+          "score": 0.497,
+          "start": 70.94
+        },
+        {
+          "end": 71.26,
+          "word": "beach",
+          "score": 0.873,
+          "start": 71.02
+        },
+        {
+          "end": 71.56,
+          "word": "ball",
+          "score": 0.886,
+          "start": 71.3
+        },
+        {
+          "end": 71.8,
+          "word": "stood",
+          "score": 0.844,
+          "start": 71.6
+        },
+        {
+          "end": 72.281,
+          "word": "quivering",
+          "score": 0.834,
+          "start": 71.88
+        },
+        {
+          "end": 72.401,
+          "word": "on",
+          "score": 0.828,
+          "start": 72.321
+        },
+        {
+          "end": 72.501,
+          "word": "the",
+          "score": 0.843,
+          "start": 72.421
+        },
+        {
+          "end": 72.761,
+          "word": "bed",
+          "score": 0.882,
+          "start": 72.541
+        },
+        {
+          "end": 73.081,
+          "word": "where",
+          "score": 0.77,
+          "start": 72.921
+        },
+        {
+          "end": 73.401,
+          "word": "Kara",
+          "score": 0.837,
+          "start": 73.101
+        },
+        {
+          "end": 73.521,
+          "word": "had",
+          "score": 0.992,
+          "start": 73.441
+        },
+        {
+          "end": 73.721,
+          "word": "been",
+          "score": 0.677,
+          "start": 73.561
+        },
+        {
+          "end": 74.162,
+          "word": "buckling",
+          "score": 0.883,
+          "start": 73.761
+        },
+        {
+          "end": 74.562,
+          "word": "and",
+          "score": 0.843,
+          "start": 74.482
+        },
+        {
+          "end": 74.922,
+          "word": "crying",
+          "score": 0.893,
+          "start": 74.622
+        },
+        {
+          "end": 75.102,
+          "word": "out",
+          "score": 0.952,
+          "start": 74.982
+        },
+        {
+          "end": 75.242,
+          "word": "in",
+          "score": 0.879,
+          "start": 75.162
+        },
+        {
+          "end": 75.602,
+          "word": "pleasure",
+          "score": 0.754,
+          "start": 75.282
+        },
+        {
+          "end": 75.662,
+          "word": "a",
+          "score": 0.999,
+          "start": 75.642
+        },
+        {
+          "end": 76.003,
+          "word": "second",
+          "score": 0.834,
+          "start": 75.723
+        },
+        {
+          "end": 76.203,
+          "word": "ago.",
+          "score": 0.887,
+          "start": 76.043
+        }
+      ]
+    },
+    {
+      "end": 81.206,
+      "text": "The transformation was very fast, and it only lasted a few minutes mercifully.",
+      "start": 76.783,
+      "words": [
+        {
+          "end": 76.883,
+          "word": "The",
+          "score": 0.887,
+          "start": 76.783
+        },
+        {
+          "end": 77.584,
+          "word": "transformation",
+          "score": 0.869,
+          "start": 76.903
+        },
+        {
+          "end": 77.724,
+          "word": "was",
+          "score": 0.993,
+          "start": 77.624
+        },
+        {
+          "end": 77.964,
+          "word": "very",
+          "score": 0.82,
+          "start": 77.764
+        },
+        {
+          "end": 78.444,
+          "word": "fast,",
+          "score": 0.774,
+          "start": 78.044
+        },
+        {
+          "end": 79.245,
+          "word": "and",
+          "score": 0.94,
+          "start": 79.144
+        },
+        {
+          "end": 79.385,
+          "word": "it",
+          "score": 0.785,
+          "start": 79.305
+        },
+        {
+          "end": 79.645,
+          "word": "only",
+          "score": 0.812,
+          "start": 79.465
+        },
+        {
+          "end": 80.025,
+          "word": "lasted",
+          "score": 0.744,
+          "start": 79.685
+        },
+        {
+          "end": 80.105,
+          "word": "a",
+          "score": 0.5,
+          "start": 80.065
+        },
+        {
+          "end": 80.305,
+          "word": "few",
+          "score": 0.73,
+          "start": 80.145
+        },
+        {
+          "end": 80.605,
+          "word": "minutes",
+          "score": 0.868,
+          "start": 80.345
+        },
+        {
+          "end": 81.206,
+          "word": "mercifully.",
+          "score": 0.964,
+          "start": 80.725
+        }
+      ]
+    },
+    {
+      "end": 88.268,
+      "text": " I tried to control my face and body so she couldn't see my fear, which had never lessened, not one iota, through all these months.",
+      "start": 81.886,
+      "words": [
+        {
+          "end": 81.946,
+          "word": "I",
+          "score": 0.944,
+          "start": 81.886
+        },
+        {
+          "end": 82.206,
+          "word": "tried",
+          "score": 0.844,
+          "start": 82.006
+        },
+        {
+          "end": 82.326,
+          "word": "to",
+          "score": 0.749,
+          "start": 82.246
+        },
+        {
+          "end": 82.706,
+          "word": "control",
+          "score": 0.824,
+          "start": 82.366
+        },
+        {
+          "end": 82.866,
+          "word": "my",
+          "score": 0.832,
+          "start": 82.746
+        },
+        {
+          "end": 83.146,
+          "word": "face",
+          "score": 0.919,
+          "start": 82.926
+        },
+        {
+          "end": 83.266,
+          "word": "and",
+          "score": 0.833,
+          "start": 83.186
+        },
+        {
+          "end": 83.567,
+          "word": "body",
+          "score": 0.882,
+          "start": 83.306
+        },
+        {
+          "end": 83.727,
+          "word": "so",
+          "score": 0.982,
+          "start": 83.607
+        },
+        {
+          "end": 83.867,
+          "word": "she",
+          "score": 0.768,
+          "start": 83.767
+        },
+        {
+          "end": 84.187,
+          "word": "couldn't",
+          "score": 0.789,
+          "start": 83.927
+        },
+        {
+          "end": 84.427,
+          "word": "see",
+          "score": 0.757,
+          "start": 84.227
+        },
+        {
+          "end": 84.607,
+          "word": "my",
+          "score": 0.833,
+          "start": 84.467
+        },
+        {
+          "end": 84.947,
+          "word": "fear,",
+          "score": 0.957,
+          "start": 84.687
+        },
+        {
+          "end": 85.287,
+          "word": "which",
+          "score": 0.879,
+          "start": 85.147
+        },
+        {
+          "end": 85.407,
+          "word": "had",
+          "score": 0.959,
+          "start": 85.327
+        },
+        {
+          "end": 85.647,
+          "word": "never",
+          "score": 0.779,
+          "start": 85.447
+        },
+        {
+          "end": 86.067,
+          "word": "lessened,",
+          "score": 0.803,
+          "start": 85.687
+        },
+        {
+          "end": 86.587,
+          "word": "not",
+          "score": 0.841,
+          "start": 86.427
+        },
+        {
+          "end": 86.848,
+          "word": "one",
+          "score": 0.61,
+          "start": 86.708
+        },
+        {
+          "end": 87.388,
+          "word": "iota,",
+          "score": 0.442,
+          "start": 86.948
+        },
+        {
+          "end": 87.668,
+          "word": "through",
+          "score": 0.676,
+          "start": 87.468
+        },
+        {
+          "end": 87.788,
+          "word": "all",
+          "score": 0.834,
+          "start": 87.688
+        },
+        {
+          "end": 87.968,
+          "word": "these",
+          "score": 0.798,
+          "start": 87.808
+        },
+        {
+          "end": 88.268,
+          "word": "months.",
+          "score": 0.884,
+          "start": 88.028
+        }
+      ]
+    },
+    {
+      "end": 94.83,
+      "text": "I hated and feared spiders since childhood, but that had never come up in the very early days of our relationship.",
+      "start": 89.048,
+      "words": [
+        {
+          "end": 89.108,
+          "word": "I",
+          "score": 0.663,
+          "start": 89.048
+        },
+        {
+          "end": 89.468,
+          "word": "hated",
+          "score": 0.776,
+          "start": 89.168
+        },
+        {
+          "end": 89.608,
+          "word": "and",
+          "score": 0.683,
+          "start": 89.508
+        },
+        {
+          "end": 89.989,
+          "word": "feared",
+          "score": 0.818,
+          "start": 89.708
+        },
+        {
+          "end": 90.449,
+          "word": "spiders",
+          "score": 0.903,
+          "start": 90.029
+        },
+        {
+          "end": 90.689,
+          "word": "since",
+          "score": 0.748,
+          "start": 90.469
+        },
+        {
+          "end": 91.149,
+          "word": "childhood,",
+          "score": 0.81,
+          "start": 90.729
+        },
+        {
+          "end": 92.169,
+          "word": "but",
+          "score": 1,
+          "start": 92.089
+        },
+        {
+          "end": 92.309,
+          "word": "that",
+          "score": 0.894,
+          "start": 92.189
+        },
+        {
+          "end": 92.429,
+          "word": "had",
+          "score": 0.972,
+          "start": 92.349
+        },
+        {
+          "end": 92.669,
+          "word": "never",
+          "score": 0.721,
+          "start": 92.469
+        },
+        {
+          "end": 92.889,
+          "word": "come",
+          "score": 0.851,
+          "start": 92.729
+        },
+        {
+          "end": 93.029,
+          "word": "up",
+          "score": 0.746,
+          "start": 92.949
+        },
+        {
+          "end": 93.129,
+          "word": "in",
+          "score": 0.766,
+          "start": 93.069
+        },
+        {
+          "end": 93.229,
+          "word": "the",
+          "score": 1,
+          "start": 93.169
+        },
+        {
+          "end": 93.49,
+          "word": "very",
+          "score": 0.745,
+          "start": 93.27
+        },
+        {
+          "end": 93.77,
+          "word": "early",
+          "score": 0.756,
+          "start": 93.57
+        },
+        {
+          "end": 94.01,
+          "word": "days",
+          "score": 0.917,
+          "start": 93.81
+        },
+        {
+          "end": 94.11,
+          "word": "of",
+          "score": 0.75,
+          "start": 94.05
+        },
+        {
+          "end": 94.25,
+          "word": "our",
+          "score": 0.834,
+          "start": 94.17
+        },
+        {
+          "end": 94.83,
+          "word": "relationship.",
+          "score": 0.863,
+          "start": 94.29
+        }
+      ]
+    },
+    {
+      "end": 104.373,
+      "text": "About three weeks into what had been the best relationship of my life so far, Kara decided she trusted me, and told me the reason why she hadn't let me make her orgasm.",
+      "start": 95.45,
+      "words": [
+        {
+          "end": 95.65,
+          "word": "About",
+          "score": 0.902,
+          "start": 95.45
+        },
+        {
+          "end": 95.91,
+          "word": "three",
+          "score": 0.701,
+          "start": 95.71
+        },
+        {
+          "end": 96.23,
+          "word": "weeks",
+          "score": 0.852,
+          "start": 95.97
+        },
+        {
+          "end": 96.47,
+          "word": "into",
+          "score": 0.838,
+          "start": 96.29
+        },
+        {
+          "end": 96.631,
+          "word": "what",
+          "score": 0.85,
+          "start": 96.49
+        },
+        {
+          "end": 96.751,
+          "word": "had",
+          "score": 0.933,
+          "start": 96.671
+        },
+        {
+          "end": 96.911,
+          "word": "been",
+          "score": 0.864,
+          "start": 96.771
+        },
+        {
+          "end": 97.011,
+          "word": "the",
+          "score": 0.999,
+          "start": 96.951
+        },
+        {
+          "end": 97.231,
+          "word": "best",
+          "score": 0.893,
+          "start": 97.051
+        },
+        {
+          "end": 97.891,
+          "word": "relationship",
+          "score": 0.806,
+          "start": 97.271
+        },
+        {
+          "end": 97.991,
+          "word": "of",
+          "score": 0.887,
+          "start": 97.931
+        },
+        {
+          "end": 98.171,
+          "word": "my",
+          "score": 0.834,
+          "start": 98.051
+        },
+        {
+          "end": 98.431,
+          "word": "life",
+          "score": 0.982,
+          "start": 98.211
+        },
+        {
+          "end": 98.671,
+          "word": "so",
+          "score": 0.874,
+          "start": 98.491
+        },
+        {
+          "end": 98.991,
+          "word": "far,",
+          "score": 0.836,
+          "start": 98.731
+        },
+        {
+          "end": 100.232,
+          "word": "Kara",
+          "score": 0.854,
+          "start": 99.892
+        },
+        {
+          "end": 100.672,
+          "word": "decided",
+          "score": 0.922,
+          "start": 100.272
+        },
+        {
+          "end": 100.812,
+          "word": "she",
+          "score": 0.827,
+          "start": 100.712
+        },
+        {
+          "end": 101.232,
+          "word": "trusted",
+          "score": 0.785,
+          "start": 100.872
+        },
+        {
+          "end": 101.392,
+          "word": "me,",
+          "score": 0.812,
+          "start": 101.272
+        },
+        {
+          "end": 101.952,
+          "word": "and",
+          "score": 0.844,
+          "start": 101.872
+        },
+        {
+          "end": 102.172,
+          "word": "told",
+          "score": 0.719,
+          "start": 101.992
+        },
+        {
+          "end": 102.272,
+          "word": "me",
+          "score": 0.742,
+          "start": 102.192
+        },
+        {
+          "end": 102.392,
+          "word": "the",
+          "score": 0.895,
+          "start": 102.312
+        },
+        {
+          "end": 102.712,
+          "word": "reason",
+          "score": 0.731,
+          "start": 102.432
+        },
+        {
+          "end": 102.932,
+          "word": "why",
+          "score": 0.615,
+          "start": 102.752
+        },
+        {
+          "end": 103.092,
+          "word": "she",
+          "score": 0.616,
+          "start": 102.972
+        },
+        {
+          "end": 103.373,
+          "word": "hadn't",
+          "score": 0.752,
+          "start": 103.133
+        },
+        {
+          "end": 103.533,
+          "word": "let",
+          "score": 0.767,
+          "start": 103.393
+        },
+        {
+          "end": 103.653,
+          "word": "me",
+          "score": 0.722,
+          "start": 103.553
+        },
+        {
+          "end": 103.853,
+          "word": "make",
+          "score": 0.85,
+          "start": 103.693
+        },
+        {
+          "end": 103.973,
+          "word": "her",
+          "score": 0.83,
+          "start": 103.873
+        },
+        {
+          "end": 104.373,
+          "word": "orgasm.",
+          "score": 0.938,
+          "start": 104.033
+        }
+      ]
+    },
+    {
+      "end": 106.916,
+      "text": " I turned into a spider, she had murmured.",
+      "start": 105.053,
+      "words": [
+        {
+          "end": 105.133,
+          "word": "I",
+          "score": 0.756,
+          "start": 105.053
+        },
+        {
+          "end": 105.394,
+          "word": "turned",
+          "score": 0.934,
+          "start": 105.173
+        },
+        {
+          "end": 105.614,
+          "word": "into",
+          "score": 0.906,
+          "start": 105.434
+        },
+        {
+          "end": 105.674,
+          "word": "a",
+          "score": 0.998,
+          "start": 105.654
+        },
+        {
+          "end": 106.235,
+          "word": "spider,",
+          "score": 0.895,
+          "start": 105.754
+        },
+        {
+          "end": 106.395,
+          "word": "she",
+          "score": 0.825,
+          "start": 106.295
+        },
+        {
+          "end": 106.515,
+          "word": "had",
+          "score": 0.96,
+          "start": 106.415
+        },
+        {
+          "end": 106.916,
+          "word": "murmured.",
+          "score": 0.876,
+          "start": 106.575
+        }
+      ]
+    },
+    {
+      "end": 108.157,
+      "text": "I froze.",
+      "start": 107.576,
+      "words": [
+        {
+          "end": 107.656,
+          "word": "I",
+          "score": 0.784,
+          "start": 107.576
+        },
+        {
+          "end": 108.157,
+          "word": "froze.",
+          "score": 0.817,
+          "start": 107.737
+        }
+      ]
+    },
+    {
+      "end": 112.502,
+      "text": "I knew immediately she wasn't joking or mad, simply telling the bold truth.",
+      "start": 108.898,
+      "words": [
+        {
+          "end": 108.958,
+          "word": "I",
+          "score": 0.928,
+          "start": 108.898
+        },
+        {
+          "end": 109.158,
+          "word": "knew",
+          "score": 0.834,
+          "start": 108.998
+        },
+        {
+          "end": 109.699,
+          "word": "immediately",
+          "score": 0.839,
+          "start": 109.198
+        },
+        {
+          "end": 109.859,
+          "word": "she",
+          "score": 0.801,
+          "start": 109.759
+        },
+        {
+          "end": 110.139,
+          "word": "wasn't",
+          "score": 0.798,
+          "start": 109.899
+        },
+        {
+          "end": 110.52,
+          "word": "joking",
+          "score": 0.921,
+          "start": 110.179
+        },
+        {
+          "end": 110.64,
+          "word": "or",
+          "score": 0.778,
+          "start": 110.58
+        },
+        {
+          "end": 110.9,
+          "word": "mad,",
+          "score": 0.816,
+          "start": 110.66
+        },
+        {
+          "end": 111.581,
+          "word": "simply",
+          "score": 0.883,
+          "start": 111.301
+        },
+        {
+          "end": 111.901,
+          "word": "telling",
+          "score": 0.857,
+          "start": 111.621
+        },
+        {
+          "end": 112.002,
+          "word": "the",
+          "score": 0.843,
+          "start": 111.921
+        },
+        {
+          "end": 112.202,
+          "word": "bold",
+          "score": 0.624,
+          "start": 112.022
+        },
+        {
+          "end": 112.502,
+          "word": "truth.",
+          "score": 0.872,
+          "start": 112.242
+        }
+      ]
+    },
+    {
+      "end": 114.204,
+      "text": "No one else knows.",
+      "start": 113.263,
+      "words": [
+        {
+          "end": 113.383,
+          "word": "No",
+          "score": 0.997,
+          "start": 113.263
+        },
+        {
+          "end": 113.563,
+          "word": "one",
+          "score": 0.846,
+          "start": 113.463
+        },
+        {
+          "end": 113.824,
+          "word": "else",
+          "score": 0.677,
+          "start": 113.623
+        },
+        {
+          "end": 114.204,
+          "word": "knows.",
+          "score": 0.887,
+          "start": 113.904
+        }
+      ]
+    },
+    {
+      "end": 117.027,
+      "text": "I've never orgasmed with a partner before.",
+      "start": 115.025,
+      "words": [
+        {
+          "end": 115.165,
+          "word": "I've",
+          "score": 0.879,
+          "start": 115.025
+        },
+        {
+          "end": 115.446,
+          "word": "never",
+          "score": 0.927,
+          "start": 115.225
+        },
+        {
+          "end": 116.066,
+          "word": "orgasmed",
+          "score": 0.82,
+          "start": 115.566
+        },
+        {
+          "end": 116.246,
+          "word": "with",
+          "score": 0.976,
+          "start": 116.126
+        },
+        {
+          "end": 116.347,
+          "word": "a",
+          "score": 0.413,
+          "start": 116.307
+        },
+        {
+          "end": 116.687,
+          "word": "partner",
+          "score": 0.91,
+          "start": 116.367
+        },
+        {
+          "end": 117.027,
+          "word": "before.",
+          "score": 0.903,
+          "start": 116.707
+        }
+      ]
+    },
+    {
+      "end": 118.87,
+      "text": "She snuggled up to me.",
+      "start": 117.708,
+      "words": [
+        {
+          "end": 117.848,
+          "word": "She",
+          "score": 0.746,
+          "start": 117.708
+        },
+        {
+          "end": 118.349,
+          "word": "snuggled",
+          "score": 0.854,
+          "start": 117.928
+        },
+        {
+          "end": 118.509,
+          "word": "up",
+          "score": 0.89,
+          "start": 118.429
+        },
+        {
+          "end": 118.689,
+          "word": "to",
+          "score": 0.813,
+          "start": 118.589
+        },
+        {
+          "end": 118.87,
+          "word": "me.",
+          "score": 0.77,
+          "start": 118.729
+        }
+      ]
+    },
+    {
+      "end": 121.653,
+      "text": "There was a mirror next to my bed when I was a child.",
+      "start": 119.51,
+      "words": [
+        {
+          "end": 119.63,
+          "word": "There",
+          "score": 0.929,
+          "start": 119.51
+        },
+        {
+          "end": 119.751,
+          "word": "was",
+          "score": 0.672,
+          "start": 119.65
+        },
+        {
+          "end": 119.811,
+          "word": "a",
+          "score": 0.987,
+          "start": 119.791
+        },
+        {
+          "end": 120.111,
+          "word": "mirror",
+          "score": 0.881,
+          "start": 119.851
+        },
+        {
+          "end": 120.351,
+          "word": "next",
+          "score": 0.762,
+          "start": 120.151
+        },
+        {
+          "end": 120.431,
+          "word": "to",
+          "score": 0.718,
+          "start": 120.371
+        },
+        {
+          "end": 120.572,
+          "word": "my",
+          "score": 1,
+          "start": 120.471
+        },
+        {
+          "end": 120.852,
+          "word": "bed",
+          "score": 0.873,
+          "start": 120.612
+        },
+        {
+          "end": 121.032,
+          "word": "when",
+          "score": 0.876,
+          "start": 120.912
+        },
+        {
+          "end": 121.112,
+          "word": "I",
+          "score": 0.855,
+          "start": 121.072
+        },
+        {
+          "end": 121.232,
+          "word": "was",
+          "score": 0.853,
+          "start": 121.132
+        },
+        {
+          "end": 121.292,
+          "word": "a",
+          "score": 0.996,
+          "start": 121.272
+        },
+        {
+          "end": 121.653,
+          "word": "child.",
+          "score": 0.993,
+          "start": 121.352
+        }
+      ]
+    },
+    {
+      "end": 126.076,
+      "text": " I was, you know, experimenting, and then it happened.",
+      "start": 122.794,
+      "words": [
+        {
+          "end": 122.854,
+          "word": "I",
+          "score": 0.684,
+          "start": 122.794
+        },
+        {
+          "end": 123.114,
+          "word": "was,",
+          "score": 0.88,
+          "start": 122.894
+        },
+        {
+          "end": 123.575,
+          "word": "you",
+          "score": 0.945,
+          "start": 123.454
+        },
+        {
+          "end": 123.855,
+          "word": "know,",
+          "score": 0.73,
+          "start": 123.615
+        },
+        {
+          "end": 124.975,
+          "word": "experimenting,",
+          "score": 0.768,
+          "start": 124.175
+        },
+        {
+          "end": 125.396,
+          "word": "and",
+          "score": 0.834,
+          "start": 125.316
+        },
+        {
+          "end": 125.536,
+          "word": "then",
+          "score": 0.879,
+          "start": 125.416
+        },
+        {
+          "end": 125.676,
+          "word": "it",
+          "score": 0.794,
+          "start": 125.576
+        },
+        {
+          "end": 126.076,
+          "word": "happened.",
+          "score": 0.82,
+          "start": 125.696
+        }
+      ]
+    },
+    {
+      "end": 128.437,
+      "text": "I could see the spider in the mirror.",
+      "start": 127.016,
+      "words": [
+        {
+          "end": 127.077,
+          "word": "I",
+          "score": 0.752,
+          "start": 127.016
+        },
+        {
+          "end": 127.277,
+          "word": "could",
+          "score": 0.769,
+          "start": 127.117
+        },
+        {
+          "end": 127.477,
+          "word": "see",
+          "score": 0.866,
+          "start": 127.317
+        },
+        {
+          "end": 127.597,
+          "word": "the",
+          "score": 0.825,
+          "start": 127.497
+        },
+        {
+          "end": 127.997,
+          "word": "spider",
+          "score": 0.888,
+          "start": 127.617
+        },
+        {
+          "end": 128.097,
+          "word": "in",
+          "score": 0.76,
+          "start": 128.037
+        },
+        {
+          "end": 128.197,
+          "word": "the",
+          "score": 0.834,
+          "start": 128.117
+        },
+        {
+          "end": 128.437,
+          "word": "mirror.",
+          "score": 0.946,
+          "start": 128.217
+        }
+      ]
+    },
+    {
+      "end": 130.058,
+      "text": "I couldn't say anything.",
+      "start": 129.038,
+      "words": [
+        {
+          "end": 129.098,
+          "word": "I",
+          "score": 0.678,
+          "start": 129.038
+        },
+        {
+          "end": 129.398,
+          "word": "couldn't",
+          "score": 0.8,
+          "start": 129.138
+        },
+        {
+          "end": 129.618,
+          "word": "say",
+          "score": 0.789,
+          "start": 129.458
+        },
+        {
+          "end": 130.058,
+          "word": "anything.",
+          "score": 0.804,
+          "start": 129.698
+        }
+      ]
+    },
+    {
+      "end": 133.6,
+      "text": "She looked up at me, worry shadowing her beautiful green eyes.",
+      "start": 130.719,
+      "words": [
+        {
+          "end": 130.819,
+          "word": "She",
+          "score": 0.671,
+          "start": 130.719
+        },
+        {
+          "end": 131.039,
+          "word": "looked",
+          "score": 0.86,
+          "start": 130.839
+        },
+        {
+          "end": 131.159,
+          "word": "up",
+          "score": 0.977,
+          "start": 131.079
+        },
+        {
+          "end": 131.279,
+          "word": "at",
+          "score": 0.775,
+          "start": 131.219
+        },
+        {
+          "end": 131.459,
+          "word": "me,",
+          "score": 0.768,
+          "start": 131.319
+        },
+        {
+          "end": 132.019,
+          "word": "worry",
+          "score": 0.997,
+          "start": 131.699
+        },
+        {
+          "end": 132.5,
+          "word": "shadowing",
+          "score": 0.895,
+          "start": 132.079
+        },
+        {
+          "end": 132.64,
+          "word": "her",
+          "score": 0.843,
+          "start": 132.54
+        },
+        {
+          "end": 133.04,
+          "word": "beautiful",
+          "score": 0.795,
+          "start": 132.66
+        },
+        {
+          "end": 133.32,
+          "word": "green",
+          "score": 0.842,
+          "start": 133.08
+        },
+        {
+          "end": 133.6,
+          "word": "eyes.",
+          "score": 0.867,
+          "start": 133.42
+        }
+      ]
+    },
+    {
+      "end": 135.721,
+      "text": "You don't mind, do you?",
+      "start": 134.301,
+      "words": [
+        {
+          "end": 134.421,
+          "word": "You",
+          "score": 0.889,
+          "start": 134.301
+        },
+        {
+          "end": 134.661,
+          "word": "don't",
+          "score": 0.634,
+          "start": 134.461
+        },
+        {
+          "end": 135.041,
+          "word": "mind,",
+          "score": 0.556,
+          "start": 134.701
+        },
+        {
+          "end": 135.521,
+          "word": "do",
+          "score": 0.923,
+          "start": 135.381
+        },
+        {
+          "end": 135.721,
+          "word": "you?",
+          "score": 0.833,
+          "start": 135.561
+        }
+      ]
+    },
+    {
+      "end": 137.723,
+      "text": "It doesn't change anything.",
+      "start": 136.542,
+      "words": [
+        {
+          "end": 136.602,
+          "word": "It",
+          "score": 0.996,
+          "start": 136.542
+        },
+        {
+          "end": 136.942,
+          "word": "doesn't",
+          "score": 0.696,
+          "start": 136.662
+        },
+        {
+          "end": 137.282,
+          "word": "change",
+          "score": 0.77,
+          "start": 136.982
+        },
+        {
+          "end": 137.723,
+          "word": "anything.",
+          "score": 0.829,
+          "start": 137.362
+        }
+      ]
+    },
+    {
+      "end": 140.144,
+      "text": "I love you so much.",
+      "start": 138.903,
+      "words": [
+        {
+          "end": 139.003,
+          "word": "I",
+          "score": 0.922,
+          "start": 138.903
+        },
+        {
+          "end": 139.223,
+          "word": "love",
+          "score": 0.964,
+          "start": 139.063
+        },
+        {
+          "end": 139.404,
+          "word": "you",
+          "score": 0.913,
+          "start": 139.264
+        },
+        {
+          "end": 139.724,
+          "word": "so",
+          "score": 0.996,
+          "start": 139.524
+        },
+        {
+          "end": 140.144,
+          "word": "much.",
+          "score": 0.73,
+          "start": 139.864
+        }
+      ]
+    },
+    {
+      "end": 142.365,
+      "text": "I've never told anyone.",
+      "start": 141.245,
+      "words": [
+        {
+          "end": 141.385,
+          "word": "I've",
+          "score": 0.763,
+          "start": 141.245
+        },
+        {
+          "end": 141.625,
+          "word": "never",
+          "score": 0.92,
+          "start": 141.445
+        },
+        {
+          "end": 141.905,
+          "word": "told",
+          "score": 0.836,
+          "start": 141.685
+        },
+        {
+          "end": 142.365,
+          "word": "anyone.",
+          "score": 0.86,
+          "start": 142.005
+        }
+      ]
+    },
+    {
+      "end": 145.207,
+      "text": "I want to be with you properly.",
+      "start": 144.026,
+      "words": [
+        {
+          "end": 144.086,
+          "word": "I",
+          "score": 0.67,
+          "start": 144.026
+        },
+        {
+          "end": 144.286,
+          "word": "want",
+          "score": 0.716,
+          "start": 144.126
+        },
+        {
+          "end": 144.366,
+          "word": "to",
+          "score": 0.931,
+          "start": 144.306
+        },
+        {
+          "end": 144.507,
+          "word": "be",
+          "score": 0.908,
+          "start": 144.406
+        },
+        {
+          "end": 144.667,
+          "word": "with",
+          "score": 0.817,
+          "start": 144.547
+        },
+        {
+          "end": 144.807,
+          "word": "you",
+          "score": 0.996,
+          "start": 144.707
+        },
+        {
+          "end": 145.207,
+          "word": "properly.",
+          "score": 0.896,
+          "start": 144.847
+        }
+      ]
+    },
+    {
+      "end": 150.793,
+      "text": " Let you do all the things to me, she pressed against me, naked.",
+      "start": 146.59,
+      "words": [
+        {
+          "end": 146.73,
+          "word": "Let",
+          "score": 0.88,
+          "start": 146.59
+        },
+        {
+          "end": 146.91,
+          "word": "you",
+          "score": 0.742,
+          "start": 146.77
+        },
+        {
+          "end": 147.11,
+          "word": "do",
+          "score": 0.814,
+          "start": 146.95
+        },
+        {
+          "end": 147.391,
+          "word": "all",
+          "score": 0.779,
+          "start": 147.251
+        },
+        {
+          "end": 147.491,
+          "word": "the",
+          "score": 0.803,
+          "start": 147.411
+        },
+        {
+          "end": 147.751,
+          "word": "things",
+          "score": 0.893,
+          "start": 147.531
+        },
+        {
+          "end": 147.911,
+          "word": "to",
+          "score": 0.995,
+          "start": 147.811
+        },
+        {
+          "end": 148.131,
+          "word": "me,",
+          "score": 0.786,
+          "start": 147.971
+        },
+        {
+          "end": 149.172,
+          "word": "she",
+          "score": 0.836,
+          "start": 149.052
+        },
+        {
+          "end": 149.492,
+          "word": "pressed",
+          "score": 0.908,
+          "start": 149.232
+        },
+        {
+          "end": 149.853,
+          "word": "against",
+          "score": 0.826,
+          "start": 149.552
+        },
+        {
+          "end": 150.053,
+          "word": "me,",
+          "score": 0.744,
+          "start": 149.933
+        },
+        {
+          "end": 150.793,
+          "word": "naked.",
+          "score": 0.755,
+          "start": 150.433
+        }
+      ]
+    },
+    {
+      "end": 154.516,
+      "text": "And my heart had melted even as I became aroused.",
+      "start": 152.255,
+      "words": [
+        {
+          "end": 152.335,
+          "word": "And",
+          "score": 0.836,
+          "start": 152.255
+        },
+        {
+          "end": 152.495,
+          "word": "my",
+          "score": 0.813,
+          "start": 152.375
+        },
+        {
+          "end": 152.755,
+          "word": "heart",
+          "score": 0.812,
+          "start": 152.535
+        },
+        {
+          "end": 152.895,
+          "word": "had",
+          "score": 0.778,
+          "start": 152.775
+        },
+        {
+          "end": 153.275,
+          "word": "melted",
+          "score": 0.853,
+          "start": 152.935
+        },
+        {
+          "end": 153.516,
+          "word": "even",
+          "score": 0.842,
+          "start": 153.375
+        },
+        {
+          "end": 153.636,
+          "word": "as",
+          "score": 0.756,
+          "start": 153.576
+        },
+        {
+          "end": 153.776,
+          "word": "I",
+          "score": 0.544,
+          "start": 153.716
+        },
+        {
+          "end": 154.096,
+          "word": "became",
+          "score": 0.854,
+          "start": 153.816
+        },
+        {
+          "end": 154.516,
+          "word": "aroused.",
+          "score": 0.953,
+          "start": 154.136
+        }
+      ]
+    },
+    {
+      "end": 156.438,
+      "text": "I drew her close and whispered,",
+      "start": 155.157,
+      "words": [
+        {
+          "end": 155.217,
+          "word": "I",
+          "score": 0.667,
+          "start": 155.157
+        },
+        {
+          "end": 155.437,
+          "word": "drew",
+          "score": 0.903,
+          "start": 155.237
+        },
+        {
+          "end": 155.577,
+          "word": "her",
+          "score": 0.995,
+          "start": 155.477
+        },
+        {
+          "end": 155.917,
+          "word": "close",
+          "score": 0.747,
+          "start": 155.617
+        },
+        {
+          "end": 156.038,
+          "word": "and",
+          "score": 0.834,
+          "start": 155.958
+        },
+        {
+          "end": 156.438,
+          "word": "whispered,",
+          "score": 0.822,
+          "start": 156.078
+        }
+      ]
+    },
+    {
+      "end": 159.154,
+      "text": " Baby, it's okay.",
+      "start": 158.314,
+      "words": [
+        {
+          "end": 158.554,
+          "word": "Baby,",
+          "score": 0.991,
+          "start": 158.314
+        },
+        {
+          "end": 158.714,
+          "word": "it's",
+          "score": 0.76,
+          "start": 158.594
+        },
+        {
+          "end": 159.154,
+          "word": "okay.",
+          "score": 0.792,
+          "start": 158.794
+        }
+      ]
+    },
+    {
+      "end": 162.316,
+      "text": "I would love you even if you turned into a worm, remember?",
+      "start": 159.995,
+      "words": [
+        {
+          "end": 160.035,
+          "word": "I",
+          "score": 1,
+          "start": 159.995
+        },
+        {
+          "end": 160.195,
+          "word": "would",
+          "score": 0.922,
+          "start": 160.075
+        },
+        {
+          "end": 160.375,
+          "word": "love",
+          "score": 0.953,
+          "start": 160.235
+        },
+        {
+          "end": 160.515,
+          "word": "you",
+          "score": 0.835,
+          "start": 160.395
+        },
+        {
+          "end": 160.715,
+          "word": "even",
+          "score": 0.885,
+          "start": 160.555
+        },
+        {
+          "end": 160.815,
+          "word": "if",
+          "score": 0.77,
+          "start": 160.755
+        },
+        {
+          "end": 160.955,
+          "word": "you",
+          "score": 0.852,
+          "start": 160.835
+        },
+        {
+          "end": 161.215,
+          "word": "turned",
+          "score": 0.84,
+          "start": 160.975
+        },
+        {
+          "end": 161.455,
+          "word": "into",
+          "score": 0.874,
+          "start": 161.255
+        },
+        {
+          "end": 161.515,
+          "word": "a",
+          "score": 0.996,
+          "start": 161.495
+        },
+        {
+          "end": 161.875,
+          "word": "worm,",
+          "score": 0.829,
+          "start": 161.555
+        },
+        {
+          "end": 162.316,
+          "word": "remember?",
+          "score": 0.905,
+          "start": 161.935
+        }
+      ]
+    },
+    {
+      "end": 165.237,
+      "text": "She laughed, cried, and then opened up to me.",
+      "start": 162.996,
+      "words": [
+        {
+          "end": 163.116,
+          "word": "She",
+          "score": 0.763,
+          "start": 162.996
+        },
+        {
+          "end": 163.436,
+          "word": "laughed,",
+          "score": 0.755,
+          "start": 163.156
+        },
+        {
+          "end": 163.876,
+          "word": "cried,",
+          "score": 0.791,
+          "start": 163.476
+        },
+        {
+          "end": 164.196,
+          "word": "and",
+          "score": 0.712,
+          "start": 164.096
+        },
+        {
+          "end": 164.396,
+          "word": "then",
+          "score": 0.852,
+          "start": 164.236
+        },
+        {
+          "end": 164.756,
+          "word": "opened",
+          "score": 0.79,
+          "start": 164.516
+        },
+        {
+          "end": 164.917,
+          "word": "up",
+          "score": 0.832,
+          "start": 164.817
+        },
+        {
+          "end": 165.037,
+          "word": "to",
+          "score": 0.904,
+          "start": 164.957
+        },
+        {
+          "end": 165.237,
+          "word": "me.",
+          "score": 0.748,
+          "start": 165.097
+        }
+      ]
+    },
+    {
+      "end": 169.958,
+      "text": "I reached deep inside her, and soon enough she orgasmed.",
+      "start": 166.477,
+      "words": [
+        {
+          "end": 166.557,
+          "word": "I",
+          "score": 0.979,
+          "start": 166.477
+        },
+        {
+          "end": 166.897,
+          "word": "reached",
+          "score": 0.815,
+          "start": 166.617
+        },
+        {
+          "end": 167.177,
+          "word": "deep",
+          "score": 0.845,
+          "start": 166.957
+        },
+        {
+          "end": 167.698,
+          "word": "inside",
+          "score": 0.842,
+          "start": 167.237
+        },
+        {
+          "end": 167.898,
+          "word": "her,",
+          "score": 0.725,
+          "start": 167.738
+        },
+        {
+          "end": 168.518,
+          "word": "and",
+          "score": 0.833,
+          "start": 168.418
+        },
+        {
+          "end": 168.818,
+          "word": "soon",
+          "score": 0.751,
+          "start": 168.598
+        },
+        {
+          "end": 169.098,
+          "word": "enough",
+          "score": 0.869,
+          "start": 168.858
+        },
+        {
+          "end": 169.318,
+          "word": "she",
+          "score": 0.695,
+          "start": 169.158
+        },
+        {
+          "end": 169.958,
+          "word": "orgasmed.",
+          "score": 0.876,
+          "start": 169.438
+        }
+      ]
+    },
+    {
+      "end": 171.839,
+      "text": "That had been six months ago.",
+      "start": 170.599,
+      "words": [
+        {
+          "end": 170.739,
+          "word": "That",
+          "score": 0.917,
+          "start": 170.599
+        },
+        {
+          "end": 170.859,
+          "word": "had",
+          "score": 0.896,
+          "start": 170.759
+        },
+        {
+          "end": 171.059,
+          "word": "been",
+          "score": 0.916,
+          "start": 170.879
+        },
+        {
+          "end": 171.339,
+          "word": "six",
+          "score": 0.909,
+          "start": 171.119
+        },
+        {
+          "end": 171.579,
+          "word": "months",
+          "score": 0.953,
+          "start": 171.379
+        },
+        {
+          "end": 171.839,
+          "word": "ago.",
+          "score": 0.883,
+          "start": 171.639
+        }
+      ]
+    },
+    {
+      "end": 179.842,
+      "text": "I always let go of her as soon as she started transforming, so I wouldn't have to feel her body shrinking and ballooning, the limbs growing and the bristles.",
+      "start": 172.539,
+      "words": [
+        {
+          "end": 172.619,
+          "word": "I",
+          "score": 0.887,
+          "start": 172.539
+        },
+        {
+          "end": 172.88,
+          "word": "always",
+          "score": 0.791,
+          "start": 172.68
+        },
+        {
+          "end": 173.06,
+          "word": "let",
+          "score": 0.737,
+          "start": 172.92
+        },
+        {
+          "end": 173.26,
+          "word": "go",
+          "score": 0.883,
+          "start": 173.1
+        },
+        {
+          "end": 173.36,
+          "word": "of",
+          "score": 0.998,
+          "start": 173.32
+        },
+        {
+          "end": 173.54,
+          "word": "her",
+          "score": 0.62,
+          "start": 173.4
+        },
+        {
+          "end": 173.64,
+          "word": "as",
+          "score": 0.876,
+          "start": 173.58
+        },
+        {
+          "end": 173.84,
+          "word": "soon",
+          "score": 0.745,
+          "start": 173.68
+        },
+        {
+          "end": 173.92,
+          "word": "as",
+          "score": 0.922,
+          "start": 173.86
+        },
+        {
+          "end": 174.08,
+          "word": "she",
+          "score": 0.748,
+          "start": 173.94
+        },
+        {
+          "end": 174.44,
+          "word": "started",
+          "score": 0.83,
+          "start": 174.1
+        },
+        {
+          "end": 175.06,
+          "word": "transforming,",
+          "score": 0.83,
+          "start": 174.46
+        },
+        {
+          "end": 175.581,
+          "word": "so",
+          "score": 0.778,
+          "start": 175.461
+        },
+        {
+          "end": 175.641,
+          "word": "I",
+          "score": 0.952,
+          "start": 175.601
+        },
+        {
+          "end": 175.901,
+          "word": "wouldn't",
+          "score": 0.889,
+          "start": 175.681
+        },
+        {
+          "end": 176.081,
+          "word": "have",
+          "score": 0.847,
+          "start": 175.941
+        },
+        {
+          "end": 176.201,
+          "word": "to",
+          "score": 0.52,
+          "start": 176.101
+        },
+        {
+          "end": 176.441,
+          "word": "feel",
+          "score": 0.803,
+          "start": 176.241
+        },
+        {
+          "end": 176.581,
+          "word": "her",
+          "score": 0.885,
+          "start": 176.481
+        },
+        {
+          "end": 176.901,
+          "word": "body",
+          "score": 0.874,
+          "start": 176.621
+        },
+        {
+          "end": 177.341,
+          "word": "shrinking",
+          "score": 0.861,
+          "start": 176.961
+        },
+        {
+          "end": 177.461,
+          "word": "and",
+          "score": 0.89,
+          "start": 177.381
+        },
+        {
+          "end": 177.922,
+          "word": "ballooning,",
+          "score": 0.869,
+          "start": 177.501
+        },
+        {
+          "end": 178.522,
+          "word": "the",
+          "score": 0.837,
+          "start": 178.442
+        },
+        {
+          "end": 178.782,
+          "word": "limbs",
+          "score": 0.817,
+          "start": 178.562
+        },
+        {
+          "end": 179.182,
+          "word": "growing",
+          "score": 0.826,
+          "start": 178.822
+        },
+        {
+          "end": 179.382,
+          "word": "and",
+          "score": 0.855,
+          "start": 179.302
+        },
+        {
+          "end": 179.482,
+          "word": "the",
+          "score": 0.998,
+          "start": 179.422
+        },
+        {
+          "end": 179.842,
+          "word": "bristles.",
+          "score": 0.845,
+          "start": 179.522
+        }
+      ]
+    },
+    {
+      "end": 181.343,
+      "text": "Oh, the bristles.",
+      "start": 180.563,
+      "words": [
+        {
+          "end": 180.743,
+          "word": "Oh,",
+          "score": 0.326,
+          "start": 180.563
+        },
+        {
+          "end": 180.903,
+          "word": "the",
+          "score": 0.834,
+          "start": 180.823
+        },
+        {
+          "end": 181.343,
+          "word": "bristles.",
+          "score": 0.808,
+          "start": 180.943
+        }
+      ]
+    },
+    {
+      "end": 183.084,
+      "text": " I couldn't get used to it.",
+      "start": 182.123,
+      "words": [
+        {
+          "end": 182.183,
+          "word": "I",
+          "score": 0.668,
+          "start": 182.123
+        },
+        {
+          "end": 182.443,
+          "word": "couldn't",
+          "score": 0.882,
+          "start": 182.203
+        },
+        {
+          "end": 182.604,
+          "word": "get",
+          "score": 0.842,
+          "start": 182.483
+        },
+        {
+          "end": 182.824,
+          "word": "used",
+          "score": 0.724,
+          "start": 182.684
+        },
+        {
+          "end": 182.924,
+          "word": "to",
+          "score": 0.992,
+          "start": 182.844
+        },
+        {
+          "end": 183.084,
+          "word": "it.",
+          "score": 0.667,
+          "start": 183.004
+        }
+      ]
+    },
+    {
+      "end": 184.945,
+      "text": "I walked to the bedroom window.",
+      "start": 183.784,
+      "words": [
+        {
+          "end": 183.864,
+          "word": "I",
+          "score": 0.748,
+          "start": 183.784
+        },
+        {
+          "end": 184.104,
+          "word": "walked",
+          "score": 0.811,
+          "start": 183.884
+        },
+        {
+          "end": 184.185,
+          "word": "to",
+          "score": 0.83,
+          "start": 184.124
+        },
+        {
+          "end": 184.285,
+          "word": "the",
+          "score": 0.839,
+          "start": 184.205
+        },
+        {
+          "end": 184.605,
+          "word": "bedroom",
+          "score": 0.829,
+          "start": 184.325
+        },
+        {
+          "end": 184.945,
+          "word": "window.",
+          "score": 0.858,
+          "start": 184.625
+        }
+      ]
+    },
+    {
+      "end": 186.466,
+      "text": "It was getting worse.",
+      "start": 185.645,
+      "words": [
+        {
+          "end": 185.705,
+          "word": "It",
+          "score": 0.752,
+          "start": 185.645
+        },
+        {
+          "end": 185.826,
+          "word": "was",
+          "score": 0.822,
+          "start": 185.725
+        },
+        {
+          "end": 186.126,
+          "word": "getting",
+          "score": 0.936,
+          "start": 185.866
+        },
+        {
+          "end": 186.466,
+          "word": "worse.",
+          "score": 0.815,
+          "start": 186.166
+        }
+      ]
+    },
+    {
+      "end": 193.07,
+      "text": "Because now Kara's love had grown, she wanted me to hold her while she came, to pet her while she was in spider form.",
+      "start": 186.486,
+      "words": [
+        {
+          "end": 187.326,
+          "word": "Because",
+          "score": 0.711,
+          "start": 186.486
+        },
+        {
+          "end": 187.507,
+          "word": "now",
+          "score": 0.889,
+          "start": 187.367
+        },
+        {
+          "end": 187.947,
+          "word": "Kara's",
+          "score": 0.859,
+          "start": 187.587
+        },
+        {
+          "end": 188.187,
+          "word": "love",
+          "score": 0.889,
+          "start": 188.007
+        },
+        {
+          "end": 188.327,
+          "word": "had",
+          "score": 0.799,
+          "start": 188.227
+        },
+        {
+          "end": 188.647,
+          "word": "grown,",
+          "score": 0.751,
+          "start": 188.347
+        },
+        {
+          "end": 189.188,
+          "word": "she",
+          "score": 0.833,
+          "start": 189.088
+        },
+        {
+          "end": 189.508,
+          "word": "wanted",
+          "score": 0.864,
+          "start": 189.228
+        },
+        {
+          "end": 189.628,
+          "word": "me",
+          "score": 0.838,
+          "start": 189.548
+        },
+        {
+          "end": 189.748,
+          "word": "to",
+          "score": 0.75,
+          "start": 189.668
+        },
+        {
+          "end": 190.028,
+          "word": "hold",
+          "score": 0.778,
+          "start": 189.788
+        },
+        {
+          "end": 190.188,
+          "word": "her",
+          "score": 0.723,
+          "start": 190.068
+        },
+        {
+          "end": 190.408,
+          "word": "while",
+          "score": 0.875,
+          "start": 190.228
+        },
+        {
+          "end": 190.569,
+          "word": "she",
+          "score": 0.513,
+          "start": 190.448
+        },
+        {
+          "end": 190.889,
+          "word": "came,",
+          "score": 0.718,
+          "start": 190.609
+        },
+        {
+          "end": 191.409,
+          "word": "to",
+          "score": 0.774,
+          "start": 191.309
+        },
+        {
+          "end": 191.669,
+          "word": "pet",
+          "score": 0.99,
+          "start": 191.469
+        },
+        {
+          "end": 191.829,
+          "word": "her",
+          "score": 0.919,
+          "start": 191.729
+        },
+        {
+          "end": 192.049,
+          "word": "while",
+          "score": 0.98,
+          "start": 191.869
+        },
+        {
+          "end": 192.19,
+          "word": "she",
+          "score": 0.761,
+          "start": 192.089
+        },
+        {
+          "end": 192.33,
+          "word": "was",
+          "score": 0.996,
+          "start": 192.23
+        },
+        {
+          "end": 192.43,
+          "word": "in",
+          "score": 1,
+          "start": 192.39
+        },
+        {
+          "end": 192.83,
+          "word": "spider",
+          "score": 0.913,
+          "start": 192.49
+        },
+        {
+          "end": 193.07,
+          "word": "form.",
+          "score": 0.866,
+          "start": 192.85
+        }
+      ]
+    },
+    {
+      "end": 194.391,
+      "text": "She wanted more.",
+      "start": 193.69,
+      "words": [
+        {
+          "end": 193.791,
+          "word": "She",
+          "score": 0.822,
+          "start": 193.69
+        },
+        {
+          "end": 194.131,
+          "word": "wanted",
+          "score": 0.749,
+          "start": 193.831
+        },
+        {
+          "end": 194.391,
+          "word": "more.",
+          "score": 0.823,
+          "start": 194.191
+        }
+      ]
+    },
+    {
+      "end": 202.356,
+      "text": "She never said so, but I knew, by the look of reproach and longing on her beautiful face as she flickered back into human form.",
+      "start": 195.051,
+      "words": [
+        {
+          "end": 195.151,
+          "word": "She",
+          "score": 0.83,
+          "start": 195.051
+        },
+        {
+          "end": 195.392,
+          "word": "never",
+          "score": 0.729,
+          "start": 195.211
+        },
+        {
+          "end": 195.632,
+          "word": "said",
+          "score": 0.893,
+          "start": 195.452
+        },
+        {
+          "end": 195.932,
+          "word": "so,",
+          "score": 0.796,
+          "start": 195.712
+        },
+        {
+          "end": 196.232,
+          "word": "but",
+          "score": 0.706,
+          "start": 196.072
+        },
+        {
+          "end": 196.472,
+          "word": "I",
+          "score": 0.75,
+          "start": 196.392
+        },
+        {
+          "end": 196.732,
+          "word": "knew,",
+          "score": 0.845,
+          "start": 196.532
+        },
+        {
+          "end": 197.153,
+          "word": "by",
+          "score": 0.986,
+          "start": 197.033
+        },
+        {
+          "end": 197.293,
+          "word": "the",
+          "score": 0.687,
+          "start": 197.193
+        },
+        {
+          "end": 197.493,
+          "word": "look",
+          "score": 0.701,
+          "start": 197.313
+        },
+        {
+          "end": 197.593,
+          "word": "of",
+          "score": 0.75,
+          "start": 197.533
+        },
+        {
+          "end": 198.133,
+          "word": "reproach",
+          "score": 0.655,
+          "start": 197.653
+        },
+        {
+          "end": 198.453,
+          "word": "and",
+          "score": 0.501,
+          "start": 198.333
+        },
+        {
+          "end": 198.854,
+          "word": "longing",
+          "score": 0.816,
+          "start": 198.534
+        },
+        {
+          "end": 199.034,
+          "word": "on",
+          "score": 0.833,
+          "start": 198.954
+        },
+        {
+          "end": 199.194,
+          "word": "her",
+          "score": 0.612,
+          "start": 199.074
+        },
+        {
+          "end": 199.654,
+          "word": "beautiful",
+          "score": 0.866,
+          "start": 199.234
+        },
+        {
+          "end": 199.994,
+          "word": "face",
+          "score": 0.994,
+          "start": 199.694
+        },
+        {
+          "end": 200.415,
+          "word": "as",
+          "score": 0.936,
+          "start": 200.335
+        },
+        {
+          "end": 200.575,
+          "word": "she",
+          "score": 0.558,
+          "start": 200.455
+        },
+        {
+          "end": 200.975,
+          "word": "flickered",
+          "score": 0.84,
+          "start": 200.655
+        },
+        {
+          "end": 201.315,
+          "word": "back",
+          "score": 0.897,
+          "start": 201.035
+        },
+        {
+          "end": 201.615,
+          "word": "into",
+          "score": 0.897,
+          "start": 201.415
+        },
+        {
+          "end": 201.996,
+          "word": "human",
+          "score": 0.871,
+          "start": 201.696
+        },
+        {
+          "end": 202.356,
+          "word": "form.",
+          "score": 0.982,
+          "start": 202.056
+        }
+      ]
+    },
+    {
+      "end": 205.258,
+      "text": "And she had been talking about marriage and commitment.",
+      "start": 202.976,
+      "words": [
+        {
+          "end": 203.056,
+          "word": "And",
+          "score": 0.934,
+          "start": 202.976
+        },
+        {
+          "end": 203.236,
+          "word": "she",
+          "score": 0.839,
+          "start": 203.116
+        },
+        {
+          "end": 203.357,
+          "word": "had",
+          "score": 0.975,
+          "start": 203.277
+        },
+        {
+          "end": 203.557,
+          "word": "been",
+          "score": 0.965,
+          "start": 203.397
+        },
+        {
+          "end": 203.937,
+          "word": "talking",
+          "score": 0.896,
+          "start": 203.617
+        },
+        {
+          "end": 204.217,
+          "word": "about",
+          "score": 0.807,
+          "start": 203.997
+        },
+        {
+          "end": 204.637,
+          "word": "marriage",
+          "score": 0.92,
+          "start": 204.277
+        },
+        {
+          "end": 204.777,
+          "word": "and",
+          "score": 0.828,
+          "start": 204.677
+        },
+        {
+          "end": 205.258,
+          "word": "commitment.",
+          "score": 0.949,
+          "start": 204.817
+        }
+      ]
+    },
+    {
+      "end": 207.659,
+      "text": "She was only a spider for a few minutes.",
+      "start": 205.918,
+      "words": [
+        {
+          "end": 205.998,
+          "word": "She",
+          "score": 0.835,
+          "start": 205.918
+        },
+        {
+          "end": 206.158,
+          "word": "was",
+          "score": 0.765,
+          "start": 206.038
+        },
+        {
+          "end": 206.398,
+          "word": "only",
+          "score": 0.811,
+          "start": 206.218
+        },
+        {
+          "end": 206.439,
+          "word": "a",
+          "score": 0.999,
+          "start": 206.418
+        },
+        {
+          "end": 206.899,
+          "word": "spider",
+          "score": 0.874,
+          "start": 206.499
+        },
+        {
+          "end": 207.059,
+          "word": "for",
+          "score": 0.744,
+          "start": 206.939
+        },
+        {
+          "end": 207.139,
+          "word": "a",
+          "score": 0.508,
+          "start": 207.099
+        },
+        {
+          "end": 207.339,
+          "word": "few",
+          "score": 0.835,
+          "start": 207.179
+        },
+        {
+          "end": 207.659,
+          "word": "minutes.",
+          "score": 0.79,
+          "start": 207.379
+        }
+      ]
+    },
+    {
+      "end": 209.821,
+      "text": "And everything else was perfect.",
+      "start": 208.36,
+      "words": [
+        {
+          "end": 208.46,
+          "word": "And",
+          "score": 0.695,
+          "start": 208.36
+        },
+        {
+          "end": 208.9,
+          "word": "everything",
+          "score": 0.842,
+          "start": 208.54
+        },
+        {
+          "end": 209.14,
+          "word": "else",
+          "score": 0.628,
+          "start": 208.96
+        },
+        {
+          "end": 209.32,
+          "word": "was",
+          "score": 0.669,
+          "start": 209.18
+        },
+        {
+          "end": 209.821,
+          "word": "perfect.",
+          "score": 0.929,
+          "start": 209.38
+        }
+      ]
+    },
+    {
+      "end": 211.802,
+      "text": " A movement caught my eye.",
+      "start": 210.561,
+      "words": [
+        {
+          "end": 210.621,
+          "word": "A",
+          "score": 0.671,
+          "start": 210.561
+        },
+        {
+          "end": 211.041,
+          "word": "movement",
+          "score": 0.881,
+          "start": 210.661
+        },
+        {
+          "end": 211.382,
+          "word": "caught",
+          "score": 0.847,
+          "start": 211.121
+        },
+        {
+          "end": 211.562,
+          "word": "my",
+          "score": 0.988,
+          "start": 211.442
+        },
+        {
+          "end": 211.802,
+          "word": "eye.",
+          "score": 0.792,
+          "start": 211.702
+        }
+      ]
+    },
+    {
+      "end": 212.842,
+      "text": "I turned.",
+      "start": 212.382,
+      "words": [
+        {
+          "end": 212.442,
+          "word": "I",
+          "score": 0.67,
+          "start": 212.382
+        },
+        {
+          "end": 212.842,
+          "word": "turned.",
+          "score": 0.759,
+          "start": 212.482
+        }
+      ]
+    },
+    {
+      "end": 214.844,
+      "text": "She was scuttling towards me.",
+      "start": 213.483,
+      "words": [
+        {
+          "end": 213.583,
+          "word": "She",
+          "score": 0.685,
+          "start": 213.483
+        },
+        {
+          "end": 213.723,
+          "word": "was",
+          "score": 0.697,
+          "start": 213.603
+        },
+        {
+          "end": 214.243,
+          "word": "scuttling",
+          "score": 0.872,
+          "start": 213.783
+        },
+        {
+          "end": 214.643,
+          "word": "towards",
+          "score": 0.808,
+          "start": 214.323
+        },
+        {
+          "end": 214.844,
+          "word": "me.",
+          "score": 0.584,
+          "start": 214.704
+        }
+      ]
+    },
+    {
+      "end": 216.645,
+      "text": "She had never done that before.",
+      "start": 215.524,
+      "words": [
+        {
+          "end": 215.624,
+          "word": "She",
+          "score": 0.671,
+          "start": 215.524
+        },
+        {
+          "end": 215.744,
+          "word": "had",
+          "score": 0.92,
+          "start": 215.664
+        },
+        {
+          "end": 215.944,
+          "word": "never",
+          "score": 0.818,
+          "start": 215.784
+        },
+        {
+          "end": 216.104,
+          "word": "done",
+          "score": 0.827,
+          "start": 215.964
+        },
+        {
+          "end": 216.284,
+          "word": "that",
+          "score": 0.923,
+          "start": 216.144
+        },
+        {
+          "end": 216.645,
+          "word": "before.",
+          "score": 0.863,
+          "start": 216.324
+        }
+      ]
+    },
+    {
+      "end": 222.408,
+      "text": "Wordlessly understanding my aversion, she had always respected my distance while she was a spider.",
+      "start": 217.285,
+      "words": [
+        {
+          "end": 217.905,
+          "word": "Wordlessly",
+          "score": 0.86,
+          "start": 217.285
+        },
+        {
+          "end": 218.586,
+          "word": "understanding",
+          "score": 0.889,
+          "start": 218.005
+        },
+        {
+          "end": 218.726,
+          "word": "my",
+          "score": 0.792,
+          "start": 218.606
+        },
+        {
+          "end": 219.226,
+          "word": "aversion,",
+          "score": 0.912,
+          "start": 218.766
+        },
+        {
+          "end": 219.867,
+          "word": "she",
+          "score": 0.715,
+          "start": 219.766
+        },
+        {
+          "end": 219.987,
+          "word": "had",
+          "score": 0.829,
+          "start": 219.907
+        },
+        {
+          "end": 220.287,
+          "word": "always",
+          "score": 0.882,
+          "start": 220.027
+        },
+        {
+          "end": 220.807,
+          "word": "respected",
+          "score": 0.879,
+          "start": 220.327
+        },
+        {
+          "end": 220.947,
+          "word": "my",
+          "score": 1,
+          "start": 220.847
+        },
+        {
+          "end": 221.407,
+          "word": "distance",
+          "score": 0.916,
+          "start": 220.987
+        },
+        {
+          "end": 221.728,
+          "word": "while",
+          "score": 0.803,
+          "start": 221.528
+        },
+        {
+          "end": 221.828,
+          "word": "she",
+          "score": 0.975,
+          "start": 221.748
+        },
+        {
+          "end": 221.948,
+          "word": "was",
+          "score": 0.834,
+          "start": 221.868
+        },
+        {
+          "end": 222.008,
+          "word": "a",
+          "score": 0.997,
+          "start": 221.988
+        },
+        {
+          "end": 222.408,
+          "word": "spider.",
+          "score": 0.959,
+          "start": 222.048
+        }
+      ]
+    },
+    {
+      "end": 224.249,
+      "text": "But now she was approaching.",
+      "start": 223.028,
+      "words": [
+        {
+          "end": 223.148,
+          "word": "But",
+          "score": 0.831,
+          "start": 223.028
+        },
+        {
+          "end": 223.409,
+          "word": "now",
+          "score": 0.897,
+          "start": 223.209
+        },
+        {
+          "end": 223.609,
+          "word": "she",
+          "score": 0.833,
+          "start": 223.509
+        },
+        {
+          "end": 223.749,
+          "word": "was",
+          "score": 0.871,
+          "start": 223.649
+        },
+        {
+          "end": 224.249,
+          "word": "approaching.",
+          "score": 0.756,
+          "start": 223.789
+        }
+      ]
+    },
+    {
+      "end": 229.132,
+      "text": "I took a step back, impulsively reached down, grabbed my slipper and raised it.",
+      "start": 224.889,
+      "words": [
+        {
+          "end": 224.95,
+          "word": "I",
+          "score": 0.675,
+          "start": 224.889
+        },
+        {
+          "end": 225.13,
+          "word": "took",
+          "score": 0.835,
+          "start": 224.97
+        },
+        {
+          "end": 225.19,
+          "word": "a",
+          "score": 0.999,
+          "start": 225.17
+        },
+        {
+          "end": 225.45,
+          "word": "step",
+          "score": 0.909,
+          "start": 225.23
+        },
+        {
+          "end": 225.71,
+          "word": "back,",
+          "score": 0.974,
+          "start": 225.49
+        },
+        {
+          "end": 226.811,
+          "word": "impulsively",
+          "score": 0.858,
+          "start": 226.17
+        },
+        {
+          "end": 227.111,
+          "word": "reached",
+          "score": 0.867,
+          "start": 226.871
+        },
+        {
+          "end": 227.371,
+          "word": "down,",
+          "score": 0.802,
+          "start": 227.131
+        },
+        {
+          "end": 228.011,
+          "word": "grabbed",
+          "score": 0.831,
+          "start": 227.771
+        },
+        {
+          "end": 228.151,
+          "word": "my",
+          "score": 0.81,
+          "start": 228.051
+        },
+        {
+          "end": 228.532,
+          "word": "slipper",
+          "score": 0.923,
+          "start": 228.211
+        },
+        {
+          "end": 228.672,
+          "word": "and",
+          "score": 0.674,
+          "start": 228.572
+        },
+        {
+          "end": 228.992,
+          "word": "raised",
+          "score": 0.778,
+          "start": 228.712
+        },
+        {
+          "end": 229.132,
+          "word": "it.",
+          "score": 0.816,
+          "start": 229.032
+        }
+      ]
+    },
+    {
+      "end": 233.895,
+      "text": "The large spider jumped on me and then bit, releasing venom into my blood.",
+      "start": 229.832,
+      "words": [
+        {
+          "end": 229.932,
+          "word": "The",
+          "score": 0.937,
+          "start": 229.832
+        },
+        {
+          "end": 230.193,
+          "word": "large",
+          "score": 0.912,
+          "start": 229.972
+        },
+        {
+          "end": 230.573,
+          "word": "spider",
+          "score": 0.876,
+          "start": 230.233
+        },
+        {
+          "end": 230.873,
+          "word": "jumped",
+          "score": 0.794,
+          "start": 230.613
+        },
+        {
+          "end": 230.973,
+          "word": "on",
+          "score": 0.998,
+          "start": 230.913
+        },
+        {
+          "end": 231.133,
+          "word": "me",
+          "score": 0.628,
+          "start": 231.013
+        },
+        {
+          "end": 231.293,
+          "word": "and",
+          "score": 0.958,
+          "start": 231.213
+        },
+        {
+          "end": 231.473,
+          "word": "then",
+          "score": 0.914,
+          "start": 231.333
+        },
+        {
+          "end": 231.734,
+          "word": "bit,",
+          "score": 0.775,
+          "start": 231.513
+        },
+        {
+          "end": 232.914,
+          "word": "releasing",
+          "score": 0.902,
+          "start": 232.494
+        },
+        {
+          "end": 233.274,
+          "word": "venom",
+          "score": 0.855,
+          "start": 232.994
+        },
+        {
+          "end": 233.495,
+          "word": "into",
+          "score": 0.844,
+          "start": 233.314
+        },
+        {
+          "end": 233.655,
+          "word": "my",
+          "score": 0.836,
+          "start": 233.535
+        },
+        {
+          "end": 233.895,
+          "word": "blood.",
+          "score": 0.867,
+          "start": 233.695
+        }
+      ]
+    },
+    {
+      "end": 237.217,
+      "text": " I screamed in agony, and then I lashed out with the slipper.",
+      "start": 234.595,
+      "words": [
+        {
+          "end": 234.655,
+          "word": "I",
+          "score": 0.669,
+          "start": 234.595
+        },
+        {
+          "end": 235.055,
+          "word": "screamed",
+          "score": 0.835,
+          "start": 234.715
+        },
+        {
+          "end": 235.155,
+          "word": "in",
+          "score": 0.779,
+          "start": 235.095
+        },
+        {
+          "end": 235.556,
+          "word": "agony,",
+          "score": 0.866,
+          "start": 235.236
+        },
+        {
+          "end": 235.956,
+          "word": "and",
+          "score": 0.954,
+          "start": 235.876
+        },
+        {
+          "end": 236.096,
+          "word": "then",
+          "score": 0.88,
+          "start": 235.976
+        },
+        {
+          "end": 236.176,
+          "word": "I",
+          "score": 0.677,
+          "start": 236.136
+        },
+        {
+          "end": 236.476,
+          "word": "lashed",
+          "score": 0.843,
+          "start": 236.236
+        },
+        {
+          "end": 236.596,
+          "word": "out",
+          "score": 1,
+          "start": 236.516
+        },
+        {
+          "end": 236.736,
+          "word": "with",
+          "score": 0.874,
+          "start": 236.636
+        },
+        {
+          "end": 236.856,
+          "word": "the",
+          "score": 0.901,
+          "start": 236.776
+        },
+        {
+          "end": 237.217,
+          "word": "slipper.",
+          "score": 0.884,
+          "start": 236.896
+        }
+      ]
+    },
+    {
+      "end": 241.639,
+      "text": "Pain and horror befuddling me, the slipper squashed my beloved Kara fully.",
+      "start": 237.837,
+      "words": [
+        {
+          "end": 238.077,
+          "word": "Pain",
+          "score": 0.959,
+          "start": 237.837
+        },
+        {
+          "end": 238.197,
+          "word": "and",
+          "score": 0.494,
+          "start": 238.117
+        },
+        {
+          "end": 238.537,
+          "word": "horror",
+          "score": 0.816,
+          "start": 238.237
+        },
+        {
+          "end": 239.098,
+          "word": "befuddling",
+          "score": 0.917,
+          "start": 238.577
+        },
+        {
+          "end": 239.278,
+          "word": "me,",
+          "score": 0.869,
+          "start": 239.138
+        },
+        {
+          "end": 239.438,
+          "word": "the",
+          "score": 0.685,
+          "start": 239.318
+        },
+        {
+          "end": 239.878,
+          "word": "slipper",
+          "score": 0.932,
+          "start": 239.498
+        },
+        {
+          "end": 240.358,
+          "word": "squashed",
+          "score": 0.868,
+          "start": 239.958
+        },
+        {
+          "end": 240.538,
+          "word": "my",
+          "score": 0.866,
+          "start": 240.418
+        },
+        {
+          "end": 240.918,
+          "word": "beloved",
+          "score": 0.714,
+          "start": 240.578
+        },
+        {
+          "end": 241.299,
+          "word": "Kara",
+          "score": 0.833,
+          "start": 240.979
+        },
+        {
+          "end": 241.639,
+          "word": "fully.",
+          "score": 0.903,
+          "start": 241.339
+        }
+      ]
+    },
+    {
+      "end": 245.441,
+      "text": "I fell howling to the floor in a paroxysm of grief and pain.",
+      "start": 242.299,
+      "words": [
+        {
+          "end": 242.359,
+          "word": "I",
+          "score": 0.668,
+          "start": 242.299
+        },
+        {
+          "end": 242.619,
+          "word": "fell",
+          "score": 0.78,
+          "start": 242.399
+        },
+        {
+          "end": 243.06,
+          "word": "howling",
+          "score": 0.845,
+          "start": 242.659
+        },
+        {
+          "end": 243.2,
+          "word": "to",
+          "score": 0.822,
+          "start": 243.1
+        },
+        {
+          "end": 243.32,
+          "word": "the",
+          "score": 0.839,
+          "start": 243.24
+        },
+        {
+          "end": 243.64,
+          "word": "floor",
+          "score": 0.879,
+          "start": 243.36
+        },
+        {
+          "end": 243.74,
+          "word": "in",
+          "score": 0.83,
+          "start": 243.68
+        },
+        {
+          "end": 243.8,
+          "word": "a",
+          "score": 0.996,
+          "start": 243.78
+        },
+        {
+          "end": 244.42,
+          "word": "paroxysm",
+          "score": 0.939,
+          "start": 243.86
+        },
+        {
+          "end": 244.54,
+          "word": "of",
+          "score": 0.739,
+          "start": 244.46
+        },
+        {
+          "end": 244.921,
+          "word": "grief",
+          "score": 0.85,
+          "start": 244.6
+        },
+        {
+          "end": 245.081,
+          "word": "and",
+          "score": 0.908,
+          "start": 245.001
+        },
+        {
+          "end": 245.441,
+          "word": "pain.",
+          "score": 0.82,
+          "start": 245.121
+        }
+      ]
+    },
+    {
+      "end": 247.082,
+      "text": "I will never love again.",
+      "start": 246.141,
+      "words": [
+        {
+          "end": 246.181,
+          "word": "I",
+          "score": 0.946,
+          "start": 246.141
+        },
+        {
+          "end": 246.381,
+          "word": "will",
+          "score": 0.865,
+          "start": 246.201
+        },
+        {
+          "end": 246.601,
+          "word": "never",
+          "score": 0.951,
+          "start": 246.421
+        },
+        {
+          "end": 246.822,
+          "word": "love",
+          "score": 0.878,
+          "start": 246.662
+        },
+        {
+          "end": 247.082,
+          "word": "again.",
+          "score": 0.9,
+          "start": 246.862
+        }
+      ]
+    }
+  ],
+  "detected_language": "en"
+}

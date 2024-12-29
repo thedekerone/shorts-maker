@@ -56,6 +56,31 @@ func MakeVideoOfImages(imagesWithTS []models.ImageWithTimestamp, duration float3
 	return outputFile, nil
 }
 
+func MakeVideoOfLocalImages(imagesWithTS []models.ImageWithTimestamp, duration float32, outputFolder string) (string, error) {
+	var video []*gobra.Video
+	config := gobra.Config{
+		Width:       1080,
+		Height:      1920,
+		Fps:         30,
+		AspectRatio: 9.0 / 16.0,
+	}
+	interval := float32(duration)/float32(len(imagesWithTS)) + 0.2
+	for _, image := range imagesWithTS {
+		currentVideo := gobra.NewZoomPanVideoFromImage(image.URL, interval, 2.3, config)
+		currentVideo = currentVideo.AddFadeIn(0.2)
+		currentVideo = currentVideo.AddFadeOut(0.2)
+		video = append(video, currentVideo)
+	}
+
+	merged := gobra.MergeVideos(video...)
+
+	outputFile := filepath.Join(outputFolder, fmt.Sprintf("%s.mp4", generateUniqueName()))
+
+	print(merged.AddSubtitles)
+	merged.Save(outputFile)
+	return outputFile, nil
+}
+
 func generateUniqueName() string {
 	timestamp := time.Now().UnixNano()
 	uuid := uuid.New().String()

@@ -358,6 +358,7 @@ func generateImages(jobID string, transcript *models.TranscriptionOutput, predic
 }
 
 func createVideo(jobID string, transcript *models.TranscriptionOutput, images []models.ImageWithTimestamp, voice string) (string, error) {
+	ctx := context.Background()
 	updateJobStatus(jobID, "creating_subtitle_file", "", "")
 
 	lastSegment := transcript.Segments[len(transcript.Segments)-1]
@@ -393,7 +394,7 @@ func createVideo(jobID string, transcript *models.TranscriptionOutput, images []
 		updateJobStatus(jobID, "failed", "", "Error transforming transcript to subs: "+err.Error())
 	}
 
-	engine.AddSubtitlesToVideo(outputPath, subtitleImages, outputFilePath)
+	engine.AddSubtitlesToVideo(ctx, outputPath, subtitleImages, outputFilePath)
 
 	return outputFilePath, nil
 }

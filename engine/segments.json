@@ -1,0 +1,838 @@
+{
+  "completed_at": "2024-12-23T02:10:36.096176Z",
+  "created_at": "2024-12-23T02:10:31.678000Z",
+  "data_removed": false,
+  "error": null,
+  "id": "rtvn04e0fsrj00cky53v2xmmdw",
+  "input": {
+    "audio_file": "https://replicate.delivery/yhqm/ySvMlOoRWjIUMl6bkC9Li2TBOQwDeKzDq1GB9CdBDYdLxzeTA/output.wav",
+    "batch_size": 128,
+    "align_output": true
+  },
+  "logs": "Lightning automatically upgraded your loaded checkpoint from v1.5.4 to v2.4.0. To apply the upgrade to your files permanently, run `python -m pytorch_lightning.utilities.upgrade_checkpoint ../root/.cache/torch/whisperx-vad-segmentation.bin`\nNo language specified, language will be first be detected for each audio file (increases inference time).\nModel was trained with pyannote.audio 0.0.1, yours is 3.1.1. Bad things might happen unless you revert pyannote.audio to 0.x.\nModel was trained with torch 1.10.0+cu102, yours is 2.1.0+cu121. Bad things might happen unless you revert torch to 1.x.\nDetected language: en (1.00) in first 30s of audio...",
+  "metrics": {
+    "predict_time": 4.411750237,
+    "total_time": 4.418176
+  },
+  "output": {
+    "segments": [
+      {
+        "end": 6.654,
+        "text": " I'd always been drawn to the abandoned asylum on the hill, its crumbling spires reaching towards the moon like skeletal fingers.",
+        "start": 0.029,
+        "words": [
+          {
+            "end": 0.129,
+            "word": "I'd",
+            "score": 0.425,
+            "start": 0.029
+          },
+          {
+            "end": 0.369,
+            "word": "always",
+            "score": 0.751,
+            "start": 0.169
+          },
+          {
+            "end": 0.589,
+            "word": "been",
+            "score": 0.764,
+            "start": 0.409
+          },
+          {
+            "end": 0.85,
+            "word": "drawn",
+            "score": 0.852,
+            "start": 0.629
+          },
+          {
+            "end": 0.93,
+            "word": "to",
+            "score": 0.763,
+            "start": 0.87
+          },
+          {
+            "end": 1.03,
+            "word": "the",
+            "score": 1,
+            "start": 0.97
+          },
+          {
+            "end": 1.47,
+            "word": "abandoned",
+            "score": 0.897,
+            "start": 1.05
+          },
+          {
+            "end": 1.91,
+            "word": "asylum",
+            "score": 0.839,
+            "start": 1.53
+          },
+          {
+            "end": 2.011,
+            "word": "on",
+            "score": 0.748,
+            "start": 1.951
+          },
+          {
+            "end": 2.091,
+            "word": "the",
+            "score": 0.997,
+            "start": 2.031
+          },
+          {
+            "end": 2.351,
+            "word": "hill,",
+            "score": 0.878,
+            "start": 2.151
+          },
+          {
+            "end": 3.151,
+            "word": "its",
+            "score": 0.744,
+            "start": 3.031
+          },
+          {
+            "end": 3.612,
+            "word": "crumbling",
+            "score": 0.869,
+            "start": 3.211
+          },
+          {
+            "end": 4.152,
+            "word": "spires",
+            "score": 0.778,
+            "start": 3.672
+          },
+          {
+            "end": 4.733,
+            "word": "reaching",
+            "score": 0.911,
+            "start": 4.332
+          },
+          {
+            "end": 5.113,
+            "word": "towards",
+            "score": 0.719,
+            "start": 4.793
+          },
+          {
+            "end": 5.253,
+            "word": "the",
+            "score": 0.833,
+            "start": 5.173
+          },
+          {
+            "end": 5.513,
+            "word": "moon",
+            "score": 0.739,
+            "start": 5.273
+          },
+          {
+            "end": 5.733,
+            "word": "like",
+            "score": 0.866,
+            "start": 5.573
+          },
+          {
+            "end": 6.234,
+            "word": "skeletal",
+            "score": 0.945,
+            "start": 5.793
+          },
+          {
+            "end": 6.654,
+            "word": "fingers.",
+            "score": 0.806,
+            "start": 6.294
+          }
+        ]
+      },
+      {
+        "end": 11.198,
+        "text": "As I stepped inside, the creaking floorboards seemed to whisper my name.",
+        "start": 7.375,
+        "words": [
+          {
+            "end": 7.455,
+            "word": "As",
+            "score": 0.733,
+            "start": 7.375
+          },
+          {
+            "end": 7.575,
+            "word": "I",
+            "score": 0.685,
+            "start": 7.515
+          },
+          {
+            "end": 7.895,
+            "word": "stepped",
+            "score": 0.867,
+            "start": 7.615
+          },
+          {
+            "end": 8.395,
+            "word": "inside,",
+            "score": 0.76,
+            "start": 7.915
+          },
+          {
+            "end": 8.976,
+            "word": "the",
+            "score": 0.679,
+            "start": 8.876
+          },
+          {
+            "end": 9.416,
+            "word": "creaking",
+            "score": 0.829,
+            "start": 9.016
+          },
+          {
+            "end": 10.017,
+            "word": "floorboards",
+            "score": 0.802,
+            "start": 9.476
+          },
+          {
+            "end": 10.297,
+            "word": "seemed",
+            "score": 0.783,
+            "start": 10.057
+          },
+          {
+            "end": 10.377,
+            "word": "to",
+            "score": 0.926,
+            "start": 10.317
+          },
+          {
+            "end": 10.717,
+            "word": "whisper",
+            "score": 0.695,
+            "start": 10.417
+          },
+          {
+            "end": 10.897,
+            "word": "my",
+            "score": 0.904,
+            "start": 10.757
+          },
+          {
+            "end": 11.198,
+            "word": "name.",
+            "score": 0.727,
+            "start": 10.957
+          }
+        ]
+      },
+      {
+        "end": 15.701,
+        "text": "I laughed it off as the wind, but the chill in my bones told a different tale.",
+        "start": 11.938,
+        "words": [
+          {
+            "end": 11.998,
+            "word": "I",
+            "score": 0.81,
+            "start": 11.938
+          },
+          {
+            "end": 12.319,
+            "word": "laughed",
+            "score": 0.913,
+            "start": 12.038
+          },
+          {
+            "end": 12.439,
+            "word": "it",
+            "score": 0.938,
+            "start": 12.379
+          },
+          {
+            "end": 12.679,
+            "word": "off",
+            "score": 0.992,
+            "start": 12.559
+          },
+          {
+            "end": 12.879,
+            "word": "as",
+            "score": 0.994,
+            "start": 12.819
+          },
+          {
+            "end": 13.019,
+            "word": "the",
+            "score": 0.858,
+            "start": 12.939
+          },
+          {
+            "end": 13.359,
+            "word": "wind,",
+            "score": 0.815,
+            "start": 13.059
+          },
+          {
+            "end": 13.76,
+            "word": "but",
+            "score": 0.83,
+            "start": 13.64
+          },
+          {
+            "end": 13.86,
+            "word": "the",
+            "score": 0.836,
+            "start": 13.78
+          },
+          {
+            "end": 14.1,
+            "word": "chill",
+            "score": 0.791,
+            "start": 13.9
+          },
+          {
+            "end": 14.2,
+            "word": "in",
+            "score": 0.787,
+            "start": 14.14
+          },
+          {
+            "end": 14.36,
+            "word": "my",
+            "score": 0.834,
+            "start": 14.24
+          },
+          {
+            "end": 14.74,
+            "word": "bones",
+            "score": 0.77,
+            "start": 14.4
+          },
+          {
+            "end": 14.981,
+            "word": "told",
+            "score": 0.818,
+            "start": 14.8
+          },
+          {
+            "end": 15.101,
+            "word": "a",
+            "score": 0.122,
+            "start": 15.061
+          },
+          {
+            "end": 15.401,
+            "word": "different",
+            "score": 0.949,
+            "start": 15.121
+          },
+          {
+            "end": 15.701,
+            "word": "tale.",
+            "score": 0.882,
+            "start": 15.441
+          }
+        ]
+      },
+      {
+        "end": 18.343,
+        "text": "Suddenly, the lights flickered and died.",
+        "start": 16.362,
+        "words": [
+          {
+            "end": 16.822,
+            "word": "Suddenly,",
+            "score": 0.807,
+            "start": 16.362
+          },
+          {
+            "end": 17.102,
+            "word": "the",
+            "score": 0.842,
+            "start": 17.022
+          },
+          {
+            "end": 17.362,
+            "word": "lights",
+            "score": 0.821,
+            "start": 17.142
+          },
+          {
+            "end": 17.843,
+            "word": "flickered",
+            "score": 0.793,
+            "start": 17.463
+          },
+          {
+            "end": 18.023,
+            "word": "and",
+            "score": 0.672,
+            "start": 17.923
+          },
+          {
+            "end": 18.343,
+            "word": "died.",
+            "score": 0.81,
+            "start": 18.063
+          }
+        ]
+      },
+      {
+        "end": 24.128,
+        "text": "I fumbled for my flashlight, but it only illuminated the darkness within myself.",
+        "start": 19.024,
+        "words": [
+          {
+            "end": 19.104,
+            "word": "I",
+            "score": 0.728,
+            "start": 19.024
+          },
+          {
+            "end": 19.544,
+            "word": "fumbled",
+            "score": 0.873,
+            "start": 19.184
+          },
+          {
+            "end": 19.704,
+            "word": "for",
+            "score": 0.835,
+            "start": 19.584
+          },
+          {
+            "end": 19.864,
+            "word": "my",
+            "score": 0.873,
+            "start": 19.744
+          },
+          {
+            "end": 20.485,
+            "word": "flashlight,",
+            "score": 0.894,
+            "start": 19.924
+          },
+          {
+            "end": 21.326,
+            "word": "but",
+            "score": 0.887,
+            "start": 21.185
+          },
+          {
+            "end": 21.466,
+            "word": "it",
+            "score": 0.832,
+            "start": 21.386
+          },
+          {
+            "end": 21.726,
+            "word": "only",
+            "score": 0.862,
+            "start": 21.546
+          },
+          {
+            "end": 22.386,
+            "word": "illuminated",
+            "score": 0.738,
+            "start": 21.766
+          },
+          {
+            "end": 22.506,
+            "word": "the",
+            "score": 0.832,
+            "start": 22.426
+          },
+          {
+            "end": 23.107,
+            "word": "darkness",
+            "score": 0.846,
+            "start": 22.566
+          },
+          {
+            "end": 23.647,
+            "word": "within",
+            "score": 0.841,
+            "start": 23.387
+          },
+          {
+            "end": 24.128,
+            "word": "myself.",
+            "score": 0.833,
+            "start": 23.707
+          }
+        ]
+      },
+      {
+        "end": 28.772,
+        "text": " That's when I saw her, a patient's journal, open to a page with a single sentence.",
+        "start": 24.768,
+        "words": [
+          {
+            "end": 24.968,
+            "word": "That's",
+            "score": 0.919,
+            "start": 24.768
+          },
+          {
+            "end": 25.129,
+            "word": "when",
+            "score": 0.998,
+            "start": 25.008
+          },
+          {
+            "end": 25.229,
+            "word": "I",
+            "score": 0.705,
+            "start": 25.169
+          },
+          {
+            "end": 25.489,
+            "word": "saw",
+            "score": 0.903,
+            "start": 25.289
+          },
+          {
+            "end": 25.649,
+            "word": "her,",
+            "score": 0.993,
+            "start": 25.529
+          },
+          {
+            "end": 25.929,
+            "word": "a",
+            "score": 0.991,
+            "start": 25.889
+          },
+          {
+            "end": 26.37,
+            "word": "patient's",
+            "score": 0.899,
+            "start": 25.969
+          },
+          {
+            "end": 26.73,
+            "word": "journal,",
+            "score": 0.768,
+            "start": 26.39
+          },
+          {
+            "end": 27.191,
+            "word": "open",
+            "score": 0.854,
+            "start": 26.93
+          },
+          {
+            "end": 27.311,
+            "word": "to",
+            "score": 0.72,
+            "start": 27.211
+          },
+          {
+            "end": 27.391,
+            "word": "a",
+            "score": 0.948,
+            "start": 27.371
+          },
+          {
+            "end": 27.711,
+            "word": "page",
+            "score": 0.952,
+            "start": 27.431
+          },
+          {
+            "end": 27.851,
+            "word": "with",
+            "score": 0.874,
+            "start": 27.731
+          },
+          {
+            "end": 27.931,
+            "word": "a",
+            "score": 0.995,
+            "start": 27.911
+          },
+          {
+            "end": 28.292,
+            "word": "single",
+            "score": 0.831,
+            "start": 27.991
+          },
+          {
+            "end": 28.772,
+            "word": "sentence.",
+            "score": 0.892,
+            "start": 28.332
+          }
+        ]
+      },
+      {
+        "end": 29.973,
+        "text": "They're coming for you.",
+        "start": 29.193,
+        "words": [
+          {
+            "end": 29.373,
+            "word": "They're",
+            "score": 0.855,
+            "start": 29.193
+          },
+          {
+            "end": 29.613,
+            "word": "coming",
+            "score": 0.839,
+            "start": 29.393
+          },
+          {
+            "end": 29.813,
+            "word": "for",
+            "score": 0.904,
+            "start": 29.673
+          },
+          {
+            "end": 29.973,
+            "word": "you.",
+            "score": 0.92,
+            "start": 29.853
+          }
+        ]
+      },
+      {
+        "end": 33.156,
+        "text": "I tried to flee, but the door slammed shut, trapping me.",
+        "start": 30.594,
+        "words": [
+          {
+            "end": 30.654,
+            "word": "I",
+            "score": 0.977,
+            "start": 30.594
+          },
+          {
+            "end": 30.894,
+            "word": "tried",
+            "score": 0.899,
+            "start": 30.694
+          },
+          {
+            "end": 31.014,
+            "word": "to",
+            "score": 0.752,
+            "start": 30.934
+          },
+          {
+            "end": 31.375,
+            "word": "flee,",
+            "score": 0.886,
+            "start": 31.074
+          },
+          {
+            "end": 31.555,
+            "word": "but",
+            "score": 0.834,
+            "start": 31.455
+          },
+          {
+            "end": 31.655,
+            "word": "the",
+            "score": 0.966,
+            "start": 31.595
+          },
+          {
+            "end": 31.935,
+            "word": "door",
+            "score": 0.926,
+            "start": 31.695
+          },
+          {
+            "end": 32.296,
+            "word": "slammed",
+            "score": 0.869,
+            "start": 31.995
+          },
+          {
+            "end": 32.596,
+            "word": "shut,",
+            "score": 0.724,
+            "start": 32.336
+          },
+          {
+            "end": 32.996,
+            "word": "trapping",
+            "score": 0.917,
+            "start": 32.636
+          },
+          {
+            "end": 33.156,
+            "word": "me.",
+            "score": 0.832,
+            "start": 33.036
+          }
+        ]
+      },
+      {
+        "end": 35.138,
+        "text": "And then the whispers started.",
+        "start": 33.837,
+        "words": [
+          {
+            "end": 33.937,
+            "word": "And",
+            "score": 0.694,
+            "start": 33.837
+          },
+          {
+            "end": 34.217,
+            "word": "then",
+            "score": 0.766,
+            "start": 33.997
+          },
+          {
+            "end": 34.338,
+            "word": "the",
+            "score": 0.827,
+            "start": 34.257
+          },
+          {
+            "end": 34.678,
+            "word": "whispers",
+            "score": 0.927,
+            "start": 34.378
+          },
+          {
+            "end": 35.138,
+            "word": "started.",
+            "score": 0.804,
+            "start": 34.718
+          }
+        ]
+      },
+      {
+        "end": 39.763,
+        "text": "My name over and over, growing louder, until I realized I wasn't alone.",
+        "start": 35.819,
+        "words": [
+          {
+            "end": 35.959,
+            "word": "My",
+            "score": 0.834,
+            "start": 35.819
+          },
+          {
+            "end": 36.219,
+            "word": "name",
+            "score": 0.784,
+            "start": 35.999
+          },
+          {
+            "end": 36.5,
+            "word": "over",
+            "score": 0.832,
+            "start": 36.319
+          },
+          {
+            "end": 36.62,
+            "word": "and",
+            "score": 0.862,
+            "start": 36.54
+          },
+          {
+            "end": 36.94,
+            "word": "over,",
+            "score": 0.836,
+            "start": 36.7
+          },
+          {
+            "end": 37.581,
+            "word": "growing",
+            "score": 0.833,
+            "start": 37.3
+          },
+          {
+            "end": 37.941,
+            "word": "louder,",
+            "score": 0.803,
+            "start": 37.601
+          },
+          {
+            "end": 38.502,
+            "word": "until",
+            "score": 0.817,
+            "start": 38.281
+          },
+          {
+            "end": 38.602,
+            "word": "I",
+            "score": 0.631,
+            "start": 38.522
+          },
+          {
+            "end": 39.042,
+            "word": "realized",
+            "score": 0.901,
+            "start": 38.642
+          },
+          {
+            "end": 39.122,
+            "word": "I",
+            "score": 0.993,
+            "start": 39.082
+          },
+          {
+            "end": 39.443,
+            "word": "wasn't",
+            "score": 0.798,
+            "start": 39.162
+          },
+          {
+            "end": 39.763,
+            "word": "alone.",
+            "score": 0.797,
+            "start": 39.503
+          }
+        ]
+      },
+      {
+        "end": 41.565,
+        "text": "The patient's never left.",
+        "start": 40.443,
+        "words": [
+          {
+            "end": 40.544,
+            "word": "The",
+            "score": 0.9,
+            "start": 40.443
+          },
+          {
+            "end": 41.024,
+            "word": "patient's",
+            "score": 0.714,
+            "start": 40.584
+          },
+          {
+            "end": 41.284,
+            "word": "never",
+            "score": 0.988,
+            "start": 41.084
+          },
+          {
+            "end": 41.565,
+            "word": "left.",
+            "score": 0.876,
+            "start": 41.324
+          }
+        ]
+      }
+    ],
+    "detected_language": "en"
+  },
+  "started_at": "2024-12-23T02:10:31.684426Z",
+  "status": "succeeded",
+  "urls": {
+    "get": "https://api.replicate.com/v1/predictions/rtvn04e0fsrj00cky53v2xmmdw",
+    "cancel": "https://api.replicate.com/v1/predictions/rtvn04e0fsrj00cky53v2xmmdw/cancel"
+  },
+  "version": "84d2ad2d6194fe98a17d2b60bef1c7f910c46b2f6fd38996ca457afd9c8abfcb"
+}
