@@ -80,48 +80,54 @@ func TestVideoGeneration(t *testing.T) {
 		t.Fatalf("Failed trying to connect to replicate service")
 	}
 
-	script := `I Didn't Mean to Destroy The Most Precious Thing In The World To Me
-	I leaned my head back against the wall in the Emergency room at our local hospital, tears pouring down my face. And it wasn’t just from the pain either. The swelling and rash had already gone down after several anti-histamine and other anti-allergen shots, but my heart was breaking for my poor darling Cara.
+	script := `It’s hard being an old man all alone. So I hired a live-in nurse.
+It’s no fun being old.
 
-	I didn’t mean to. I can’t believe I killed the most precious thing to me in the world. 
+Cloudy eyes. Brittle bones. Muscles gone soft. It’s not easy to get used to.
 
-	I looked at myself in the selfie view of my phone camera. I still looked deadly ill. The police had questioned me, but there was nothing more than a squashed bloody spider in my bedroom, and they had to let me go. They said they would search for Cara as they helped the paramedics get me out of there. I heard them talking about “mental breakdown” and “paranoid” with the emerg intake. 
+But at least I had Jeanine.
 
-	That day had been like most other days I spent with Cara. We were in bed, and it was her “turn”. I slipped my fingers over her dazzling silken skin, feeling her soft and loveable under my hands. 
+She was my home health aide. About 25. A pretty little thing. Being so vulnerable around a stranger was uncomfortable, at first. But her friendly demeanor soon put my mind at ease. As I showed her to her room, she kept going on about how nice the house was.
 
-	And then, I tried to repress the familiar shudder as her limbs elongated and she sprouted four more, bristles poked out of her smooth skin, her head grew large and her eyes multiplied. I rolled away from her.
+“Wow, Mr. Stephens! This place is gorgeous.”
 
-	A spider as big as a beach ball stood quivering on the bed where Cara had been buckling and crying out in pleasure a second ago. The transformation was very fast.
+“With what I paid for it, it had better be,” I joked, as she held my arm.
 
-	And it only lasted a few minutes, mercifully. I tried to control my face and body so she couldn’t see my fear, which had never lessened, not one iota, through all these months.
+“Sir,” she said, smiling as she looked around, “I think we’re going to be good friends.”
 
-	I hated and feared spiders since childhood, but that had never come up in the very early days of our relationship. 
+And she meant it. Jeanine helped me with everything — chores, cooking, keeping track of my bills, always with a smile. Eventually, I could hardly remember how I ever got by without her. Her three month contract soon became six, at my request. Then nine. And each time, she seemed more than happy to stay. Insistent on it, as a matter of fact.
 
-	About three weeks into what had been the best relationship of my life so far, Cara decided she trusted me and told me the reason why she hadn’t let me make her orgasm.
+By New Year’s Eve, she’d been with me for nearly a year.
 
-	“I turn into a spider” she had murmured.
+We’d just finished watching the ball drop. I was about to go to bed when I noticed Jeanine looked…different, as she asked me a question.
 
-	I froze. I knew immediately she wasn’t joking or mad, simply telling the bald truth.
+“Jim, where’s the money?”
 
-	“No-one else knows. I’ve never orgasmed with a partner before.” She snuggled up to me. “There was a mirror next to my bed when I was a child. I was, you know, experimenting, and then it happened. I could see the spider in the mirror.”
+“You want a raise?”, I chuckled.
 
-	I couldn’t say anything. She looked up at me, worry shadowing her beautiful green eyes. “You don’t mind do you? It doesn’t change anything- I- I love you so much- I’ve never told anyone - I want to be with you properly, let you do all the things to me-” she pressed against me, naked, and my heart had melted even as I became aroused. I drew her close and whispered “shhh, baby it’s ok. I would love you even if you turned into a worm, remember?”
+“Don’t bullshit me!” she hissed, her words dripping with frustration.
 
-	She laugh-cried and then opened up to me. I reached deep inside her, and soon enough, she orgasmed.
+“I only took this job because I heard you were loaded. And I’m getting what I came for.”
 
-	That had been six months ago. I always let go of her as soon as she started transforming, so I wouldn’t have to feel her body shrinking and ballooning, the limbs growing and the bristles. Oh the bristles.
+As it dawned on me that she was serious, I noticed the gun she’d pulled from her jacket pocket.
 
-	I couldn’t get used to it. I walked to the bedroom window. It was getting worse. Because now Cara’s love had grown, she wanted me to hold her while she came, to pet her while she was in spider form. She wanted more. She never said so, but I knew, by the look of reproach and longing on her beautiful face as she flickered back into human form. And she had been talking about marriage and commitment. 
+“An old man in a big house, all alone. Cash. Jewelry.” She gestured towards the stairs with her gun. “Take me to them.”
 
-	She was only a spider for a few minutes. And everything else was perfect.
+Begrudgingly, I led her to the safe hidden in my bedroom closet. She forced me to open it, but not before I spit in her eye. Liar. Without blinking, she put a bullet in my chest and began to rummage through my valuables.
 
-	A movement caught my eye- I turned. She was scuttling towards me. She had never done that before. Wordlessly understanding my aversion, she had always respected my distance while she was a spider.
+Just what I’d been waiting for.
 
-	But now she was approaching. I took a step back, impulsively reached down, grabbed my slipper and raised it.
+I don’t know what she realized first, that there was no money, or that she couldn’t move. She collapsed, paralyzed by my venom as the ragged hole in my ribs closed before her eyes. As I slid my proboscis down her throat, she gazed up at me in agony as her face began to sag and wrinkle. And for a split second, just before the transformation was complete, she didn’t see Jim Stephens’ face. She didn’t see her own.
 
-	The large spider jumped on me and then bit, releasing venom into my blood. I screamed in agony and then I lashed out with the slipper. The pain and horror befuddling me, the slipper squashed my beloved Cara fully. I fell howling to the floor in a paroxysm of grief and pain. 
+She saw mine.
 
-	I will never love again.`
+Taking the shape of the rich old man had been fun, for a while. But as I changed into Jeanine’s clothes, I was ready for something fresh. Soon, police would find “Jim Stevens” dead on his bedroom floor. No one would ask questions. And I’d have a new body, one dripping with opportunity.
+
+As I practiced sobbing with Jeanine’s voice before dialing 911, I smiled.
+
+What is it human kids say?
+
+“New Year, New Me.”`
 
 	// Test audio generation
 
@@ -161,11 +167,16 @@ func TestVideoGeneration(t *testing.T) {
 		})
 	}
 
-	path, err := pkg.MakeVideoOfLocalImages(images, float32(lastSegment.End), os.TempDir()+pkg.GenerateRandomString(6)+".mp4")
+	t.Log("Creating video from images...")
+
+	path, err := pkg.MakeVideoOfLocalImages(images, float32(lastSegment.End), os.TempDir())
+	t.Log("Created video with images...")
 
 	if err != nil {
 		t.Fatalf("Failed to Create video of images")
 	}
+
+	t.Log("Starting to create video with sound...")
 	outputPath, err := pkg.AddAudioToVideo(path, voice, os.TempDir())
 
 	if err != nil {

@@ -64,9 +64,9 @@ func CreateSubtitles(transcript *models.TranscriptionOutput) []Subtitle {
 func CreateSubtitleImage(subs *Subtitle, subtitlesPath string) (engine.SubtitleImage, error) {
 	var subImage engine.SubtitleImage
 
-	subtitlesId := uuid.New().String()
+	subtitlesId := uuid.New().ID()
 
-	imageName := fmt.Sprintf("%s.png", subtitlesId)
+	imageName := fmt.Sprintf("%d.png", subtitlesId)
 	err := engine.RenderText(subs.Text, subtitlesPath, imageName)
 
 	if err != nil {

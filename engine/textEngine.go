@@ -74,8 +74,6 @@ func RenderText(text string, path string, filename string) error {
 		"-strokewidth", fmt.Sprintf("%d", defaultStyle.borderSize),
 		"-background", defaultStyle.background,
 		"-fill", defaultStyle.color,
-		"xc:none",
-		"+antialias",
 		"-font", defaultStyle.font,
 		"-pointsize", fmt.Sprintf("%d", defaultStyle.fontSize),
 		"-size", "1080x1920",
