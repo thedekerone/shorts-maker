@@ -10,9 +10,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/thedekerone/shorts-maker/elevenlabs"
 	"github.com/thedekerone/shorts-maker/engine"
 	"github.com/thedekerone/shorts-maker/models"
+	"github.com/thedekerone/shorts-maker/neets"
 	"github.com/thedekerone/shorts-maker/pkg"
 	"github.com/thedekerone/shorts-maker/services"
 	"github.com/thedekerone/shorts-maker/subtitles"
@@ -40,15 +40,12 @@ func skipTestCreateVideoFromImages(t *testing.T) {
 	t.Log("dsadsaadsadsdsa\n")
 
 	imagesForVideo := []string{
-		"/Users/mauriciofow/Documents/shorts-maker/handlers/testImages/pexels-photo-0.jpeg",
-		"/Users/mauriciofow/Documents/shorts-maker/handlers/testImages/pexels-photo-1.jpeg",
-		"/Users/mauriciofow/Documents/shorts-maker/handlers/testImages/pexels-photo-2.jpeg",
-		"/Users/mauriciofow/Documents/shorts-maker/handlers/testImages/pexels-photo-3.jpeg", "/Users/mauriciofow/Documents/shorts-maker/handlers/testImages/pexels-photo-1.jpeg",
-		"/Users/mauriciofow/Documents/shorts-maker/handlers/testImages/pexels-photo-2.jpeg",
-		"/Users/mauriciofow/Documents/shorts-maker/handlers/testImages/pexels-photo-3.jpeg", "/Users/mauriciofow/Documents/shorts-maker/handlers/testImages/pexels-photo-1.jpeg",
-		"/Users/mauriciofow/Documents/shorts-maker/handlers/testImages/pexels-photo-2.jpeg",
-		"/Users/mauriciofow/Documents/shorts-maker/handlers/testImages/pexels-photo-3.jpeg",
-		"/Users/mauriciofow/Documents/shorts-maker/handlers/testImages/pexels-photo-4.jpeg",
+		"/var/folders/27/3tlwn24s2d7bgwgclkt3y2hw0000gn/T/image_472479805.jpg",
+		"/var/folders/27/3tlwn24s2d7bgwgclkt3y2hw0000gn/T/image_575969719.jpg",
+		"/var/folders/27/3tlwn24s2d7bgwgclkt3y2hw0000gn/T/image_1020201603.jpg",
+		"/var/folders/27/3tlwn24s2d7bgwgclkt3y2hw0000gn/T/image_3694320876.jpg",
+		"/var/folders/27/3tlwn24s2d7bgwgclkt3y2hw0000gn/T/image_4280124063.jpg",
+		"/var/folders/27/3tlwn24s2d7bgwgclkt3y2hw0000gn/T/image_1460845745.jpg",
 	}
 	t.Log("dsadsaadsadsdsa2\n")
 
@@ -117,9 +114,9 @@ I unzipped my suitcase and showed him the body of his mistress which was folded 
 
 	// Test audio generation
 
-	n := elevenlabs.CreateEleven()
+	n := neets.CreateNeets()
 
-	vr := n.NewVoiceRequest(strings.ReplaceAll(script, "\n", ""), "9BWtsMINqrJLrRacOk9x")
+	vr := n.NewVoiceRequest(strings.ReplaceAll(script, "\n", ""), "us-male-1")
 
 	audioPath, err := vr.Call("test.mp3")
 	if err != nil {
@@ -139,14 +136,13 @@ I unzipped my suitcase and showed him the body of his mistress which was folded 
 	}
 
 	imagesForVideo := []string{
-		"./testImages/pexels-photo-0.jpeg",
-		"./testImages/pexels-photo-1.jpeg",
-		"./testImages/pexels-photo-2.jpeg",
-		"./testImages/pexels-photo-3.jpeg",
-		"./testImages/pexels-photo-4.jpeg",
+		"/var/folders/27/3tlwn24s2d7bgwgclkt3y2hw0000gn/T/image_472479805.jpg",
+		"/var/folders/27/3tlwn24s2d7bgwgclkt3y2hw0000gn/T/image_575969719.jpg",
+		"/var/folders/27/3tlwn24s2d7bgwgclkt3y2hw0000gn/T/image_1020201603.jpg",
+		"/var/folders/27/3tlwn24s2d7bgwgclkt3y2hw0000gn/T/image_3694320876.jpg",
+		"/var/folders/27/3tlwn24s2d7bgwgclkt3y2hw0000gn/T/image_4280124063.jpg",
+		"/var/folders/27/3tlwn24s2d7bgwgclkt3y2hw0000gn/T/image_1460845745.jpg",
 	}
-
-	lastSegment := transcription.Segments[len(transcription.Segments)-1]
 
 	var images []models.ImageWithTimestamp
 	totalDuration := transcription.Segments[len(transcription.Segments)-1].End
@@ -161,7 +157,7 @@ I unzipped my suitcase and showed him the body of his mistress which was folded 
 
 	t.Log("Creating video from images...")
 
-	path, err := pkg.MakeVideoOfLocalImages(images, float32(lastSegment.End), os.TempDir())
+	path, err := engine.CreateVideoFromImages(images, os.TempDir()+pkg.GenerateRandomString(6)+".mp4")
 	t.Log("Created video with images...")
 
 	if err != nil {
@@ -169,7 +165,7 @@ I unzipped my suitcase and showed him the body of his mistress which was folded 
 	}
 
 	t.Log("Starting to create video with sound...")
-	outputPath, err := pkg.AddAudioToVideo(path, audioPath, os.TempDir())
+	outputPath, err := pkg.AddAudioToVideo(path.Path, audioPath, os.TempDir())
 
 	if err != nil {
 		t.Fatalf("Failed to Create video with sound")

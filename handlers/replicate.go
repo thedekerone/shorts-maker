@@ -15,9 +15,9 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/minio/minio-go/v7"
-	"github.com/thedekerone/shorts-maker/elevenlabs"
 	"github.com/thedekerone/shorts-maker/engine"
 	"github.com/thedekerone/shorts-maker/models"
+	"github.com/thedekerone/shorts-maker/neets"
 	"github.com/thedekerone/shorts-maker/pkg"
 	"github.com/thedekerone/shorts-maker/services"
 	"github.com/thedekerone/shorts-maker/subtitles"
@@ -194,22 +194,29 @@ func handleGetImages(w http.ResponseWriter, r *http.Request) {
 }
 
 func generateAIShort(w http.ResponseWriter, r *http.Request) {
-	// Check if the request method is GET
-	if r.Method != http.MethodGet {
+	// Check if the request method is POST
+	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
-	// Get the text query parameter
-	text := r.URL.Query().Get("text")
+	// Parse the request body
+	var requestBody struct {
+		Script string `json:"script"`
+	}
 
-	script := r.URL.Query().Get("script")
-
-	// Validate the text parameter
-	if text == "" && script == "" {
-		http.Error(w, "text parameter is required", http.StatusBadRequest)
+	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
+
+	// Validate the script parameter
+	if requestBody.Script == "" {
+		http.Error(w, "script parameter is required", http.StatusBadRequest)
+		return
+	}
+
+	script := requestBody.Script
 
 	// Generate a unique job ID
 	jobID := uuid.New().String()
@@ -225,7 +232,7 @@ func generateAIShort(w http.ResponseWriter, r *http.Request) {
 	jobsMutex.Unlock()
 
 	// Start the video generation process in a goroutine
-	go processVideoGeneration(jobID, text, script)
+	go processVideoGeneration(jobID, script)
 
 	// Prepare the response
 	response := map[string]string{
@@ -243,7 +250,7 @@ func generateAIShort(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func processVideoGeneration(jobID string, text string, script string) {
+func processVideoGeneration(jobID string, script string) {
 	print("dasdasads")
 
 	minioClient, err := connectToMinio(jobID)
@@ -256,22 +263,17 @@ func processVideoGeneration(jobID string, text string, script string) {
 		return
 	}
 
-	predictions, err := generateScript(jobID, rs, text, script)
+	voice, err := generateVoice(jobID, rs, script)
 	if err != nil {
 		return
 	}
 
-	voice, err := generateVoice(jobID, rs, predictions)
+	transcript, err := generateTranscription(jobID, rs, voice, script)
 	if err != nil {
 		return
 	}
 
-	transcript, err := generateTranscription(jobID, rs, voice, predictions)
-	if err != nil {
-		return
-	}
-
-	images, err := generateImages(jobID, transcript, predictions)
+	images, err := generateImages(jobID, transcript, script)
 	if err != nil {
 		return
 	}
@@ -330,14 +332,20 @@ func generateScript(jobID string, rs *services.ReplicateService, text string, sc
 
 func generateVoice(jobID string, rs *services.ReplicateService, predictions string) (string, error) {
 	updateJobStatus(jobID, "generating_voice", "", "")
-	n := elevenlabs.CreateEleven()
+	n := neets.CreateNeets()
 
-	vr := n.NewVoiceRequest(predictions, "9BWtsMINqrJLrRacOk9x")
+	vr := n.NewVoiceRequest(predictions, "grimes")
 
-	audioPath, err := vr.Call("test.mp3")
+	audioPath, err := vr.CallByChunks(os.TempDir() + pkg.GenerateRandomString(6) + ".mp3")
+	println("generating audiooooooooooooo!!!")
 	if err != nil {
+		updateJobStatus(jobID, "failed", "", "Error getting audio: "+err.Error())
+		println("error generating audioooooooo!!!")
+		fmt.Println("%v", err)
 		return "", err
 	}
+
+	println("finished generating audioooooooo!!!")
 
 	return audioPath, nil
 }
@@ -367,7 +375,7 @@ func createVideo(jobID string, transcript *models.TranscriptionOutput, images []
 	updateJobStatus(jobID, "creating_subtitle_file", "", "")
 
 	updateJobStatus(jobID, "creating_video_from_images", "", "")
-	path, err := engine.CreateVideoFromImages(images, os.TempDir())
+	path, err := engine.CreateVideoFromImages(images, os.TempDir()+pkg.GenerateRandomString(6)+".mp4")
 	if err != nil {
 		updateJobStatus(jobID, "failed", "", "Error making video: "+err.Error())
 		return "", err
@@ -382,19 +390,19 @@ func createVideo(jobID string, transcript *models.TranscriptionOutput, images []
 
 	outputFileName := fmt.Sprintf("%s.mp4", generateUniqueName())
 	outputFilePath := filepath.Join(os.TempDir(), outputFileName)
-
-	animationSubs := subtitles.CreateSubtitles(transcript)
-	if err != nil {
-		updateJobStatus(jobID, "failed", "", "Error transforming transcript to subs: "+err.Error())
+	subStyles := subtitles.SubtitleStyles{
+		FontFamily:  "Roboto-Black",
+		FontSize:    72,
+		BorderColor: "red",
+		BorderWidth: 4,
+		Color:       "white",
 	}
-
-	print("animationsSubs=====================================================\n\n\n\n")
-	print(animationSubs)
+	animationSubs := subtitles.CreateSubtitlesWithStyles(transcript, &subStyles)
 
 	subtitleImages, err := subtitles.CreateSubtitleImages(animationSubs)
+
 	if err != nil {
-		fmt.Println(err)
-		updateJobStatus(jobID, "failed", "", "Error transforming transcript to subs: "+err.Error())
+		return "", err
 	}
 
 	engine.AddSubtitlesToVideo(ctx, outputPath, subtitleImages, outputFilePath)
@@ -435,6 +443,7 @@ func uploadToMinio(jobID string, minioClient *services.MinioService, outputFileP
 		return err
 	}
 
+	println(object.String())
 	// put only the part from just before the bucket name until the end
 	videoSignedURL := object.String()[strings.Index(object.String(), "/shorts-maker"):]
 
@@ -481,7 +490,7 @@ func getImagesWithTimestamps(transcript *models.TranscriptionOutput, script stri
 		if len(images) > 0 {
 			imagesWithTimestamps = append(imagesWithTimestamps, models.ImageWithTimestamp{
 				URL:       images[0],
-				Timestamp: timestamp,
+				Timestamp: totalDuration / float64(numImages),
 			})
 		}
 	}

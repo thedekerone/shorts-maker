@@ -4,6 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"io"
+	"net/http"
+	"os"
 	"strings"
 
 	"github.com/replicate/replicate-go"
@@ -71,7 +74,6 @@ func (rs *ReplicateService) GetCompletition(prompt string, systemPrompt string) 
 	return strings.Join(stringOutput, ""), nil
 
 }
-
 func (rs *ReplicateService) GetImages(prompt string, quantity int64) ([]string, error) {
 	ctx := context.TODO()
 	model := "black-forest-labs/flux-schnell"
@@ -95,7 +97,29 @@ func (rs *ReplicateService) GetImages(prompt string, quantity int64) ([]string, 
 
 	stringsOutput := outputToStrings(output)
 
-	return stringsOutput, nil
+	var imagePaths []string
+	for _, url := range stringsOutput {
+		resp, err := http.Get(url)
+		if err != nil {
+			return nil, err
+		}
+		defer resp.Body.Close()
+
+		tempFile, err := os.CreateTemp("", "image_*.jpg")
+		if err != nil {
+			return nil, err
+		}
+		defer tempFile.Close()
+
+		_, err = io.Copy(tempFile, resp.Body)
+		if err != nil {
+			return nil, err
+		}
+
+		imagePaths = append(imagePaths, tempFile.Name())
+	}
+
+	return imagePaths, nil
 }
 
 func (rs *ReplicateService) GetVoice(text string) (string, error) {
@@ -135,12 +159,9 @@ func (rs *ReplicateService) GetTranscription(audio string, initial string) (*mod
 	}
 
 	input := replicate.PredictionInput{
-		"audio_file":     audioFile,
-		"align_output":   true,
-		"batch_size":     64,
-		"offset_seconds": 0,
-		"max_line_width": 42,
-		"max_line_count": 2,
+		"audio_file":   audioFile,
+		"align_output": true,
+		"batch_size":   64,
 	}
 
 	output, err := rs.Client.Run(ctx, model, input, nil)
