@@ -128,11 +128,19 @@ func (rs *ReplicateService) GetTranscription(audio string, initial string) (*mod
 	ctx := context.TODO()
 	model := "victor-upmeet/whisperx:84d2ad2d6194fe98a17d2b60bef1c7f910c46b2f6fd38996ca457afd9c8abfcb"
 
+	audioFile, err := rs.Client.CreateFileFromPath(ctx, audio, nil)
+
+	if err != nil {
+		return nil, err
+	}
+
 	input := replicate.PredictionInput{
-		"audio_file":     audio,
+		"audio_file":     audioFile,
 		"align_output":   true,
-		"batch_size":     128,
+		"batch_size":     64,
 		"offset_seconds": 0,
+		"max_line_width": 42,
+		"max_line_count": 2,
 	}
 
 	output, err := rs.Client.Run(ctx, model, input, nil)

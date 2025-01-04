@@ -15,6 +15,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/minio/minio-go/v7"
+	"github.com/thedekerone/shorts-maker/elevenlabs"
 	"github.com/thedekerone/shorts-maker/engine"
 	"github.com/thedekerone/shorts-maker/models"
 	"github.com/thedekerone/shorts-maker/pkg"
@@ -329,12 +330,16 @@ func generateScript(jobID string, rs *services.ReplicateService, text string, sc
 
 func generateVoice(jobID string, rs *services.ReplicateService, predictions string) (string, error) {
 	updateJobStatus(jobID, "generating_voice", "", "")
-	voice, err := rs.GetVoice(predictions)
+	n := elevenlabs.CreateEleven()
+
+	vr := n.NewVoiceRequest(predictions, "9BWtsMINqrJLrRacOk9x")
+
+	audioPath, err := vr.Call("test.mp3")
 	if err != nil {
-		updateJobStatus(jobID, "failed", "", "Error getting voice: "+err.Error())
 		return "", err
 	}
-	return voice, nil
+
+	return audioPath, nil
 }
 
 func generateTranscription(jobID string, rs *services.ReplicateService, voice string, predictions string) (*models.TranscriptionOutput, error) {
@@ -361,17 +366,15 @@ func createVideo(jobID string, transcript *models.TranscriptionOutput, images []
 	ctx := context.Background()
 	updateJobStatus(jobID, "creating_subtitle_file", "", "")
 
-	lastSegment := transcript.Segments[len(transcript.Segments)-1]
-
 	updateJobStatus(jobID, "creating_video_from_images", "", "")
-	path, err := pkg.MakeVideoOfImages(images, float32(lastSegment.End), os.TempDir())
+	path, err := engine.CreateVideoFromImages(images, os.TempDir())
 	if err != nil {
 		updateJobStatus(jobID, "failed", "", "Error making video: "+err.Error())
 		return "", err
 	}
 
 	updateJobStatus(jobID, "adding_audio_to_video", "", "")
-	outputPath, err := pkg.AddAudioToVideo(path, voice, os.TempDir())
+	outputPath, err := pkg.AddAudioToVideo(path.Path, voice, os.TempDir())
 	if err != nil {
 		updateJobStatus(jobID, "failed", "", "Error adding audio to video: "+err.Error())
 		return "", err

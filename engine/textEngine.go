@@ -16,12 +16,12 @@ type SubtitleImage struct {
 }
 
 type TextStyle struct {
-	color       string
-	fontSize    int
-	font        string
-	background  string
-	borderColor string
-	borderSize  int
+	Color       string
+	FontSize    int
+	Font        string
+	Background  string
+	BorderColor string
+	BorderSize  int
 }
 
 type TextClip struct {
@@ -33,12 +33,12 @@ type TextClip struct {
 
 func createDefaultStyle() *TextStyle {
 	defaultStyle := TextStyle{
-		color:       "white",
-		fontSize:    72,
-		font:        "Arial-Black",
-		background:  "transparent",
-		borderColor: "black",
-		borderSize:  5,
+		Color:       "white",
+		FontSize:    72,
+		Font:        "Roboto-Black",
+		Background:  "transparent",
+		BorderColor: "black",
+		BorderSize:  4,
 	}
 
 	return &defaultStyle
@@ -70,12 +70,44 @@ func RenderText(text string, path string, filename string) error {
 
 	cmd := exec.Command("magick",
 		"-gravity", "center",
-		"-stroke", defaultStyle.borderColor,
-		"-strokewidth", fmt.Sprintf("%d", defaultStyle.borderSize),
-		"-background", defaultStyle.background,
-		"-fill", defaultStyle.color,
-		"-font", defaultStyle.font,
-		"-pointsize", fmt.Sprintf("%d", defaultStyle.fontSize),
+		"-stroke", defaultStyle.BorderColor,
+		"-strokewidth", fmt.Sprintf("%d", defaultStyle.BorderSize),
+		"-background", defaultStyle.Background,
+		"-fill", defaultStyle.Color,
+		"-font", defaultStyle.Font,
+		"-pointsize", fmt.Sprintf("%d", defaultStyle.FontSize),
+		"-size", "1080x1920",
+		label,
+		fullPath,
+	)
+
+	fmt.Printf("%s\n", cmd.String())
+
+	if err := cmd.Run(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func RenderTextWithStyles(text string, path string, filename string, styles *TextStyle) error {
+	label := fmt.Sprintf("caption:%s", text)
+	fullPath := fmt.Sprintf("./%s/%s", path, filename)
+
+	err := os.MkdirAll("./"+path, os.ModePerm)
+
+	if err != nil {
+		return errors.New("error when creating folder")
+	}
+
+	cmd := exec.Command("magick",
+		"-gravity", "center",
+		"-stroke", styles.BorderColor,
+		"-strokewidth", fmt.Sprintf("%d", styles.BorderSize),
+		"-background", styles.Background,
+		"-fill", styles.Color,
+		"-font", styles.Font,
+		"-pointsize", fmt.Sprintf("%d", styles.FontSize),
 		"-size", "1080x1920",
 		label,
 		fullPath,

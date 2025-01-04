@@ -89,27 +89,18 @@ func generateUniqueName() string {
 
 func AddAudioToVideo(videoPath, audioPath, outputFolder string) (string, error) {
 	// Generate unique names for temporary audio file and output video file
-	audioFileName := fmt.Sprintf("%s.mp3", generateUniqueName())
 	outputFileName := fmt.Sprintf("%s.mp4", generateUniqueName())
 
-	// Full paths for the files
-	audioFilePath := filepath.Join(outputFolder, audioFileName)
 	outputFilePath := filepath.Join(outputFolder, outputFileName)
-
-	// Download audio file
-	err := DownloadFile(audioPath, audioFilePath)
-	if err != nil {
-		return "", fmt.Errorf("failed to download audio file: %v", err)
-	}
 
 	// Defer cleanup of temporary audio file
 	defer func() {
-		if err := os.Remove(audioFilePath); err != nil {
+		if err := os.Remove(audioPath); err != nil {
 			fmt.Printf("Failed to remove temporary audio file: %v\n", err)
 		}
 	}()
 
-	video := gobra.NewVideoWithAudio(videoPath, audioFilePath, gobra.Config{
+	video := gobra.NewVideoWithAudio(videoPath, audioPath, gobra.Config{
 		Width:       1080,
 		Height:      1920,
 		Fps:         30,

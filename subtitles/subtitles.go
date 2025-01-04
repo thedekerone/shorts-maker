@@ -13,7 +13,7 @@ type SubtitleStyles struct {
 	FontFamily  string
 	BorderColor string
 	Color       string
-	BorderWidth string
+	BorderWidth int
 	FontSize    int
 }
 
@@ -26,10 +26,10 @@ type Subtitle struct {
 
 func getDefaultStyles() SubtitleStyles {
 	return SubtitleStyles{
-		FontFamily:  "arial",
+		FontFamily:  "Roboto-Black",
 		BorderColor: "white",
 		Color:       "white",
-		BorderWidth: "1px",
+		BorderWidth: 1,
 		FontSize:    120,
 	}
 }
@@ -61,13 +61,28 @@ func CreateSubtitles(transcript *models.TranscriptionOutput) []Subtitle {
 	return subtitles
 }
 
+func CreateSubtitlesWithStyles(transcript *models.TranscriptionOutput, styles *SubtitleStyles) []Subtitle {
+	var subtitles []Subtitle
+
+	for _, segment := range transcript.Segments {
+		subtitles = append(subtitles, Subtitle{
+			Text:      segment.Text,
+			EndTime:   float32(segment.End),
+			StartTime: float32(segment.Start),
+			Style:     styles,
+		})
+	}
+
+	return subtitles
+}
+
 func CreateSubtitleImage(subs *Subtitle, subtitlesPath string) (engine.SubtitleImage, error) {
 	var subImage engine.SubtitleImage
 
 	subtitlesId := uuid.New().ID()
 
 	imageName := fmt.Sprintf("%d.png", subtitlesId)
-	err := engine.RenderText(subs.Text, subtitlesPath, imageName)
+	err := engine.RenderTextWithStyles(subs.Text, subtitlesPath, imageName, getTextStyles(subs.Style))
 
 	if err != nil {
 		return subImage, errors.New("Failed to render text")
@@ -93,4 +108,16 @@ func CreateSubtitleImages(subtitles []Subtitle) ([]engine.SubtitleImage, error) 
 	}
 
 	return images, nil
+}
+
+func getTextStyles(s *SubtitleStyles) *engine.TextStyle {
+	engineStyles := engine.TextStyle{
+		Color:       s.Color,
+		FontSize:    s.FontSize,
+		Font:        s.FontFamily,
+		Background:  "transparent",
+		BorderColor: s.BorderColor,
+		BorderSize:  s.BorderWidth,
+	}
+	return &engineStyles
 }

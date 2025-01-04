@@ -7,8 +7,10 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
+	"github.com/thedekerone/shorts-maker/elevenlabs"
 	"github.com/thedekerone/shorts-maker/engine"
 	"github.com/thedekerone/shorts-maker/models"
 	"github.com/thedekerone/shorts-maker/pkg"
@@ -80,68 +82,58 @@ func TestVideoGeneration(t *testing.T) {
 		t.Fatalf("Failed trying to connect to replicate service")
 	}
 
-	script := `It’s hard being an old man all alone. So I hired a live-in nurse.
-It’s no fun being old.
+	script := `I Gave My Husband an Ultimatum Today
+When my husband got home from work, I was waiting for him in the bedroom.
 
-Cloudy eyes. Brittle bones. Muscles gone soft. It’s not easy to get used to.
+“Hey, Hun,” he said as he walked through the door, “What’s all this?” he nodded to where I sat on the end of the bed with a confused look on his face.
 
-But at least I had Jeanine.
+“Are we going on a trip?” he asked a moment later.
 
-She was my home health aide. About 25. A pretty little thing. Being so vulnerable around a stranger was uncomfortable, at first. But her friendly demeanor soon put my mind at ease. As I showed her to her room, she kept going on about how nice the house was.
+While my husband was at work, I’d prepared an ultimatum for him. He had two choices, each represented by a suitcase which was positioned to either side of me.
 
-“Wow, Mr. Stephens! This place is gorgeous.”
+“We might be,” I replied cryptically, “It all depends on which suitcase you pick. Yours,” I waved my left hand, indicating the suitcase monogrammed with his initials, “Or mine,” I waved with my right hand indicating the suitcase monogrammed with my initials.
 
-“With what I paid for it, it had better be,” I joked, as she held my arm.
+“Why do I have to pick?” he asked.
 
-“Sir,” she said, smiling as she looked around, “I think we’re going to be good friends.”
+“You have to pick because each one of these suitcases represents our marriage in a different way,” I explained, “If you pick your suitcase, it means you don’t love me any longer and don’t want to be married to me in which case you should take the bag and leave.”
 
-And she meant it. Jeanine helped me with everything — chores, cooking, keeping track of my bills, always with a smile. Eventually, I could hardly remember how I ever got by without her. Her three month contract soon became six, at my request. Then nine. And each time, she seemed more than happy to stay. Insistent on it, as a matter of fact.
+I paused to let my words sink in before continuing.
 
-By New Year’s Eve, she’d been with me for nearly a year.
+“But if you pick my suitcase, it means you do love me and will do anything to save our marriage.”
 
-We’d just finished watching the ball drop. I was about to go to bed when I noticed Jeanine looked…different, as she asked me a question.
+I waited for him to respond.
 
-“Jim, where’s the money?”
+“Are you serious?” he asked.
 
-“You want a raise?”, I chuckled.
+“I’m deadly serious,” I gave him a stern look, “Pick a suitcase,” I demanded.
 
-“Don’t bullshit me!” she hissed, her words dripping with frustration.
+“I choose your suitcase,” he pointed, “Now will you tell me what all of this was really about?”
 
-“I only took this job because I heard you were loaded. And I’m getting what I came for.”
+I walked up to him, gave him a kiss, and then returned to the end of the bed, “Of course I will, Honey.”
 
-As it dawned on me that she was serious, I noticed the gun she’d pulled from her jacket pocket.
+I unzipped my suitcase and showed him the body of his mistress which was folded up inside.
 
-“An old man in a big house, all alone. Cash. Jewelry.” She gestured towards the stairs with her gun. “Take me to them.”
-
-Begrudgingly, I led her to the safe hidden in my bedroom closet. She forced me to open it, but not before I spit in her eye. Liar. Without blinking, she put a bullet in my chest and began to rummage through my valuables.
-
-Just what I’d been waiting for.
-
-I don’t know what she realized first, that there was no money, or that she couldn’t move. She collapsed, paralyzed by my venom as the ragged hole in my ribs closed before her eyes. As I slid my proboscis down her throat, she gazed up at me in agony as her face began to sag and wrinkle. And for a split second, just before the transformation was complete, she didn’t see Jim Stephens’ face. She didn’t see her own.
-
-She saw mine.
-
-Taking the shape of the rich old man had been fun, for a while. But as I changed into Jeanine’s clothes, I was ready for something fresh. Soon, police would find “Jim Stevens” dead on his bedroom floor. No one would ask questions. And I’d have a new body, one dripping with opportunity.
-
-As I practiced sobbing with Jeanine’s voice before dialing 911, I smiled.
-
-What is it human kids say?
-
-“New Year, New Me.”`
+“Since you chose to stay with me,” I smiled, “I’m going to need your help disposing of this.”`
 
 	// Test audio generation
 
-	voice, err := rs.GetVoice(script)
+	n := elevenlabs.CreateEleven()
+
+	vr := n.NewVoiceRequest(strings.ReplaceAll(script, "\n", ""), "9BWtsMINqrJLrRacOk9x")
+
+	audioPath, err := vr.Call("test.mp3")
+	if err != nil {
+		t.Fatalf("%v", err)
+	}
 
 	if err != nil {
 		t.Fatalf("Failed to generate voice")
 	}
 
-	t.Logf("%s", voice)
+	t.Logf("%s", audioPath)
 
 	// Test audio transcription
-
-	transcription, err := rs.GetTranscription(voice, script)
+	transcription, err := rs.GetTranscription(audioPath, script)
 	if err != nil {
 		t.Fatalf("Failed to transcribe audio")
 	}
@@ -177,7 +169,7 @@ What is it human kids say?
 	}
 
 	t.Log("Starting to create video with sound...")
-	outputPath, err := pkg.AddAudioToVideo(path, voice, os.TempDir())
+	outputPath, err := pkg.AddAudioToVideo(path, audioPath, os.TempDir())
 
 	if err != nil {
 		t.Fatalf("Failed to Create video with sound")
@@ -186,7 +178,14 @@ What is it human kids say?
 	outputFileName := fmt.Sprintf("%s.mp4", pkg.GenerateRandomString(6))
 	outputFilePath := filepath.Join(os.TempDir(), outputFileName)
 
-	animationSubs := subtitles.CreateSubtitles(transcription)
+	subStyles := subtitles.SubtitleStyles{
+		FontFamily:  "Roboto-Black",
+		FontSize:    72,
+		BorderColor: "red",
+		BorderWidth: 4,
+		Color:       "white",
+	}
+	animationSubs := subtitles.CreateSubtitlesWithStyles(transcription, &subStyles)
 
 	subtitleImages, err := subtitles.CreateSubtitleImages(animationSubs)
 
