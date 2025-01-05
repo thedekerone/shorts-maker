@@ -250,6 +250,29 @@ func generateAIShort(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func uploadGeneratedFile(mio *services.MinioService, filePath string, fileName string, jobID string) error {
+	file, err := os.Open(filePath)
+
+	if err != nil {
+		print(err.Error())
+		return err
+	}
+	defer file.Close()
+
+	fileInfo, err := file.Stat()
+	if err != nil {
+		updateJobStatus(jobID, "failed", "", "Error getting file info: "+err.Error())
+		return err
+	}
+	fileSize := fileInfo.Size()
+	fileExt := filepath.Ext(fileInfo.Name())
+	generatedFileName := fmt.Sprintf("shorts/%s/%s%s", jobID, fileName, fileExt)
+
+	_, err = mio.Client.PutObject(context.Background(), "shorts-maker", generatedFileName, file, fileSize, minio.PutObjectOptions{ContentType: "video/mp4"})
+
+	return nil
+}
+
 func processVideoGeneration(jobID string, script string) {
 	print("dasdasads")
 
@@ -268,6 +291,12 @@ func processVideoGeneration(jobID string, script string) {
 		return
 	}
 
+	err = uploadGeneratedFile(minioClient, voice, "voice_script", jobID)
+	if err != nil {
+		println("Failed to upload voice to minio")
+		return
+	}
+
 	transcript, err := generateTranscription(jobID, rs, voice, script)
 	if err != nil {
 		return
@@ -276,6 +305,15 @@ func processVideoGeneration(jobID string, script string) {
 	images, err := generateImages(jobID, transcript, script)
 	if err != nil {
 		return
+	}
+
+	for i, v := range images {
+		uploadGeneratedFile(minioClient, v.URL, fmt.Sprintf("generate_image_%d", i), jobID)
+		if err != nil {
+			println("Failed to upload image to minio")
+			return
+		}
+
 	}
 
 	outputFilePath, err := createVideo(jobID, transcript, images, voice)
@@ -334,7 +372,7 @@ func generateVoice(jobID string, rs *services.ReplicateService, predictions stri
 	updateJobStatus(jobID, "generating_voice", "", "")
 	n := neets.CreateNeets()
 
-	vr := n.NewVoiceRequest(predictions, "grimes")
+	vr := n.NewVoiceRequest(predictions, "uk-male-1")
 
 	audioPath, err := vr.CallByChunks(os.TempDir() + pkg.GenerateRandomString(6) + ".mp3")
 	println("generating audiooooooooooooo!!!")
@@ -393,7 +431,7 @@ func createVideo(jobID string, transcript *models.TranscriptionOutput, images []
 	subStyles := subtitles.SubtitleStyles{
 		FontFamily:  "Roboto-Black",
 		FontSize:    72,
-		BorderColor: "red",
+		BorderColor: "black",
 		BorderWidth: 4,
 		Color:       "white",
 	}
@@ -427,7 +465,7 @@ func uploadToMinio(jobID string, minioClient *services.MinioService, outputFileP
 	}
 	fileSize := fileInfo.Size()
 	fileExt := filepath.Ext(fileInfo.Name())
-	generatedFileName := fmt.Sprintf("shorts/generated_short_%s%s", jobID, fileExt)
+	generatedFileName := fmt.Sprintf("shorts/%s/generated_short_%s", jobID, fileExt)
 
 	updateJobStatus(jobID, "uploading_to_minio", "", "")
 	_, err = minioClient.Client.PutObject(context.Background(), "shorts-maker", generatedFileName, file, fileSize, minio.PutObjectOptions{ContentType: "video/mp4"})
@@ -465,7 +503,7 @@ func getImagesWithTimestamps(transcript *models.TranscriptionOutput, script stri
 
 	for i := 0; i < int(numImages); i++ {
 		timestamp := float64(i) * interval
-		system := "I have the following story: \n" + script + "\n" + "Generate a prompt for an image for this specific part(prompt should describe what is in the image, camera settings, and style according to the overall story) with the context of the story and the specific parts after it: "
+		system := "I have the following story: \n" + script + "\n" + "Generate a prompt for an image for this specific part(prompt should describe what is in the image, camera settings, and style according to the overall story) with the context of the story and the specific parts after it: \n The resulted prompt should be short only explaining the resulted image. DON'T ADD ANY INTRODUCTION OR UNNECESSSARY EXPLANATION"
 
 		relevantText := getRelevantText(transcript, timestamp)
 
@@ -475,7 +513,7 @@ func getImagesWithTimestamps(transcript *models.TranscriptionOutput, script stri
 		}
 
 		promptForImage, err := rs.
-			GetCompletition(system+relevantText,
+			GetCompletitionForImages(system+relevantText,
 				"generate a prompt for flux image generation for this part of the story; the prompt should describe exactly what should be in the image, and also the camera settings and style")
 
 		if err != nil {

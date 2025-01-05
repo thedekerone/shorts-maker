@@ -5,7 +5,7 @@ go 1.23.3
 require (
 	github.com/google/uuid v1.6.0
 	github.com/minio/minio-go/v7 v7.0.76
-	github.com/replicate/replicate-go v0.23.0
+	github.com/replicate/replicate-go v0.26.0
 	github.com/stretchr/testify v1.9.0
 	github.com/thedekerone/gobra v1.0.11
 	gopkg.in/gographics/imagick.v2 v2.6.0
@@ -26,9 +26,10 @@ require (
 	github.com/rs/xid v1.6.0 // indirect
 	github.com/u2takey/ffmpeg-go v0.5.0 // indirect
 	github.com/u2takey/go-utils v0.3.1 // indirect
+	github.com/vincent-petithory/dataurl v1.0.0 // indirect
 	golang.org/x/crypto v0.26.0 // indirect
 	golang.org/x/net v0.28.0 // indirect
-	golang.org/x/sync v0.8.0 // indirect
+	golang.org/x/sync v0.10.0 // indirect
 	golang.org/x/sys v0.24.0 // indirect
 	golang.org/x/text v0.17.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect

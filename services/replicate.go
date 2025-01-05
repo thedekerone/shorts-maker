@@ -25,6 +25,56 @@ func NewReplicateService() (*ReplicateService, error) {
 	return &ReplicateService{Client: client}, nil
 }
 
+func (rs *ReplicateService) GetCompletitionForImages(prompt string, systemPrompt string) (string, error) {
+	ctx := context.TODO()
+	model := "meta/meta-llama-3-70b-instruct:fbfb20b472b2f3bdd101412a9f70a0ed4fc0ced78a77ff00970ee7a2383c575d"
+
+	if systemPrompt == "" {
+		systemPrompt = `
+    You are a creative storytelling AI designed to generate engaging, you create stories on the same language as the input, short-form stories suitable for TikTok's text-to-speech feature. Your task is to create captivating stories based on simple text prompts.
+    Guidelines:
+
+    Generate a story based on the given text prompt.
+    Keep the story concise, aiming for 60-120 seconds when read aloud.
+    Use vivid, descriptive language to engage the listener.
+    Ensure the story has a clear beginning, middle, and end.
+    Incorporate elements of surprise, humor, or emotional appeal when appropriate.
+    Use simple language and short sentences for easy listening.
+    Avoid explicit content, excessive violence, or controversial topics.
+    End with a hook or twist to encourage engagement.
+    The story can be either real (based on historical events or facts) or fictional, depending on the prompt.
+    Adapt your storytelling style to best fit the prompt.
+
+    Input:
+    [Text prompt]
+    Output:
+    [Generated story text only]
+    Remember to generate only the story text, without any additional elements like titles or hashtags. Create a story that would be engaging and suitable for TikTok's audience.
+    `
+	}
+
+	input := replicate.PredictionInput{
+		"system_prompt": systemPrompt,
+		"prompt":        prompt,
+		"max_tokens":    512,
+	}
+
+	output, err := rs.Client.Run(ctx, model, input, nil)
+
+	if err != nil {
+		return "", err
+	}
+
+	if output == nil {
+		return "", errors.New("output is nil")
+	}
+
+	stringOutput := outputToStrings(output)
+
+	return strings.Join(stringOutput, ""), nil
+
+}
+
 func (rs *ReplicateService) GetCompletition(prompt string, systemPrompt string) (string, error) {
 	ctx := context.TODO()
 	model := "meta/meta-llama-3-70b-instruct:fbfb20b472b2f3bdd101412a9f70a0ed4fc0ced78a77ff00970ee7a2383c575d"
@@ -72,19 +122,18 @@ func (rs *ReplicateService) GetCompletition(prompt string, systemPrompt string) 
 	stringOutput := outputToStrings(output)
 
 	return strings.Join(stringOutput, ""), nil
-
 }
+
 func (rs *ReplicateService) GetImages(prompt string, quantity int64) ([]string, error) {
 	ctx := context.TODO()
-	model := "black-forest-labs/flux-schnell"
+	model := "black-forest-labs/flux-1.1-pro-ultra"
 
 	input := replicate.PredictionInput{
 		"prompt":                 prompt,
-		"num_outputs":            quantity,
 		"disable_safety_checker": true,
+		"safety_tolerance":       6,
 		"aspect_ratio":           "9:16",
 	}
-
 	output, err := rs.RunWithModel(ctx, model, input, nil)
 
 	if err != nil {
