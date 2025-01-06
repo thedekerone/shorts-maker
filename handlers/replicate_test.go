@@ -82,41 +82,13 @@ func TestVideoGeneration(t *testing.T) {
 	script := `I Gave My Husband an Ultimatum Today
 When my husband got home from work, I was waiting for him in the bedroom.
 
-“Hey, Hun,” he said as he walked through the door, “What’s all this?” he nodded to where I sat on the end of the bed with a confused look on his face.
-
-“Are we going on a trip?” he asked a moment later.
-
-While my husband was at work, I’d prepared an ultimatum for him. He had two choices, each represented by a suitcase which was positioned to either side of me.
-
-“We might be,” I replied cryptically, “It all depends on which suitcase you pick. Yours,” I waved my left hand, indicating the suitcase monogrammed with his initials, “Or mine,” I waved with my right hand indicating the suitcase monogrammed with my initials.
-
-“Why do I have to pick?” he asked.
-
-“You have to pick because each one of these suitcases represents our marriage in a different way,” I explained, “If you pick your suitcase, it means you don’t love me any longer and don’t want to be married to me in which case you should take the bag and leave.”
-
-I paused to let my words sink in before continuing.
-
-“But if you pick my suitcase, it means you do love me and will do anything to save our marriage.”
-
-I waited for him to respond.
-
-“Are you serious?” he asked.
-
-“I’m deadly serious,” I gave him a stern look, “Pick a suitcase,” I demanded.
-
-“I choose your suitcase,” he pointed, “Now will you tell me what all of this was really about?”
-
-I walked up to him, gave him a kiss, and then returned to the end of the bed, “Of course I will, Honey.”
-
-I unzipped my suitcase and showed him the body of his mistress which was folded up inside.
-
 “Since you chose to stay with me,” I smiled, “I’m going to need your help disposing of this.”`
 
 	// Test audio generation
 
 	n := neets.CreateNeets()
 
-	vr := n.NewVoiceRequest(strings.ReplaceAll(script, "\n", ""), "us-male-1")
+	vr := n.NewVoiceRequest(strings.ReplaceAll(script, "\n", ""), "grimes")
 
 	audioPath, err := vr.Call("test.mp3")
 	if err != nil {
@@ -181,21 +153,27 @@ I unzipped my suitcase and showed him the body of his mistress which was folded 
 		BorderWidth: 4,
 		Color:       "white",
 	}
-	animationSubs := subtitles.CreateSubtitlesWithStyles(transcription, &subStyles)
+	animationSubs := subtitles.CreateShortSubsWithStyles(transcription, &subStyles)
 
-	subtitleImages, err := subtitles.CreateSubtitleImages(animationSubs)
+	t.Logf("======================================================")
+	baseAssPath := "../subtitles/assets/base.ass"
+	subtitlesPath, err := subtitles.CreateAssFile(animationSubs, baseAssPath)
+
+	t.Logf(subtitlesPath)
 
 	if err != nil {
+		t.Logf("%v", err)
+
 		t.Fatalf("Failed to Create video with subtitles")
 
 	}
 
 	ctx := context.Background()
-	str, err := engine.AddSubtitlesToVideo(ctx, outputPath, subtitleImages, outputFilePath)
+	str, err := engine.AddAssSubtitlesToVideo(ctx, outputPath, subtitlesPath, outputFilePath)
 
 	if err != nil {
+		t.Logf("%v", err)
 		t.Fatalf("Failed to Create video with subs")
-
 	}
 
 	t.Logf("successfully generated %s", str)

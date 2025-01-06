@@ -126,7 +126,7 @@ func (rs *ReplicateService) GetCompletition(prompt string, systemPrompt string) 
 
 func (rs *ReplicateService) GetImages(prompt string, quantity int64) ([]string, error) {
 	ctx := context.TODO()
-	model := "black-forest-labs/flux-1.1-pro-ultra"
+	model := "black-forest-labs/flux-schnell"
 
 	input := replicate.PredictionInput{
 		"prompt":                 prompt,
@@ -137,7 +137,7 @@ func (rs *ReplicateService) GetImages(prompt string, quantity int64) ([]string, 
 	output, err := rs.RunWithModel(ctx, model, input, nil)
 
 	if err != nil {
-		return nil, err
+		return rs.GetImages(prompt, quantity)
 	}
 
 	if output == nil {

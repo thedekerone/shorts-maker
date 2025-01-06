@@ -15,9 +15,9 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/minio/minio-go/v7"
+	"github.com/thedekerone/shorts-maker/elevenlabs"
 	"github.com/thedekerone/shorts-maker/engine"
 	"github.com/thedekerone/shorts-maker/models"
-	"github.com/thedekerone/shorts-maker/neets"
 	"github.com/thedekerone/shorts-maker/pkg"
 	"github.com/thedekerone/shorts-maker/services"
 	"github.com/thedekerone/shorts-maker/subtitles"
@@ -370,11 +370,11 @@ func generateScript(jobID string, rs *services.ReplicateService, text string, sc
 
 func generateVoice(jobID string, rs *services.ReplicateService, predictions string) (string, error) {
 	updateJobStatus(jobID, "generating_voice", "", "")
-	n := neets.CreateNeets()
+	n := elevenlabs.CreateEleven()
 
-	vr := n.NewVoiceRequest(predictions, "uk-male-1")
+	vr := n.NewVoiceRequest(predictions, "21m00Tcm4TlvDq8ikWAM")
 
-	audioPath, err := vr.CallByChunks(os.TempDir() + pkg.GenerateRandomString(6) + ".mp3")
+	audioPath, err := vr.Call(os.TempDir() + pkg.GenerateRandomString(6) + ".mp3")
 	println("generating audiooooooooooooo!!!")
 	if err != nil {
 		updateJobStatus(jobID, "failed", "", "Error getting audio: "+err.Error())
@@ -435,15 +435,35 @@ func createVideo(jobID string, transcript *models.TranscriptionOutput, images []
 		BorderWidth: 4,
 		Color:       "white",
 	}
-	animationSubs := subtitles.CreateSubtitlesWithStyles(transcript, &subStyles)
-
-	subtitleImages, err := subtitles.CreateSubtitleImages(animationSubs)
+	animationSubs := subtitles.CreateShortSubsWithStyles(transcript, &subStyles)
 
 	if err != nil {
 		return "", err
 	}
 
-	engine.AddSubtitlesToVideo(ctx, outputPath, subtitleImages, outputFilePath)
+	updateJobStatus(jobID, "generating ASS file", "", "")
+	fmt.Printf("%v", err)
+	baseAssPath, err := filepath.Abs("handlers/assets/base.ass")
+	if err != nil {
+		updateJobStatus(jobID, "failed", "", "Error getting absolute path for base.ass: "+err.Error())
+		return "", err
+	}
+	subtitlesPath, err := subtitles.CreateAssFile(animationSubs, baseAssPath)
+
+	fmt.Printf(subtitlesPath)
+
+	fmt.Printf("%v", err)
+	if err != nil {
+		return "", err
+	}
+	updateJobStatus(jobID, "Adding subtitles to video", "", "")
+
+	_, err = engine.AddAssSubtitlesToVideo(ctx, outputPath, subtitlesPath, outputFilePath)
+
+	if err != nil {
+		return "", err
+
+	}
 
 	return outputFilePath, nil
 }

@@ -1,8 +1,11 @@
 package subtitles
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
+	"os"
+	"path/filepath"
 
 	"github.com/google/uuid"
 	"github.com/thedekerone/shorts-maker/engine"
@@ -61,6 +64,28 @@ func CreateSubtitles(transcript *models.TranscriptionOutput) []Subtitle {
 	return subtitles
 }
 
+func CreateShortLengthSubtitles(transcript *models.TranscriptionOutput) []Subtitle {
+	var subtitles []Subtitle
+	defaultStyles := getDefaultStyles()
+
+	for _, segment := range transcript.Segments {
+
+		for _, w := range segment.Words {
+
+			subtitles = append(subtitles, Subtitle{
+				Text:      w.Word,
+				EndTime:   float32(w.End),
+				StartTime: float32(w.Start),
+				Style:     &defaultStyles,
+			})
+		}
+
+	}
+
+	return subtitles
+
+}
+
 func CreateSubtitlesWithStyles(transcript *models.TranscriptionOutput, styles *SubtitleStyles) []Subtitle {
 	var subtitles []Subtitle
 
@@ -71,6 +96,43 @@ func CreateSubtitlesWithStyles(transcript *models.TranscriptionOutput, styles *S
 			StartTime: float32(segment.Start),
 			Style:     styles,
 		})
+	}
+
+	return subtitles
+}
+
+func CreateShortSubsWithStyles(transcript *models.TranscriptionOutput, styles *SubtitleStyles) []Subtitle {
+	var subtitles []Subtitle
+	maxChars := 10
+
+	for _, segment := range transcript.Segments {
+		var combined []models.Word
+		lenSum := 0
+
+		fmt.Printf("%v", segment.Words)
+
+		for i, w := range segment.Words {
+			combined = append(combined, w)
+			lenSum = len(w.Word) + lenSum
+
+			if lenSum >= maxChars || i == len(segment.Words)-1 {
+				sentence := ""
+
+				for _, w := range combined {
+					sentence = sentence + " " + w.Word
+				}
+				subtitles = append(subtitles, Subtitle{
+					Text:      sentence,
+					EndTime:   float32(combined[len(combined)-1].End),
+					StartTime: float32(combined[0].Start),
+					Style:     styles,
+				})
+
+				combined = make([]models.Word, 0)
+				lenSum = 0
+			}
+		}
+
 	}
 
 	return subtitles
@@ -120,4 +182,75 @@ func getTextStyles(s *SubtitleStyles) *engine.TextStyle {
 		BorderSize:  s.BorderWidth,
 	}
 	return &engineStyles
+}
+
+// Dialogue: 0,0:00:01.00,0:00:03.00,Default,,0,0,0,,{\fscx50\fscy50\t(0,60,\fscx55\fscy55)\t(60,140,\fscx50\fscy50)}Hello, world!
+func CreateAssFile(subtitles []Subtitle, basePath string) (string, error) {
+	// Ensure the basePath is an absolute path
+	absBasePath, err := filepath.Abs(basePath)
+	if err != nil {
+		return "", fmt.Errorf("failed to get absolute path: %w", err)
+	}
+
+	text, err := getTextFromFile(absBasePath)
+
+	if err != nil {
+		return "", err
+	}
+
+	for _, v := range subtitles {
+		formattedString := fmt.Sprintf("Dialogue: 0,%s,%s,Default,,0,0,0,,{\\fscx40\\fscy40\\t(0,60,\\fscx45\\fscy45)\\t(60,140,\\fscx40\\fscy40)}%s\n", transformFloatToTimestamp(v.StartTime), transformFloatToTimestamp(v.EndTime), v.Text)
+
+		text = text + formattedString
+	}
+
+	println("subs---------------------")
+
+	tempFile, err := os.CreateTemp("", "*.ass")
+	if err != nil {
+		return "", err
+	}
+	defer tempFile.Close()
+
+	_, err = tempFile.WriteString(text)
+	if err != nil {
+		return "", err
+	}
+
+	return tempFile.Name(), nil
+}
+
+func transformFloatToTimestamp(time float32) string {
+	hours := int(time) / 3600
+	minutes := (int(time) % 3600) / 60
+	seconds := int(time) % 60
+	milliseconds := int((time - float32(int(time))) * 100)
+
+	return fmt.Sprintf("%d:%02d:%02d.%02d", hours, minutes, seconds, milliseconds)
+}
+
+func getTextFromFile(path string) (string, error) {
+	text := ""
+	f, err := os.Open(path)
+
+	if err != nil {
+		return "", err
+	}
+
+	r := bufio.NewReader(f)
+
+	for {
+		line, err := r.ReadString('\n')
+		if err != nil {
+			break
+		}
+
+		fmt.Print(line)
+		text = text + line + "\n"
+	}
+
+	defer f.Close()
+
+	return text, nil
+
 }
