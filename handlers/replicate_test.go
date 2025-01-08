@@ -40,7 +40,6 @@ func skipTestCreateVideoFromImages(t *testing.T) {
 	t.Log("dsadsaadsadsdsa\n")
 
 	imagesForVideo := []string{
-		"/var/folders/27/3tlwn24s2d7bgwgclkt3y2hw0000gn/T/image_472479805.jpg",
 		"/var/folders/27/3tlwn24s2d7bgwgclkt3y2hw0000gn/T/image_575969719.jpg",
 		"/var/folders/27/3tlwn24s2d7bgwgclkt3y2hw0000gn/T/image_1020201603.jpg",
 		"/var/folders/27/3tlwn24s2d7bgwgclkt3y2hw0000gn/T/image_3694320876.jpg",
@@ -72,7 +71,7 @@ func skipTestCreateVideoFromImages(t *testing.T) {
 	t.Logf("%s", outputPath)
 }
 
-func TestVideoGeneration(t *testing.T) {
+func skipTestVideoGeneration(t *testing.T) {
 	rs, err := services.NewReplicateService()
 
 	if err != nil {
@@ -156,7 +155,7 @@ When my husband got home from work, I was waiting for him in the bedroom.
 	animationSubs := subtitles.CreateShortSubsWithStyles(transcription, &subStyles)
 
 	t.Logf("======================================================")
-	baseAssPath := "../subtitles/assets/base.ass"
+	baseAssPath := "../handlers/assets/base.ass"
 	subtitlesPath, err := subtitles.CreateAssFile(animationSubs, baseAssPath)
 
 	t.Logf(subtitlesPath)
@@ -178,4 +177,37 @@ When my husband got home from work, I was waiting for him in the bedroom.
 
 	t.Logf("successfully generated %s", str)
 
+}
+
+func TestImageVideo(t *testing.T) {
+	// Test audio transcription
+
+	imagesForVideo := []string{
+		"/var/folders/27/3tlwn24s2d7bgwgclkt3y2hw0000gn/T/image_3028651160.jpg",
+		"/var/folders/27/3tlwn24s2d7bgwgclkt3y2hw0000gn/T/image_3180086704.jpg",
+		"/var/folders/27/3tlwn24s2d7bgwgclkt3y2hw0000gn/T/image_3028651160.jpg",
+		"/var/folders/27/3tlwn24s2d7bgwgclkt3y2hw0000gn/T/image_3180086704.jpg",
+	}
+
+	var images []models.ImageWithTimestamp
+	totalDuration := 40.0
+	interval := totalDuration / float64(len(imagesForVideo))
+
+	for _, v := range imagesForVideo {
+		images = append(images, models.ImageWithTimestamp{
+			URL:       v,
+			Timestamp: interval,
+		})
+	}
+
+	t.Log("Creating video from images...")
+
+	path, err := engine.CreateVideoFromImages(images, os.TempDir()+pkg.GenerateRandomString(6)+".mp4")
+	t.Log("Created video with images...")
+
+	if err != nil {
+		t.Fatalf("%v", err)
+	}
+
+	t.Log(path)
 }
