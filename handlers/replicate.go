@@ -15,9 +15,9 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/minio/minio-go/v7"
-	"github.com/thedekerone/shorts-maker/elevenlabs"
 	"github.com/thedekerone/shorts-maker/engine"
 	"github.com/thedekerone/shorts-maker/models"
+	"github.com/thedekerone/shorts-maker/neets"
 	"github.com/thedekerone/shorts-maker/pkg"
 	"github.com/thedekerone/shorts-maker/services"
 	"github.com/thedekerone/shorts-maker/subtitles"
@@ -70,6 +70,7 @@ func handleIndex(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("replicate responded"))
 }
+
 func handleCompletition(w http.ResponseWriter, r *http.Request) {
 	rs, err := services.NewReplicateService()
 
@@ -370,9 +371,9 @@ func generateScript(jobID string, rs *services.ReplicateService, text string, sc
 
 func generateVoice(jobID string, rs *services.ReplicateService, predictions string) (string, error) {
 	updateJobStatus(jobID, "generating_voice", "", "")
-	n := elevenlabs.CreateEleven()
+	n := neets.CreateNeets()
 
-	vr := n.NewVoiceRequest(predictions, "21m00Tcm4TlvDq8ikWAM")
+	vr := n.NewVoiceRequest(predictions, "grimes")
 
 	audioPath, err := vr.Call(os.TempDir() + pkg.GenerateRandomString(6) + ".mp3")
 	println("generating audiooooooooooooo!!!")
@@ -400,7 +401,7 @@ func generateTranscription(jobID string, rs *services.ReplicateService, voice st
 
 func generateImages(jobID string, transcript *models.TranscriptionOutput, predictions string) ([]models.ImageWithTimestamp, error) {
 	updateJobStatus(jobID, "generating_images", "", "")
-	images, err := getImagesWithTimestamps(transcript, predictions, 6)
+	images, err := getImagesWithTimestamps(transcript, predictions, 12)
 	if err != nil {
 		updateJobStatus(jobID, "failed", "", "Error getting images: "+err.Error())
 		return nil, err
@@ -413,7 +414,9 @@ func createVideo(jobID string, transcript *models.TranscriptionOutput, images []
 	updateJobStatus(jobID, "creating_subtitle_file", "", "")
 
 	updateJobStatus(jobID, "creating_video_from_images", "", "")
-	path, err := engine.CreateVideoFromImages(images, os.TempDir()+pkg.GenerateRandomString(6)+".mp4")
+	totalDuration := transcript.Segments[len(transcript.Segments)-1].End
+
+	path, err := engine.CreateVideoFromImages(images, os.TempDir()+pkg.GenerateRandomString(6)+".mp4", totalDuration)
 	if err != nil {
 		updateJobStatus(jobID, "failed", "", "Error making video: "+err.Error())
 		return "", err
@@ -521,9 +524,34 @@ func getImagesWithTimestamps(transcript *models.TranscriptionOutput, script stri
 
 	var imagesWithTimestamps []models.ImageWithTimestamp
 
-	for i := 0; i < int(numImages); i++ {
+	segments := make([]map[string]interface{}, len(transcript.Segments))
+	for i, segment := range transcript.Segments {
+		segments[i] = map[string]interface{}{
+			"text":  segment.Text,
+			"start": segment.Start,
+			"end":   segment.End,
+		}
+	}
+
+	imageGenerationPrompts := fmt.Sprintf(`You are a image prompt generator, the images generated should be interesting and with the tone of the story they should evolve taking in consideration the story, describe the images prompts well and don't forget to mention the styles of the image in the prompt, the user will provide a story divided in segments with timestamps and you have to return a JSON with the following format, JUST WRITE THE JSON, AVOID WRITING EXTRA TEXT. Describe the image style and camera settings, keep the styles consistant between images, numImages should depend on the length of the story. the sum of all the images duration should be %.2f:
+		{
+			numImages: number,
+			images: [
+				{ prompt: "string", segment: "part of the story where the image shows", duration : 12.0 }
+			]
+		}
+
+		`, totalDuration)
+
+	println("1222222222222222222222222222222222222")
+	println(imageGenerationPrompts)
+
+	promptForImage, err := rs.
+		GetCompletitionForImages(imageGenerationPrompts+fmt.Sprintf("%s \n %v", script, segments), "")
+
+	println("%v", promptForImage)
+	for i := 0; i < int(promptForImage.NumImages); i++ {
 		timestamp := float64(i) * interval
-		system := "I have the following story: \n" + script + "\n" + "Generate a prompt for an image for this specific part(prompt should describe what is in the image, camera settings, and style according to the overall story) with the context of the story and the specific parts after it: \n The resulted prompt should be short only explaining the resulted image. DON'T ADD ANY INTRODUCTION OR UNNECESSSARY EXPLANATION"
 
 		relevantText := getRelevantText(transcript, timestamp)
 
@@ -532,15 +560,7 @@ func getImagesWithTimestamps(transcript *models.TranscriptionOutput, script stri
 			relevantText = transcript.Segments[0].Text
 		}
 
-		promptForImage, err := rs.
-			GetCompletitionForImages(system+relevantText,
-				"generate a prompt for flux image generation for this part of the story; the prompt should describe exactly what should be in the image, and also the camera settings and style")
-
-		if err != nil {
-			promptForImage = system + relevantText
-		}
-
-		images, err := rs.GetImages(promptForImage, 1)
+		images, err := rs.GetImages(promptForImage.ImagesPrompt[i].Prompt, 1)
 		if err != nil {
 			return nil, fmt.Errorf("error getting image %d: %w", i+1, err)
 		}
@@ -548,12 +568,36 @@ func getImagesWithTimestamps(transcript *models.TranscriptionOutput, script stri
 		if len(images) > 0 {
 			imagesWithTimestamps = append(imagesWithTimestamps, models.ImageWithTimestamp{
 				URL:       images[0],
-				Timestamp: totalDuration / float64(numImages),
+				Timestamp: promptForImage.ImagesPrompt[i].Duration,
 			})
 		}
 	}
 
+	fmt.Println("00000000000000000000000000000000000000000000000")
+	fmt.Println("%v", imagesWithTimestamps)
+
 	return imagesWithTimestamps, nil
+}
+
+func findTimestampForImage(script string, transcript *models.TranscriptionOutput, segmentToFind string) float64 {
+	result := strings.Split(script, segmentToFind)
+	wordCount := len(strings.Fields(result[0]))
+
+	var allWords []models.Word
+	for _, v := range transcript.Segments {
+		allWords = append(allWords, v.Words...)
+	}
+	println("=========================================")
+	println("=========================================")
+	println("=========================================")
+	fmt.Println("%v", result)
+	fmt.Println("%v", allWords)
+
+	if len(allWords)-1 <= wordCount {
+		wordCount = len(allWords) - 1
+	}
+
+	return allWords[wordCount].Start
 }
 
 func getRelevantText(transcript *models.TranscriptionOutput, timestamp float64) string {

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/thedekerone/shorts-maker/engine"
@@ -103,8 +104,9 @@ func CreateSubtitlesWithStyles(transcript *models.TranscriptionOutput, styles *S
 
 func CreateShortSubsWithStyles(transcript *models.TranscriptionOutput, styles *SubtitleStyles) []Subtitle {
 	var subtitles []Subtitle
-	maxChars := 10
+	maxChars := 6
 
+	var prevEnd float32
 	for _, segment := range transcript.Segments {
 		var combined []models.Word
 		lenSum := 0
@@ -119,14 +121,23 @@ func CreateShortSubsWithStyles(transcript *models.TranscriptionOutput, styles *S
 				sentence := ""
 
 				for _, w := range combined {
-					sentence = sentence + " " + w.Word
+					sentence = sentence + " " + strings.ToUpper(w.Word)
 				}
+
+				start := float32(combined[0].Start)
+
+				if float32(combined[0].Start) == 0 && i != 0 {
+					start = prevEnd + 0.1
+				}
+
 				subtitles = append(subtitles, Subtitle{
 					Text:      sentence,
 					EndTime:   float32(combined[len(combined)-1].End),
-					StartTime: float32(combined[0].Start),
+					StartTime: start,
 					Style:     styles,
 				})
+
+				prevEnd = float32(combined[len(combined)-1].End)
 
 				combined = make([]models.Word, 0)
 				lenSum = 0
