@@ -524,13 +524,27 @@ func getImagesWithTimestamps(transcript *models.TranscriptionOutput, script stri
 
 	var imagesWithTimestamps []models.ImageWithTimestamp
 
-	imageGenerationPrompts := fmt.Sprintf(`You are a image prompt generator, the images generated should be interesting and with the tone of the story they should evolve taking in consideration the story, describe the images prompts well and don't forget to mention the styles of the image in the prompt, the user will provide a story divided in segments with timestamps and you have to return a JSON with the following format, JUST WRITE THE JSON, AVOID WRITING EXTRA TEXT. Describe the image style and camera settings, keep the styles consistant between images, numImages should depend on the length of the story. the sum of all the images duration should be %.2f:
+	imageGenerationPrompts := fmt.Sprintf(`You are an expert image prompt generator specialized in creating visually compelling and stylistically consistent prompts for image generation. The generated images should align with the tone and narrative of the story provided. Ensure that the styles, lighting, and camera settings remain consistent across all images to maintain coherence throughout the story.
+
+		The user will provide a story divided into segments with timestamps, and your task is to return a JSON object with the following structure. The images should evolve in alignment with the narrative progression, and the total duration of all images should sum to %.2f. Keep your responses strictly formatted in JSON, with no additional commentary. 
+
+		JSON format:
 		{
-			numImages: number,
-			images: [
-				{ prompt: "string", segment: "part of the story where the image shows", duration: 12.0 }
+			"numImages": number,
+			"images": [
+				{ 
+					"prompt": "string - a detailed and vivid description of the scene, including style, tone, lighting, and camera settings", 
+					"segment": "string - the corresponding part of the story the image represents", 
+					"duration": number - duration of the image in seconds 
+				}
 			]
 		}
+
+		Important considerations:
+		1. Use consistent visual styles (e.g., cinematic, watercolor, hyper-realistic, etc.).
+		2. Describe the atmosphere, lighting, and camera techniques (e.g., wide shot, close-up, soft lighting).
+		3. Adapt the prompts to the emotional and narrative shifts in the story.
+		4. The number of images should correspond to the story's length and complexity.
 
 		`, totalDuration)
 
@@ -544,7 +558,7 @@ func getImagesWithTimestamps(transcript *models.TranscriptionOutput, script stri
 	}
 
 	promptForImage, err := rs.
-		GetCompletitionForImages(imageGenerationPrompts+fmt.Sprintf("%s \n %v", script, segmentStrings), "")
+		GetCompletitionForImages(imageGenerationPrompts+fmt.Sprintf("\n %v", segmentStrings), "")
 
 	println("%v", promptForImage)
 	for i := 0; i < int(promptForImage.NumImages); i++ {
