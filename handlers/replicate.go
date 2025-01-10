@@ -524,20 +524,11 @@ func getImagesWithTimestamps(transcript *models.TranscriptionOutput, script stri
 
 	var imagesWithTimestamps []models.ImageWithTimestamp
 
-	segments := make([]map[string]interface{}, len(transcript.Segments))
-	for i, segment := range transcript.Segments {
-		segments[i] = map[string]interface{}{
-			"text":  segment.Text,
-			"start": segment.Start,
-			"end":   segment.End,
-		}
-	}
-
 	imageGenerationPrompts := fmt.Sprintf(`You are a image prompt generator, the images generated should be interesting and with the tone of the story they should evolve taking in consideration the story, describe the images prompts well and don't forget to mention the styles of the image in the prompt, the user will provide a story divided in segments with timestamps and you have to return a JSON with the following format, JUST WRITE THE JSON, AVOID WRITING EXTRA TEXT. Describe the image style and camera settings, keep the styles consistant between images, numImages should depend on the length of the story. the sum of all the images duration should be %.2f:
 		{
 			numImages: number,
 			images: [
-				{ prompt: "string", segment: "part of the story where the image shows", duration : 12.0 }
+				{ prompt: "string", segment: "part of the story where the image shows", duration: 12.0 }
 			]
 		}
 
@@ -546,8 +537,14 @@ func getImagesWithTimestamps(transcript *models.TranscriptionOutput, script stri
 	println("1222222222222222222222222222222222222")
 	println(imageGenerationPrompts)
 
+	var segmentStrings string
+
+	for _, v := range transcript.Segments {
+		segmentStrings = segmentStrings + fmt.Sprintf(" segment: %s ----- start: %.3f ----- end: %.3f \n", v.Text, v.Start, v.End)
+	}
+
 	promptForImage, err := rs.
-		GetCompletitionForImages(imageGenerationPrompts+fmt.Sprintf("%s \n %v", script, segments), "")
+		GetCompletitionForImages(imageGenerationPrompts+fmt.Sprintf("%s \n %v", script, segmentStrings), "")
 
 	println("%v", promptForImage)
 	for i := 0; i < int(promptForImage.NumImages); i++ {
