@@ -373,7 +373,7 @@ func generateVoice(jobID string, rs *services.ReplicateService, predictions stri
 	updateJobStatus(jobID, "generating_voice", "", "")
 	n := neets.CreateNeets()
 
-	vr := n.NewVoiceRequest(predictions, "grimes")
+	vr := n.NewVoiceRequest(predictions, "us-male-11")
 
 	audioPath, err := vr.Call(os.TempDir() + pkg.GenerateRandomString(6) + ".mp3")
 	println("generating audiooooooooooooo!!!")

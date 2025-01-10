@@ -219,6 +219,7 @@ func (rs *ReplicateService) GetTranscription(audio string, initial string) (*mod
 		"audio_file":   audioFile,
 		"align_output": true,
 		"batch_size":   64,
+		"initial_prompt": initial,
 	}
 
 	output, err := rs.Client.Run(ctx, model, input, nil)
