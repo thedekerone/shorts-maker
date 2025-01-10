@@ -524,29 +524,29 @@ func getImagesWithTimestamps(transcript *models.TranscriptionOutput, script stri
 
 	var imagesWithTimestamps []models.ImageWithTimestamp
 
-	imageGenerationPrompts := fmt.Sprintf(`You are an expert image prompt generator specialized in creating visually compelling and stylistically consistent prompts for image generation. The generated images should align with the tone and narrative of the story provided. Ensure that the styles, lighting, and camera settings remain consistent across all images to maintain coherence throughout the story.
+	imageGenerationPrompts := fmt.Sprintf(`You are an image prompt generator tasked with creating consistent, high-quality prompts for generating images that match the tone and narrative of a provided story. The images must adhere to a single, unified visual style (e.g., cinematic, realistic, or painterly) throughout the story, avoiding any mix of styles. 
 
-		The user will provide a story divided into segments with timestamps, and your task is to return a JSON object with the following structure. The images should evolve in alignment with the narrative progression, and the total duration of all images should sum to %.2f. Keep your responses strictly formatted in JSON, with no additional commentary. 
+The user will provide a story divided into segments with timestamps. Your task is to return a JSON object structured as follows, with images distributed evenly across the story. The total duration of all images must sum to %.2f. Respond strictly in JSON format with no extra text.
 
-		JSON format:
-		{
-			"numImages": number,
-			"images": [
-				{ 
-					"prompt": "string - a detailed and vivid description of the scene, including style, tone, lighting, and camera settings", 
-					"segment": "string - the corresponding part of the story the image represents", 
-					"duration": number - duration of the image in seconds 
-				}
-			]
-		}
+JSON format:
+{
+    "numImages": number,
+    "images": [
+        { 
+            "prompt": "string - a concise, vivid description of the scene, including the unified style, lighting, and camera settings", 
+            "segment": "string - the part of the story the image represents", 
+            "duration": number - duration of the image in seconds 
+        }
+    ]
+}
 
-		Important considerations:
-		1. Use consistent visual styles (e.g., cinematic, watercolor, hyper-realistic, etc.).
-		2. Describe the atmosphere, lighting, and camera techniques (e.g., wide shot, close-up, soft lighting).
-		3. Adapt the prompts to the emotional and narrative shifts in the story.
-		4. The number of images should correspond to the story's length and complexity.
+Key rules:
+1. Use a single, consistent visual style throughout (e.g., realistic, cinematic, watercolor, etc.).
+2. Describe lighting and camera settings succinctly (e.g., soft lighting, wide shot).
+3. Distribute images evenly across the story to represent its flow effectively.
+4. Ensure prompts are vivid and match the story's tone and key moments.
 
-		`, totalDuration)
+`, totalDuration)
 
 	println("1222222222222222222222222222222222222")
 	println(imageGenerationPrompts)
