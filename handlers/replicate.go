@@ -15,9 +15,9 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/minio/minio-go/v7"
+	"github.com/thedekerone/shorts-maker/elevenlabs"
 	"github.com/thedekerone/shorts-maker/engine"
 	"github.com/thedekerone/shorts-maker/models"
-	"github.com/thedekerone/shorts-maker/neets"
 	"github.com/thedekerone/shorts-maker/pkg"
 	"github.com/thedekerone/shorts-maker/services"
 	"github.com/thedekerone/shorts-maker/subtitles"
@@ -371,9 +371,9 @@ func generateScript(jobID string, rs *services.ReplicateService, text string, sc
 
 func generateVoice(jobID string, rs *services.ReplicateService, predictions string) (string, error) {
 	updateJobStatus(jobID, "generating_voice", "", "")
-	n := neets.CreateNeets()
+	n := elevenlabs.CreateEleven()
 
-	vr := n.NewVoiceRequest(predictions, "us-male-11")
+	vr := n.NewVoiceRequest(predictions, "pqHfZKP75CvOlQylNhV4")
 
 	audioPath, err := vr.Call(os.TempDir() + pkg.GenerateRandomString(6) + ".mp3")
 	println("generating audiooooooooooooo!!!")
