@@ -36,7 +36,7 @@ func CreateVideoFromImages(images []models.ImageWithTimestamp, output string, to
 		accumulatedDuration = accumulatedDuration + v.Timestamp
 
 		filter := fmt.Sprintf("[%d:v]scale=4000:-1,setsar=1,", i)
-		zoomFilter := fmt.Sprintf("zoompan=z='if(lte(ot,%.2f),1.4, max(zoom-0.003,1.15))':d=%.2f:x='iw/2-(iw/zoom/2)+sin(ot*%.2f/3)*100':y='ih/2-(ih/zoom/2)-cos(ot*%.2f/2)*30':s=1080x1920", v.Timestamp-rand.Float64()*6+1, v.Timestamp*float64(fps-5), rand.Float64()*2+1, rand.Float64()*2+1)
+		zoomFilter := fmt.Sprintf("zoompan=z='if(lte(ot,%.2f),1.4, max(zoom-0.003,1.15))':d=%.2f:x='iw/2-(iw/zoom/2)+sin(ot*%.2f/3)*100':y='ih/2-(ih/zoom/2)-cos(ot*%.2f/2)*30':s=1080x1920", v.Timestamp-rand.Float64()*(v.Timestamp), v.Timestamp*float64(fps-5), rand.Float64()*2+1, rand.Float64()*2+1)
 
 		if i == 0 {
 			filter += fmt.Sprintf("%s,fade=t=out:st=%.1f:d=%.1f[v%d];", zoomFilter, v.Timestamp-fadeDuration, fadeDuration, i)
