@@ -62,6 +62,19 @@ func (n *Eleven) NewVoiceRequest(text string, voiceId string) *VoiceRequest {
 	return &request
 }
 
+func (n *Eleven) NewVoiceRequestRandomVoice(text string) *VoiceRequest {
+	p := RequestParams{
+		Model: "eleven_multilingual_v2",
+	}
+	request := VoiceRequest{
+		Text:   text,
+		Params: p,
+		URL:    "https://api.elevenlabs.io/v1/text-to-speech",
+		ApiKey: n.apiKey,
+	}
+	return &request
+}
+
 func (vr *VoiceRequest) Call(path string) (string, error) {
 	// Prepare the request body according to API specifications
 	requestBody := TextToSpeechRequest{
@@ -129,4 +142,3 @@ func (vr *VoiceRequest) Call(path string) (string, error) {
 
 	return path, nil
 }
-

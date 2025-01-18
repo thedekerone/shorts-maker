@@ -373,7 +373,7 @@ func generateVoice(jobID string, rs *services.ReplicateService, predictions stri
 	updateJobStatus(jobID, "generating_voice", "", "")
 	n := elevenlabs.CreateEleven()
 
-	vr := n.NewVoiceRequest(predictions, "pqHfZKP75CvOlQylNhV4")
+	vr := n.NewVoiceRequestRandomVoice(predictions)
 
 	audioPath, err := vr.Call(os.TempDir() + pkg.GenerateRandomString(6) + ".mp3")
 	println("generating audiooooooooooooo!!!")
