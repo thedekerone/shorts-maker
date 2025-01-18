@@ -1,8 +1,11 @@
 package services
 
 import (
+	"context"
 	"log"
+	"net/url"
 	"os"
+	"time"
 
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
@@ -10,6 +13,17 @@ import (
 
 type MinioService struct {
 	Client *minio.Client
+}
+
+// GetPresignedURL generates a presigned URL for the given bucket and object name.
+func (s *MinioService) GetPresignedURL(bucketName, objectPath string, expiry time.Duration) (string, error) {
+	ctx := context.Background()
+	reqParams := make(url.Values)
+	presignedURL, err := s.Client.PresignedGetObject(ctx, bucketName, objectPath, expiry, reqParams)
+	if err != nil {
+		return "", err
+	}
+	return presignedURL.String(), nil
 }
 
 func NewMinioService(client *minio.Client) *MinioService {

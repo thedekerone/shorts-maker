@@ -35,6 +35,7 @@ func main() {
 
 	mux.HandleFunc("/ping", handlers.HealthCheckHandler)
 	handlers.HandleReplicateRequest(mux, minioClient)
+	handlers.HandleVideoRequest(mux, minioClient)
 
 	log.Fatal(http.ListenAndServe(":8080", mux))
 }

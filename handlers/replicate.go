@@ -524,16 +524,16 @@ func getImagesWithTimestamps(transcript *models.TranscriptionOutput, script stri
 
 	var imagesWithTimestamps []models.ImageWithTimestamp
 
-	imageGenerationPrompts := fmt.Sprintf(`You are an image prompt generator tasked with creating consistent, high-quality prompts for generating images that match the tone and narrative of a provided story. The images must adhere to a single, unified visual style (e.g., cinematic, realistic, or painterly) throughout the story, avoiding any mix of styles. 
+	imageGenerationPrompts := fmt.Sprintf(`You are an image prompt generator tasked with creating high-quality prompts for generating ultra-realistic, high-definition images that align with the tone and narrative of a provided story. All images must adhere to a single, unified visual style, focusing on hyper-realism with detailed textures, lifelike lighting, and a cinematic feel. 
 
-The user will provide a story divided into segments with timestamps. Your task is to return a JSON object structured as follows, with images distributed evenly across the story. The total duration of all images must sum to %.2f. Respond strictly in JSON format with no extra text.
+The user will provide a story divided into segments with timestamps. Your task is to return a JSON object formatted as follows, with images distributed evenly throughout the story. The total duration of all images must sum to %.2f. Respond strictly in JSON format with no additional text.
 
 JSON format:
 {
     "numImages": number,
     "images": [
         { 
-            "prompt": "string - a concise, vivid description of the scene, including the unified style, lighting, and camera settings", 
+            "prompt": "string - a vivid, detailed description of the scene, emphasizing ultra-realism, lighting, and camera settings", 
             "segment": "string - the part of the story the image represents", 
             "duration": number - duration of the image in seconds 
         }
@@ -541,10 +541,10 @@ JSON format:
 }
 
 Key rules:
-1. Use a single, consistent visual style throughout (e.g., realistic, cinematic, watercolor, etc.).
-2. Describe lighting and camera settings succinctly (e.g., soft lighting, wide shot).
-3. Distribute images evenly across the story to represent its flow effectively.
-4. Ensure prompts are vivid and match the story's tone and key moments.
+1. Use a single, consistent ultra-realistic style with detailed textures and lifelike lighting.
+2. Include specific lighting and camera settings (e.g., soft ambient light, shallow depth of field, wide-angle shot).
+3. Distribute images evenly across the story to represent key moments and maintain narrative flow.
+4. Ensure each prompt vividly describes the scene while maintaining coherence with the story’s tone.
 
 `, totalDuration)
 
