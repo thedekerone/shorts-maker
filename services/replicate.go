@@ -45,7 +45,7 @@ func (rs *ReplicateService) GetCompletitionForImages(prompt string, systemPrompt
 		{
 			numImages: number,
 			images: [
-				{ prompt: "string", segment: "part of the story where the image shows" }
+		{ prompt: "string", duration: number }
 			]
 		}`
 	}
@@ -53,7 +53,7 @@ func (rs *ReplicateService) GetCompletitionForImages(prompt string, systemPrompt
 	input := replicate.PredictionInput{
 		"system_prompt": systemPrompt,
 		"prompt":        prompt,
-		"max_tokens":    2048,
+		"max_tokens":    4096,
 	}
 
 	output, err := rs.Client.Run(ctx, model, input, nil)
@@ -216,9 +216,9 @@ func (rs *ReplicateService) GetTranscription(audio string, initial string) (*mod
 	}
 
 	input := replicate.PredictionInput{
-		"audio_file":   audioFile,
-		"align_output": true,
-		"batch_size":   64,
+		"audio_file":     audioFile,
+		"align_output":   true,
+		"batch_size":     64,
 		"initial_prompt": initial,
 	}
 
