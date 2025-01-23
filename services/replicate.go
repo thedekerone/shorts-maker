@@ -45,7 +45,7 @@ func (rs *ReplicateService) GetCompletitionForImages(prompt string, systemPrompt
 		{
 			numImages: number,
 			images: [
-		{ prompt: "string", duration: number }
+				{ prompt: "string", duration: number, segmentIndex: number }
 			]
 		}`
 	}

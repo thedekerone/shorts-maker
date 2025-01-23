@@ -528,14 +528,16 @@ func getImagesWithTimestamps(transcript *models.TranscriptionOutput, script stri
 
 The user will provide a story divided into segments with timestamps. Your task is to return a JSON object formatted as follows, with images distributed evenly throughout the story. The total duration of all images must sum to %.2f. Respond strictly in JSON format with no additional text.
 
+The images should appear sorted from the first that should appear to the last.
+
 JSON format:
 {
     "numImages": number,
     "images": [
         { 
-            "prompt": "string - a vivid, detailed description of the scene, emphasizing ultra-realism, lighting, and camera settings", 
-            "segment": "string - the part of the story the image represents", 
-            "duration": number - duration of the image in seconds 
+		"prompt": "string - a vivid, detailed description of the scene, emphasizing ultra-realism, lighting, and camera settings", 
+		"segmentIndex": number,
+		"duration": number - duration of the image in seconds 
         }
     ]
 }
@@ -554,7 +556,7 @@ Key rules:
 	var segmentStrings string
 
 	for _, v := range transcript.Segments {
-		segmentStrings = segmentStrings + fmt.Sprintf(" segment: %s ----- start: %.3f ----- end: %.3f \n", v.Text, v.Start, v.End)
+		segmentStrings = segmentStrings + fmt.Sprintf(" segment: %s, start: %.3f, end: %.3f \n", v.Text, v.Start, v.End)
 	}
 
 	promptForImage, err := rs.

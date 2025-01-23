@@ -2,6 +2,7 @@ package elevenlabs
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -26,6 +27,17 @@ type VoiceRequest struct {
 
 type RequestParams struct {
 	Model string
+}
+
+type CallWithTimestampResponse struct {
+	AudioBase64 string    `json:"audio_base64"`
+	Alignment   Alignment `json:"alignment"`
+}
+
+type Alignment struct {
+	Characters                 []string  `json:"characters"`
+	CharacterStartTimesSeconds []float32 `json:"character_start_times_seconds"`
+	CharacterEndTimesSeconds   []float32 `json:"character_end_times_seconds"`
 }
 
 // Request body structure according to ElevenLabs API
@@ -93,7 +105,7 @@ func (vr *VoiceRequest) Call(path string) (string, error) {
 	}
 
 	// Create request with correct URL format
-	url := fmt.Sprintf("%s/%s", vr.URL, vr.VoiceId)
+	url := fmt.Sprintf("%s/%s/with-timestamps", vr.URL, vr.VoiceId)
 	r, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return "", fmt.Errorf("error creating request: %v", err)
@@ -138,6 +150,79 @@ func (vr *VoiceRequest) Call(path string) (string, error) {
 
 	// Write the audio file
 	if err := os.WriteFile(path, body, 0644); err != nil {
+		return "", fmt.Errorf("error writing file: %v", err)
+	}
+
+	return path, nil
+}
+
+func (vr *VoiceRequest) CallWithTimestamp(path string) (string, error) {
+	// Prepare the request body according to API specifications
+	requestBody := TextToSpeechRequest{
+		Text:  vr.Text,
+		Model: vr.Params.Model,
+		Voice: VoiceSettings{
+			Stability:       0.5,  // Default value, adjust as needed
+			SimilarityBoost: 0.75, // Default value, adjust as needed
+		},
+	}
+
+	jsonData, err := json.Marshal(requestBody)
+	if err != nil {
+		return "", fmt.Errorf("error marshaling request: %v", err)
+	}
+
+	// Create request with correct URL format
+	url := fmt.Sprintf("%s/%s/with-timestamps", vr.URL, vr.VoiceId)
+	r, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+	if err != nil {
+		return "", fmt.Errorf("error creating request: %v", err)
+	}
+
+	// Set headers
+	r.Header.Set("Content-Type", "application/json")
+	r.Header.Set("xi-api-key", vr.ApiKey)
+
+	// Make the request
+	client := &http.Client{}
+	res, err := client.Do(r)
+	if err != nil {
+		return "", fmt.Errorf("error making request: %v", err)
+	}
+	defer res.Body.Close()
+
+	// Read response body
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		return "", fmt.Errorf("error reading response: %v", err)
+	}
+
+	// Handle non-200 responses
+	if res.StatusCode != http.StatusOK {
+		// Try to parse error message if available
+		var errorResponse struct {
+			Detail string `json:"detail"`
+		}
+		if err := json.Unmarshal(body, &errorResponse); err == nil && errorResponse.Detail != "" {
+			return "", fmt.Errorf("API error (status %d): %s", res.StatusCode, errorResponse.Detail)
+		}
+		return "", fmt.Errorf("API error (status %d): %s", res.StatusCode, string(body))
+	}
+
+	// Parse the response
+	var response CallWithTimestampResponse
+	if err := json.Unmarshal(body, &response); err != nil {
+		return "", fmt.Errorf("error unmarshaling response: %v", err)
+	}
+
+	// Decode the base64 audio
+	audioData, err := base64.StdEncoding.DecodeString(response.AudioBase64)
+	if err != nil {
+		return "", fmt.Errorf("error decoding audio: %v", err)
+	}
+
+	// Write the audio file
+	if err := os.WriteFile(path, audioData, 0644); err != nil {
 		return "", fmt.Errorf("error writing file: %v", err)
 	}
 
