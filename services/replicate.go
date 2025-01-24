@@ -23,9 +23,8 @@ type ImagePromptGenerator struct {
 }
 
 type ImagesPrompts struct {
-	Prompt       string  `json:"prompt"`
-	SegmentIndex int     `json:"segmentIndex"`
-	Duration     float64 `json:"duration"`
+	Prompt   string  `json:"prompt"`
+	Duration float64 `json:"duration"`
 }
 
 func NewReplicateService() (*ReplicateService, error) {
@@ -45,7 +44,7 @@ func (rs *ReplicateService) GetCompletitionForImages(prompt string, systemPrompt
 		{
 			numImages: number,
 			images: [
-				{ prompt: "string", duration: number, segmentIndex: number }
+				{ prompt: "string", duration: number }
 			]
 		}`
 	}

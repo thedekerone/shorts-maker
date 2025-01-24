@@ -94,7 +94,7 @@ func (ds *DeepSeekService) GetCompletitionForImages(prompt string, systemPrompt 
 		{
 			numImages: number,
 			images: [
-				{ prompt: "string", duration: number, segmentIndex: number }
+				{ prompt: "string", duration: number }
 			]
 		}`
 	}

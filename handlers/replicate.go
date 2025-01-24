@@ -537,7 +537,6 @@ JSON format:
     "images": [
         { 
 		"prompt": "string - a vivid, detailed description of the scene, emphasizing ultra-realism, lighting, and camera settings", 
-		"segmentIndex": number,
 		"duration": number - duration of the image in seconds 
         }
     ]
