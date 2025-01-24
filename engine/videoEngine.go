@@ -14,48 +14,79 @@ type Video struct {
 	Duration float64
 }
 
-func CreateVideoFromImages(images []models.ImageWithTimestamp, output string, totalDuration float64) (*Video, error) {
+const (
+	TransitionTypeFade  = "fade"
+	TransitionTypeSlide = "slide"
+)
+
+func createTransitionFilter(imageIndex int, image models.ImageWithTimestamp, totalDuration float64, fadeDuration float64, fps int, transitionType string) string {
+	filter := fmt.Sprintf("[%d:v]scale=4000:-1,setsar=1,", imageIndex)
+	zoomFilter := fmt.Sprintf("zoompan=z='if(lte(ot,%.2f),1.4, max(zoom-0.003,1.15))':d=%.2f:x='iw/2-(iw/zoom/2)+sin(ot*%.2f/3)*100':y='ih/2-(ih/zoom/2)-cos(ot*%.2f/2)*30':s=1080x1920", image.Timestamp-rand.Float64()*(image.Timestamp), image.Timestamp*float64(fps-5), rand.Float64()*2+1, rand.Float64()*2+1)
+
+	switch transitionType {
+	case TransitionTypeFade:
+		if imageIndex == 0 {
+			filter += fmt.Sprintf("%s,fade=t=out:st=%.1f:d=%.1f[v%d];", zoomFilter, image.Timestamp-fadeDuration, fadeDuration, imageIndex)
+		} else {
+			filter += fmt.Sprintf("%s,fade=t=in:st=0:d=1,fade=t=out:st=%.1f:d=%.1f[v%d];", zoomFilter, image.Timestamp-fadeDuration, fadeDuration/2, imageIndex)
+		}
+
+	case TransitionTypeSlide:
+		if imageIndex == 0 {
+			filter += fmt.Sprintf("%s[vin%d];", zoomFilter, imageIndex)
+		} else {
+			filter += fmt.Sprintf("%s[vin%d];[vin%d][vin%d]xfade=transition=fade:duration=%.1f:offset=%.1f[v%d];", zoomFilter, imageIndex, imageIndex-1, imageIndex, fadeDuration, image.Timestamp-fadeDuration, imageIndex)
+
+		}
+
+	default:
+		// Default to fade transition if no valid type is provided
+		if imageIndex == 0 {
+			filter += fmt.Sprintf("%s,fade=t=out:st=%.1f:d=%.1f[v%d];", zoomFilter, image.Timestamp-fadeDuration, fadeDuration, imageIndex)
+		} else {
+			filter += fmt.Sprintf("%s,fade=t=in:st=0:d=1,fade=t=out:st=%.1f:d=%.1f[v%d];", zoomFilter, image.Timestamp-fadeDuration, fadeDuration/2, imageIndex)
+		}
+	}
+
+	return filter
+}
+
+func createConcatenationFilter(images []models.ImageWithTimestamp) string {
+	var concats []string
+	for i := range images {
+		concats = append(concats, fmt.Sprintf("[v%d]", i))
+	}
+	return fmt.Sprintf("%s concat=n=%d:v=1:a=0,format=yuv420p[v]", strings.Join(concats, ""), len(concats))
+}
+
+func CreateVideoFromImages(images []models.ImageWithTimestamp, output string, totalDuration float64, transitionType string) (*Video, error) {
 	var imagePaths []string
 	fps := 30
+	fadeDuration := 1.0
 
 	for _, v := range images {
 		imagePaths = append(imagePaths, "-t", fmt.Sprintf("%.2f", v.Timestamp), "-i", v.URL)
 	}
 
-	fadeDuration := 1.0
-
+	var filterComplexes []string
 	accumulatedDuration := 0.0
 
-	var filterComplexes []string
 	for i, v := range images {
-
 		if i == len(images)-1 {
 			v.Timestamp = totalDuration - accumulatedDuration
 		}
+		accumulatedDuration += v.Timestamp
 
-		accumulatedDuration = accumulatedDuration + v.Timestamp
-
-		filter := fmt.Sprintf("[%d:v]scale=4000:-1,setsar=1,", i)
-		zoomFilter := fmt.Sprintf("zoompan=z='if(lte(ot,%.2f),1.4, max(zoom-0.003,1.15))':d=%.2f:x='iw/2-(iw/zoom/2)+sin(ot*%.2f/3)*100':y='ih/2-(ih/zoom/2)-cos(ot*%.2f/2)*30':s=1080x1920", v.Timestamp-rand.Float64()*(v.Timestamp), v.Timestamp*float64(fps-5), rand.Float64()*2+1, rand.Float64()*2+1)
-
-		if i == 0 {
-			filter += fmt.Sprintf("%s,fade=t=out:st=%.1f:d=%.1f[v%d];", zoomFilter, v.Timestamp-fadeDuration, fadeDuration, i)
-		} else {
-			filter += fmt.Sprintf("%s,fade=t=in:st=0:d=1,fade=t=out:st=%.1f:d=%.1f[v%d];", zoomFilter, v.Timestamp-fadeDuration, fadeDuration/2, i)
-		}
-
-		filterComplexes = append(filterComplexes, filter)
+		filterComplex := createTransitionFilter(i, v, totalDuration, fadeDuration, fps, transitionType)
+		filterComplexes = append(filterComplexes, filterComplex)
 	}
 
-	var concats []string
-	for i, _ := range images {
-		concats = append(concats, fmt.Sprintf("[v%d]", i))
-	}
+	concatenationFilter := createConcatenationFilter(images)
 
 	framerate := fmt.Sprintf("%d", fps)
 	cmdArgs := append([]string{"-framerate", framerate}, imagePaths...)
 	cmdArgs = append(cmdArgs,
-		"-filter_complex", fmt.Sprintf("%s %s", strings.Join(filterComplexes, ""), strings.Join(concats, "")+fmt.Sprintf("concat=n=%d:v=1:a=0,format=yuv420p[v]", len(concats))),
+		"-filter_complex", fmt.Sprintf("%s %s", strings.Join(filterComplexes, ""), concatenationFilter),
 		"-map", "[v]",
 		"-pix_fmt", "yuv420p",
 		output, "-y",
@@ -73,7 +104,4 @@ func CreateVideoFromImages(images []models.ImageWithTimestamp, output string, to
 	}
 
 	return &video, nil
-}
-func CreateVideoFromImage(Image models.ImageWithTimestamp, duration float64) {
-
 }

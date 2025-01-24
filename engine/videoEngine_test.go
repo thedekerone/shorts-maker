@@ -11,9 +11,6 @@ func TestVideoFromImages(t *testing.T) {
 	imagesForVideo := []string{
 		"/Users/mauriciofow/Documents/shorts-maker/handlers/testImages/pexels-photo-0.jpeg",
 		"/Users/mauriciofow/Documents/shorts-maker/handlers/testImages/pexels-photo-1.jpeg",
-		"/Users/mauriciofow/Documents/shorts-maker/handlers/testImages/pexels-photo-2.jpeg",
-		"/Users/mauriciofow/Documents/shorts-maker/handlers/testImages/pexels-photo-3.jpeg",
-		"/Users/mauriciofow/Documents/shorts-maker/handlers/testImages/pexels-photo-4.jpeg",
 	}
 	t.Log("dsadsaadsadsdsa2\n")
 
@@ -26,7 +23,7 @@ func TestVideoFromImages(t *testing.T) {
 		})
 	}
 
-	video, err := engine.CreateVideoFromImages(images, "videoOutput.mp4")
+	video, err := engine.CreateVideoFromImages(images, "videoOutput.mp4", float64(3*len(images)), engine.TransitionTypeSlide)
 
 	if err != nil {
 		print("dasdas dasdas ads ads ads  dadas ")
