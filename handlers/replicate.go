@@ -416,7 +416,7 @@ func createVideo(jobID string, transcript *models.TranscriptionOutput, images []
 	updateJobStatus(jobID, "creating_video_from_images", "", "")
 	totalDuration := transcript.Segments[len(transcript.Segments)-1].End
 
-	path, err := engine.CreateVideoFromImages(images, os.TempDir()+pkg.GenerateRandomString(6)+".mp4", totalDuration)
+	path, err := engine.CreateVideoFromImages(images, os.TempDir()+pkg.GenerateRandomString(6)+".mp4", totalDuration, engine.TransitionTypeFade)
 	if err != nil {
 		updateJobStatus(jobID, "failed", "", "Error making video: "+err.Error())
 		return "", err

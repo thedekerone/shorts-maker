@@ -61,7 +61,7 @@ func skipTestCreateVideoFromImages(t *testing.T) {
 
 	t.Log("dsadsaadsadsdsa3\n")
 
-	path, err := engine.CreateVideoFromImages(images, os.TempDir()+pkg.GenerateRandomString(6)+".mp4", 20.0)
+	path, err := engine.CreateVideoFromImages(images, os.TempDir()+pkg.GenerateRandomString(6)+".mp4", 20.0, engine.TransitionTypeFade)
 
 	if err != nil {
 		t.Fatalf("Failed to Create video of images")
@@ -202,7 +202,7 @@ func TestImageVideo(t *testing.T) {
 
 	t.Log("Creating video from images...")
 
-	path, err := engine.CreateVideoFromImages(images, os.TempDir()+pkg.GenerateRandomString(6)+".mp4", 20.0)
+	path, err := engine.CreateVideoFromImages(images, os.TempDir()+pkg.GenerateRandomString(6)+".mp4", 20.0, engine.TransitionTypeFade)
 	t.Log("Created video with images...")
 
 	if err != nil {
