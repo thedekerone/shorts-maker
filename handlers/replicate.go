@@ -546,7 +546,7 @@ JSON format:
 Key rules:
 1. Use a single, consistent ultra-realistic style with detailed textures and lifelike lighting.
 2. Include specific lighting and camera settings (e.g., soft ambient light, shallow depth of field, wide-angle shot).
-3. Distribute images evenly across the story to represent key moments and maintain narrative flow.
+3. Distribute images to represent key moments and maintain narrative flow, distribute images cohesively on the story. DON'T JUST DIVIDE THE NUMBER OF IMAGES WITH TOTAL DURATION.
 4. Ensure each prompt vividly describes the scene while maintaining coherence with the story’s tone.
 
 `, totalDuration)

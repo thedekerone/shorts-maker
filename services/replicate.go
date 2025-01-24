@@ -23,9 +23,9 @@ type ImagePromptGenerator struct {
 }
 
 type ImagesPrompts struct {
-	Prompt   string  `json:"prompt"`
-	Segment  string  `json:"segment"`
-	Duration float64 `json:"duration"`
+	Prompt       string  `json:"prompt"`
+	SegmentIndex int     `json:"segmentIndex"`
+	Duration     float64 `json:"duration"`
 }
 
 func NewReplicateService() (*ReplicateService, error) {

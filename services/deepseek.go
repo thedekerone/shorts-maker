@@ -29,11 +29,50 @@ type Message struct {
 }
 
 type DeepSeekResponse struct {
+	ID      string `json:"id"`
 	Choices []struct {
-		Message struct {
-			Content string `json:"content"`
+		FinishReason string `json:"finish_reason"`
+		Index        int    `json:"index"`
+		Message      struct {
+			Content          string `json:"content"`
+			ReasoningContent string `json:"reasoning_content"`
+			ToolCalls        []struct {
+				ID       string `json:"id"`
+				Type     string `json:"type"`
+				Function struct {
+					Name      string `json:"name"`
+					Arguments string `json:"arguments"`
+				} `json:"function"`
+			} `json:"tool_calls"`
+			Role string `json:"role"`
 		} `json:"message"`
+		Logprobs struct {
+			Content []struct {
+				Token       string  `json:"token"`
+				Logprob     float64 `json:"logprob"`
+				Bytes       []int   `json:"bytes"`
+				TopLogprobs []struct {
+					Token   string  `json:"token"`
+					Logprob float64 `json:"logprob"`
+					Bytes   []int   `json:"bytes"`
+				} `json:"top_logprobs"`
+			} `json:"content"`
+		} `json:"logprobs"`
 	} `json:"choices"`
+	Created           int    `json:"created"`
+	Model             string `json:"model"`
+	SystemFingerprint string `json:"system_fingerprint"`
+	Object            string `json:"object"`
+	Usage             struct {
+		CompletionTokens        int `json:"completion_tokens"`
+		PromptTokens            int `json:"prompt_tokens"`
+		PromptCacheHitTokens    int `json:"prompt_cache_hit_tokens"`
+		PromptCacheMissTokens   int `json:"prompt_cache_miss_tokens"`
+		TotalTokens             int `json:"total_tokens"`
+		CompletionTokensDetails struct {
+			ReasoningTokens int `json:"reasoning_tokens"`
+		} `json:"completion_tokens_details"`
+	} `json:"usage"`
 }
 
 func NewDeepSeekService() (*DeepSeekService, error) {
@@ -50,9 +89,8 @@ func NewDeepSeekService() (*DeepSeekService, error) {
 }
 
 func (ds *DeepSeekService) GetCompletitionForImages(prompt string, systemPrompt string) (*ImagePromptGenerator, error) {
-
 	if systemPrompt == "" {
-		systemPrompt = `You are a image prompt generator, the user will show you a story and you have to return a JSON with the following format:
+		systemPrompt = `You are a image prompt generator, the user will show you a story and you have to return a JSON with the following format, return a go parsable answer, so dont include any visual help. JUST WRITE THE ANSWER, DONT ADD JSON FORMATTING OR BACKTICKS:
 		{
 			numImages: number,
 			images: [
@@ -94,14 +132,22 @@ func (ds *DeepSeekService) GetCompletitionForImages(prompt string, systemPrompt 
 	}
 
 	body, err := io.ReadAll(resp.Body)
+
 	if err != nil {
 		return nil, err
 	}
 
+	fmt.Printf("\n\n\n%v", body)
+
 	var apiResponse DeepSeekResponse
 	if err := json.Unmarshal(body, &apiResponse); err != nil {
+
+		fmt.Printf("\n ERROR UNMARHSALLING")
 		return nil, err
 	}
+
+	fmt.Printf("=========================\n")
+	fmt.Printf("\n\n\n%v", apiResponse.Choices[0].Message.Content)
 
 	if len(apiResponse.Choices) == 0 {
 		return nil, errors.New("no completions returned")
