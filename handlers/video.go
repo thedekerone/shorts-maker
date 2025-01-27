@@ -15,7 +15,7 @@ func HandleVideoRequest(m *http.ServeMux, minioClient *services.MinioService) {
 }
 
 func getVideo(w http.ResponseWriter, r *http.Request, minioClient *services.MinioService) {
-	videoPath := r.URL.Query().Get("path")
+	videoPath := r.URL.Query().Get("jobId")
 	if videoPath == "" {
 		http.Error(w, "Path is required", http.StatusBadRequest)
 		return

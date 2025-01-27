@@ -515,6 +515,7 @@ func uploadToMinio(jobID string, minioClient *services.MinioService, outputFileP
 
 func getImagesWithTimestamps(transcript *models.TranscriptionOutput, script string, numImages int32) ([]models.ImageWithTimestamp, error) {
 	rs, err := services.NewReplicateService()
+	deepseek, err := services.NewDeepSeekService()
 	if err != nil {
 		return nil, fmt.Errorf("error creating replicate service: %w", err)
 	}
@@ -558,7 +559,7 @@ Key rules:
 		segmentStrings = segmentStrings + fmt.Sprintf("{ segment: %s, start: %.3f, end: %.3f } \n", v.Text, v.Start, v.End)
 	}
 
-	promptForImage, err := rs.
+	promptForImage, err := deepseek.
 		GetCompletitionForImages(imageGenerationPrompts+fmt.Sprintf("\n %v", segmentStrings), "")
 
 	println("%v", promptForImage)
