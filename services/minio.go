@@ -38,18 +38,27 @@ func ConnectToMinio() (*MinioService, error) {
 	secretAccessKey := os.Getenv("MINIO_SECRET_KEY")
 
 	useSSL := false
+	log.Println(endpoint)
+	log.Println(accessKeyID)
+	log.Println(secretAccessKey)
 
 	minioClient, err := minio.New(endpoint, &minio.Options{
 		Creds:  credentials.NewStaticV4(accessKeyID, secretAccessKey, ""),
 		Secure: useSSL,
 	})
 
+	log.Println("TRYING TO CONNECT")
 	if err != nil {
+		log.Println("FAILED TO CONNECT TO MINIO ")
+		log.Println("================================")
+		log.Println("================================")
+		log.Println("================================")
+
 		log.Println(err)
 		return nil, err
 	}
 
 	log.Println("Connected to Minio")
-
+	log.Printf("%#v\n", minioClient)
 	return NewMinioService(minioClient), nil
 }

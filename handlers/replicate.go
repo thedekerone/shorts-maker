@@ -287,7 +287,7 @@ func processVideoGeneration(jobID string, script string) {
 		return
 	}
 
-	voice, err := generateVoice(jobID, rs, script)
+	voice, transcript, err := generateVoice(jobID, rs, script)
 	if err != nil {
 		return
 	}
@@ -298,9 +298,11 @@ func processVideoGeneration(jobID string, script string) {
 		return
 	}
 
-	transcript, err := generateTranscription(jobID, rs, voice, script)
-	if err != nil {
-		return
+	if transcript == nil {
+		transcript, err = generateTranscription(jobID, rs, voice, script)
+		if err != nil {
+			return
+		}
 	}
 
 	images, err := generateImages(jobID, transcript, script)
@@ -309,7 +311,7 @@ func processVideoGeneration(jobID string, script string) {
 	}
 
 	for i, v := range images {
-		uploadGeneratedFile(minioClient, v.URL, fmt.Sprintf("generate_image_%d", i), jobID)
+		err = uploadGeneratedFile(minioClient, v.URL, fmt.Sprintf("generate_image_%d", i), jobID)
 		if err != nil {
 			println("Failed to upload image to minio")
 			return
@@ -369,24 +371,24 @@ func generateScript(jobID string, rs *services.ReplicateService, text string, sc
 	return predictions, nil
 }
 
-func generateVoice(jobID string, rs *services.ReplicateService, predictions string) (string, error) {
+func generateVoice(jobID string, rs *services.ReplicateService, predictions string) (string, *models.TranscriptionOutput, error) {
 	updateJobStatus(jobID, "generating_voice", "", "")
 	n := elevenlabs.CreateEleven()
 
 	vr := n.NewVoiceRequestMultilingual(predictions, "pqHfZKP75CvOlQylNhV4")
 
-	audioPath, err := vr.Call(os.TempDir() + pkg.GenerateRandomString(6) + ".mp3")
+	audio, err := vr.Call(os.TempDir()+pkg.GenerateRandomString(6)+".mp3", true)
 	println("generating audiooooooooooooo!!!")
 	if err != nil {
 		updateJobStatus(jobID, "failed", "", "Error getting audio: "+err.Error())
 		println("error generating audioooooooo!!!")
 		fmt.Println("%v", err)
-		return "", err
+		return "", nil, err
 	}
 
 	println("finished generating audioooooooo!!!")
 
-	return audioPath, nil
+	return audio.AudioPath, audio.Transcription, nil
 }
 
 func generateTranscription(jobID string, rs *services.ReplicateService, voice string, predictions string) (*models.TranscriptionOutput, error) {
@@ -543,10 +545,11 @@ JSON format:
 }
 
 Key rules:
-1. Use a single, consistent ultra-realistic style with detailed textures and lifelike lighting.
+1. Use a single, consistent style with detailed textures and lifelike lighting.
 2. Include specific lighting and camera settings (e.g., soft ambient light, shallow depth of field, wide-angle shot).
 3. Distribute images to represent key moments and maintain narrative flow, distribute images cohesively on the story. DON'T JUST DIVIDE THE NUMBER OF IMAGES WITH TOTAL DURATION.
 4. Ensure each prompt vividly describes the scene while maintaining coherence with the story’s tone.
+5. Describe well what the image should show and how, the image generator doesnt have the context of the story.
 
 `, totalDuration)
 

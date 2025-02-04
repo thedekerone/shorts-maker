@@ -2,6 +2,7 @@ package elevenlabs
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -10,6 +11,8 @@ import (
 	"net/http"
 	"os"
 	"strings"
+
+	"github.com/thedekerone/shorts-maker/models"
 )
 
 type Eleven struct {
@@ -38,6 +41,22 @@ type TextToSpeechRequest struct {
 type VoiceSettings struct {
 	Stability       float64 `json:"stability,omitempty"`
 	SimilarityBoost float64 `json:"similarity_boost,omitempty"`
+}
+
+type TTSWithTimestamps struct {
+	Audio     string       `json:"audio_base64"`
+	Alignment TTSAlignment `json:"alignment"`
+}
+
+type TTSAlignment struct {
+	CharactersStartTimes []float64 `json:"character_start_times_seconds"`
+	Characters           []string  `json:"characters"`
+	CharactersEndTimes   []float64 `json:"character_end_times_seconds"`
+}
+
+type CallResponse struct {
+	AudioPath     string
+	Transcription *models.TranscriptionOutput
 }
 
 func CreateEleven() *Eleven {
@@ -75,8 +94,7 @@ func (n *Eleven) NewVoiceRequestMultilingual(text string, voiceId string) *Voice
 	}
 	return &request
 }
-
-func (vr *VoiceRequest) Call(path string) (string, error) {
+func (vr *VoiceRequest) Call(path string, withTimestamps bool) (*CallResponse, error) {
 	// Prepare the request body according to API specifications
 	requestBody := TextToSpeechRequest{
 		Text:  vr.Text,
@@ -89,14 +107,19 @@ func (vr *VoiceRequest) Call(path string) (string, error) {
 
 	jsonData, err := json.Marshal(requestBody)
 	if err != nil {
-		return "", fmt.Errorf("error marshaling request: %v", err)
+		return nil, fmt.Errorf("error marshaling request: %v", err)
 	}
 
 	// Create request with correct URL format
 	url := fmt.Sprintf("%s/%s", vr.URL, vr.VoiceId)
+
+	if withTimestamps == true {
+		url += fmt.Sprintf("/%s", "with-timestamps")
+	}
+
 	r, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
 	if err != nil {
-		return "", fmt.Errorf("error creating request: %v", err)
+		return nil, fmt.Errorf("error creating request: %v", err)
 	}
 
 	// Set headers
@@ -107,14 +130,14 @@ func (vr *VoiceRequest) Call(path string) (string, error) {
 	client := &http.Client{}
 	res, err := client.Do(r)
 	if err != nil {
-		return "", fmt.Errorf("error making request: %v", err)
+		return nil, fmt.Errorf("error making request: %v", err)
 	}
 	defer res.Body.Close()
 
 	// Read response body
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
-		return "", fmt.Errorf("error reading response: %v", err)
+		return nil, fmt.Errorf("error reading response: %v", err)
 	}
 
 	// Handle non-200 responses
@@ -124,22 +147,92 @@ func (vr *VoiceRequest) Call(path string) (string, error) {
 			Detail string `json:"detail"`
 		}
 		if err := json.Unmarshal(body, &errorResponse); err == nil && errorResponse.Detail != "" {
-			return "", fmt.Errorf("API error (status %d): %s", res.StatusCode, errorResponse.Detail)
+			return nil, fmt.Errorf("API error (status %d): %s", res.StatusCode, errorResponse.Detail)
 		}
-		return "", fmt.Errorf("API error (status %d): %s", res.StatusCode, string(body))
+		return nil, fmt.Errorf("API error (status %d): %s", res.StatusCode, string(body))
+	}
+
+	if withTimestamps == true {
+		var jsonBody TTSWithTimestamps
+
+		json.Unmarshal(body, &jsonBody)
+
+		dec, err := base64.StdEncoding.DecodeString(jsonBody.Audio)
+
+		if err != nil {
+			return nil, err
+		}
+
+		f, err := os.Create(path)
+
+		if err != nil {
+			return nil, err
+		}
+
+		if _, err := f.Write(dec); err != nil {
+			return nil, err
+		}
+
+		if err := f.Sync(); err != nil {
+			return nil, err
+		}
+
+		return &CallResponse{
+			AudioPath:     path,
+			Transcription: getTranscriptionOutput(&jsonBody.Alignment),
+		}, nil
 	}
 
 	// Verify content type
 	if !strings.Contains(res.Header.Get("Content-Type"), "audio/mpeg") {
 		log.Printf("Unexpected content type: %s", res.Header.Get("Content-Type"))
 		log.Printf("Response body: %s", string(body))
-		return "", errors.New("response is not an MP3 file")
+		return nil, errors.New("response is not an MP3 file")
 	}
 
 	// Write the audio file
 	if err := os.WriteFile(path, body, 0644); err != nil {
-		return "", fmt.Errorf("error writing file: %v", err)
+		return nil, fmt.Errorf("error writing file: %v", err)
 	}
 
-	return path, nil
+	return &CallResponse{
+		AudioPath:     path,
+		Transcription: nil,
+	}, nil
+}
+
+func getTranscriptionOutput(alignment *TTSAlignment) *models.TranscriptionOutput {
+	var words []models.Word
+	var wordStrings []string
+	var currentWord models.Word
+
+	for i, v := range alignment.Characters {
+		if v == " " {
+			currentWord.End = alignment.CharactersEndTimes[i-1]
+			words = append(words, currentWord)
+			wordStrings = append(wordStrings, currentWord.Word)
+
+			currentWord = models.Word{}
+			continue
+		}
+
+		if currentWord.Start <= 0.0 {
+			currentWord.Start = alignment.CharactersStartTimes[i]
+		}
+
+		currentWord.Word += v
+	}
+	segment := models.Segment{
+		Text:  strings.Join(wordStrings, " "),
+		Start: words[0].Start,
+		End:   words[len(words)-1].End,
+		Words: words,
+	}
+
+	output := models.TranscriptionOutput{
+		Segments: []models.Segment{segment},
+		Language: "en",
+	}
+
+	return &output
 }

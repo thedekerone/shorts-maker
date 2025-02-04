@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/minio/minio-go/v7"
 	"github.com/thedekerone/shorts-maker/handlers"
@@ -20,6 +21,7 @@ func main() {
 		return
 	}
 
+	time.Sleep(1 * time.Second)
 	bucketExists, err := minioClient.Client.BucketExists(context.Background(), "shorts-maker")
 
 	if err != nil {
