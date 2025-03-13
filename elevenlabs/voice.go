@@ -202,26 +202,58 @@ func (vr *VoiceRequest) Call(path string, withTimestamps bool) (*CallResponse, e
 }
 
 func getTranscriptionOutput(alignment *TTSAlignment) *models.TranscriptionOutput {
+	if alignment == nil || len(alignment.Characters) == 0 {
+		return &models.TranscriptionOutput{
+			Segments: []models.Segment{},
+			Language: "en",
+		}
+	}
+
 	var words []models.Word
 	var wordStrings []string
 	var currentWord models.Word
 
-	for i, v := range alignment.Characters {
-		if v == " " {
-			currentWord.End = alignment.CharactersEndTimes[i-1]
-			words = append(words, currentWord)
-			wordStrings = append(wordStrings, currentWord.Word)
+	// Process all characters
+	for i, char := range alignment.Characters {
+		if char == " " {
+			// Only add the word if it's not empty
+			if currentWord.Word != "" {
+				currentWord.End = alignment.CharactersEndTimes[i-1]
+				words = append(words, currentWord)
+				wordStrings = append(wordStrings, currentWord.Word)
+			}
 
+			// Reset current word
 			currentWord = models.Word{}
 			continue
 		}
 
+		// Set the start time for a new word
 		if currentWord.Start <= 0.0 {
 			currentWord.Start = alignment.CharactersStartTimes[i]
 		}
 
-		currentWord.Word += v
+		// Add this character to the current word
+		currentWord.Word += char
 	}
+
+	// Add the last word if it exists (handles case where text doesn't end with a space)
+	if currentWord.Word != "" {
+		lastIndex := len(alignment.Characters) - 1
+		currentWord.End = alignment.CharactersEndTimes[lastIndex]
+		words = append(words, currentWord)
+		wordStrings = append(wordStrings, currentWord.Word)
+	}
+
+	// Handle the case where no words were found
+	if len(words) == 0 {
+		return &models.TranscriptionOutput{
+			Segments: []models.Segment{},
+			Language: "en",
+		}
+	}
+
+	// Create the segment from the words
 	segment := models.Segment{
 		Text:  strings.Join(wordStrings, " "),
 		Start: words[0].Start,
@@ -229,10 +261,8 @@ func getTranscriptionOutput(alignment *TTSAlignment) *models.TranscriptionOutput
 		Words: words,
 	}
 
-	output := models.TranscriptionOutput{
+	return &models.TranscriptionOutput{
 		Segments: []models.Segment{segment},
 		Language: "en",
 	}
-
-	return &output
 }

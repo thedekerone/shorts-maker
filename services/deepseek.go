@@ -17,6 +17,7 @@ type DeepSeekService struct {
 }
 
 type DeepSeekRequest struct {
+	MaxTokens   int       `json:"max_tokens"`
 	Model       string    `json:"model"`
 	Messages    []Message `json:"messages"`
 	Temperature float64   `json:"temperature,omitempty"`
@@ -100,7 +101,8 @@ func (ds *DeepSeekService) GetCompletitionForImages(prompt string, systemPrompt 
 	}
 
 	reqBody := DeepSeekRequest{
-		Model: "deepseek-reasoner",
+		Model:     "deepseek-reasoner",
+		MaxTokens: 8192,
 		Messages: []Message{
 			{Role: "system", Content: systemPrompt},
 			{Role: "user", Content: prompt},

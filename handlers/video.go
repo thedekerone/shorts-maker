@@ -4,6 +4,7 @@ import (
 	"github.com/thedekerone/shorts-maker/services"
 	"log"
 	"net/http"
+	"time"
 )
 
 func HandleVideoRequest(m *http.ServeMux, minioClient *services.MinioService) {
@@ -13,18 +14,20 @@ func HandleVideoRequest(m *http.ServeMux, minioClient *services.MinioService) {
 		getVideo(w, r, minioClient)
 	}))
 }
-
 func getVideo(w http.ResponseWriter, r *http.Request, minioClient *services.MinioService) {
 	videoPath := r.URL.Query().Get("jobId")
 	if videoPath == "" {
 		http.Error(w, "Path is required", http.StatusBadRequest)
 		return
 	}
+	log.Printf("Getting presigned URL for video %s", videoPath)
 
-	presignedURL, err := minioClient.GetPresignedURL("shorts-maker", videoPath, 60*60)
+	// Get the presigned URL from MinIO
+	presignedURL, err := minioClient.GetPresignedURL("shorts-maker", videoPath, time.Hour*2)
 	if err != nil {
+		print("Error in GetPresignedURL")
 		log.Printf("Failed to get presigned URL: %v", err)
-		http.Error(w, "Failed to get presigned URL", http.StatusInternalServerError)
+		http.Error(w, "Fail123 to get presigned URL", http.StatusInternalServerError)
 		return
 	}
 

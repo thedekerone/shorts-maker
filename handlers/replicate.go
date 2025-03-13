@@ -523,13 +523,12 @@ func getImagesWithTimestamps(transcript *models.TranscriptionOutput, script stri
 	}
 
 	totalDuration := transcript.Segments[len(transcript.Segments)-1].End
-	interval := totalDuration / float64(numImages)
 
 	var imagesWithTimestamps []models.ImageWithTimestamp
 
 	imageGenerationPrompts := fmt.Sprintf(`You are an image prompt generator tasked with creating high-quality prompts for generating ultra-realistic, high-definition images that align with the tone and narrative of a provided story. All images must adhere to a single, unified visual style, focusing on hyper-realism with detailed textures, lifelike lighting, and a cinematic feel. 
 
-The user will provide a story divided into segments with timestamps. Your task is to return a JSON object formatted as follows, with images distributed evenly throughout the story. The total duration of all images must sum to %.2f. Respond strictly in JSON format with no additional text.
+The user will provide a story divided into segments with timestamps. Your task is to return a JSON object formatted as follows. The total duration of all images must sum to %.2f. Respond strictly in JSON format with no additional text.
 
 The images should appear sorted from the first that should appear to the last.
 
@@ -545,12 +544,12 @@ JSON format:
 }
 
 Key rules:
-1. Use a single, consistent style with detailed textures and lifelike lighting.
+1. Use a single, consistent style with detailed textures and lifelike lighting, the progression from an image to the next needs to make sense.
 2. Include specific lighting and camera settings (e.g., soft ambient light, shallow depth of field, wide-angle shot).
 3. Distribute images to represent key moments and maintain narrative flow, distribute images cohesively on the story. DON'T JUST DIVIDE THE NUMBER OF IMAGES WITH TOTAL DURATION.
 4. Ensure each prompt vividly describes the scene while maintaining coherence with the story’s tone.
 5. Describe well what the image should show and how, the image generator doesnt have the context of the story.
-
+6. The amount of images should make the video not boring, but not too fast either. 
 `, totalDuration)
 
 	println("1222222222222222222222222222222222222")
@@ -567,16 +566,8 @@ Key rules:
 
 	println("%v", promptForImage)
 	for i := 0; i < int(promptForImage.NumImages); i++ {
-		timestamp := float64(i) * interval
-
-		relevantText := getRelevantText(transcript, timestamp)
-
-		// If relevantText is empty, use the text from the first segment
-		if relevantText == "" && len(transcript.Segments) > 0 {
-			relevantText = transcript.Segments[0].Text
-		}
-
 		images, err := rs.GetImages(promptForImage.ImagesPrompt[i].Prompt, 1)
+
 		if err != nil {
 			return nil, fmt.Errorf("error getting image %d: %w", i+1, err)
 		}
