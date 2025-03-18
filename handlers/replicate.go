@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -34,6 +35,11 @@ type Job struct {
 	Status string `json:"status"`
 	URL    string `json:"url"`
 	Error  string `json:"error,omitempty"`
+}
+
+type CompletedWebhookBody struct {
+	URL string `json:"url"`
+	ID  string `json:"id"`
 }
 
 func (j Job) FormattedURL() string {
@@ -203,7 +209,8 @@ func generateAIShort(w http.ResponseWriter, r *http.Request) {
 
 	// Parse the request body
 	var requestBody struct {
-		Script string `json:"script"`
+		Script  string `json:"script"`
+		Webhook string `json:"webhook"`
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
@@ -218,6 +225,7 @@ func generateAIShort(w http.ResponseWriter, r *http.Request) {
 	}
 
 	script := requestBody.Script
+	webhook := "http://localhost:3000" + requestBody.Webhook
 
 	// Generate a unique job ID
 	jobID := uuid.New().String()
@@ -233,7 +241,7 @@ func generateAIShort(w http.ResponseWriter, r *http.Request) {
 	jobsMutex.Unlock()
 
 	// Start the video generation process in a goroutine
-	go processVideoGeneration(jobID, script)
+	go processVideoGeneration(jobID, script, webhook)
 
 	// Prepare the response
 	response := map[string]string{
@@ -274,7 +282,7 @@ func uploadGeneratedFile(mio *services.MinioService, filePath string, fileName s
 	return nil
 }
 
-func processVideoGeneration(jobID string, script string) {
+func processVideoGeneration(jobID string, script string, webhook string) {
 	print("dasdasads")
 
 	minioClient, err := connectToMinio(jobID)
@@ -325,6 +333,21 @@ func processVideoGeneration(jobID string, script string) {
 	}
 
 	err = uploadToMinio(jobID, minioClient, outputFilePath)
+	if err != nil {
+		return
+	}
+
+	whBody := CompletedWebhookBody{
+		ID:  jobID,
+		URL: outputFilePath,
+	}
+
+	jsonBody, err := json.Marshal(&whBody)
+	if err != nil {
+		return
+	}
+	//call webhook
+	_, err = http.NewRequest("POST", webhook, bytes.NewBuffer(jsonBody))
 	if err != nil {
 		return
 	}
@@ -550,6 +573,7 @@ Key rules:
 4. Ensure each prompt vividly describes the scene while maintaining coherence with the story’s tone.
 5. Describe well what the image should show and how, the image generator doesnt have the context of the story.
 6. The amount of images should make the video not boring, but not too fast either. 
+7. There should be at least an image every 12 seconds.
 `, totalDuration)
 
 	println("1222222222222222222222222222222222222")

@@ -39,7 +39,7 @@ func CreateDialogFromWords(segment models.Segment) (string, error) {
 			start = 0
 		}
 
-		dialog += fmt.Sprintf("Dialogue: 0,%s,%s,Default,,0000,0000,0000,,%s\n", floatToAssTimeStamp(start), floatToAssTimeStamp(end), word.Word)
+		dialog += fmt.Sprintf("Dialogue: 0,%s,%s,Default,,0000,0000,0000,,{\fade(200,200)\blur5}%s\n", floatToAssTimeStamp(start), floatToAssTimeStamp(end), word.Word)
 	}
 
 	return dialog, nil
