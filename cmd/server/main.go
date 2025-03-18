@@ -29,6 +29,7 @@ func main() {
 	}
 
 	if !bucketExists {
+		log.Print("bucket doesnt exist")
 		err = minioClient.Client.MakeBucket(context.Background(), "shorts-maker", minio.MakeBucketOptions{})
 		if err != nil {
 			log.Fatal("failed to create bucket:", err)
