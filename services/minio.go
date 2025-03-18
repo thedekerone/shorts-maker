@@ -44,7 +44,7 @@ func ConnectToMinio() (*MinioService, error) {
 
 	minioClient, err := minio.New(endpoint, &minio.Options{
 		Creds:  credentials.NewStaticV4(accessKeyID, secretAccessKey, ""),
-		Secure: true,
+		Secure: false,
 	})
 
 	log.Println("TRYING TO CONNECT")
