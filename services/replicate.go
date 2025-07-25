@@ -133,7 +133,7 @@ func (rs *ReplicateService) GetCompletition(prompt string, systemPrompt string) 
 
 func (rs *ReplicateService) GetImages(prompt string, quantity int64, mode string) ([]string, error) {
 	ctx := context.TODO()
-	model := "black-forest-labs/flux-schnell"
+	model := "black-forest-labs/flux-1.1-pro"
 
 	aspect_ratio := "9:16"
 
@@ -146,6 +146,9 @@ func (rs *ReplicateService) GetImages(prompt string, quantity int64, mode string
 		"disable_safety_checker": true,
 		"safety_tolerance":       6,
 		"aspect_ratio":           aspect_ratio,
+		"prompt_upsampling":      true,
+		"output_format":          "png",
+		"output_quality":         100,
 	}
 	output, err := rs.RunWithModel(ctx, model, input, nil)
 
