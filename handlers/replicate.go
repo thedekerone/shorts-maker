@@ -209,8 +209,11 @@ func generateAIShort(w http.ResponseWriter, r *http.Request) {
 
 	// Parse the request body
 	var requestBody struct {
-		Script  string `json:"script"`
-		Webhook string `json:"webhook"`
+		Script       string `json:"script"`
+		Webhook      string `json:"webhook"`
+		CaptionStyle string `json:"caption_style"`
+		VoiceId      string `json:"voice_id"`
+		MusicId      string `json:"music_id"`
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
@@ -295,7 +298,7 @@ func processVideoGeneration(jobID string, script string, webhook string) {
 		return
 	}
 
-	voice, transcript, err := generateVoice(jobID, rs, script)
+	voice, transcript, err := generateVoice(jobID, script)
 	if err != nil {
 		return
 	}
@@ -313,7 +316,7 @@ func processVideoGeneration(jobID string, script string, webhook string) {
 		}
 	}
 
-	images, err := generateImages(jobID, transcript, script)
+	images, err := generateImages(jobID, transcript)
 	if err != nil {
 		return
 	}
@@ -376,7 +379,7 @@ func createReplicateService(jobID string) (*services.ReplicateService, error) {
 	return rs, nil
 }
 
-func generateScript(jobID string, rs *services.ReplicateService, text string, script string) (string, error) {
+func _generateScript(jobID string, rs *services.ReplicateService, text string, script string) (string, error) {
 	updateJobStatus(jobID, "generating_script", "", "")
 
 	var predictions string
@@ -394,22 +397,17 @@ func generateScript(jobID string, rs *services.ReplicateService, text string, sc
 	return predictions, nil
 }
 
-func generateVoice(jobID string, rs *services.ReplicateService, predictions string) (string, *models.TranscriptionOutput, error) {
+func generateVoice(jobID string, predictions string) (string, *models.TranscriptionOutput, error) {
 	updateJobStatus(jobID, "generating_voice", "", "")
 	n := elevenlabs.CreateEleven()
 
 	vr := n.NewVoiceRequestMultilingual(predictions, "pqHfZKP75CvOlQylNhV4")
 
 	audio, err := vr.Call(os.TempDir()+pkg.GenerateRandomString(6)+".mp3", true)
-	println("generating audiooooooooooooo!!!")
 	if err != nil {
 		updateJobStatus(jobID, "failed", "", "Error getting audio: "+err.Error())
-		println("error generating audioooooooo!!!")
-		fmt.Println("%v", err)
 		return "", nil, err
 	}
-
-	println("finished generating audioooooooo!!!")
 
 	return audio.AudioPath, audio.Transcription, nil
 }
@@ -424,9 +422,9 @@ func generateTranscription(jobID string, rs *services.ReplicateService, voice st
 	return transcript, nil
 }
 
-func generateImages(jobID string, transcript *models.TranscriptionOutput, predictions string) ([]models.ImageWithTimestamp, error) {
+func generateImages(jobID string, transcript *models.TranscriptionOutput) ([]models.ImageWithTimestamp, error) {
 	updateJobStatus(jobID, "generating_images", "", "")
-	images, err := getImagesWithTimestamps(transcript, predictions, 12)
+	images, err := getImagesWithTimestamps(transcript)
 	if err != nil {
 		updateJobStatus(jobID, "failed", "", "Error getting images: "+err.Error())
 		return nil, err
@@ -464,10 +462,6 @@ func createVideo(jobID string, transcript *models.TranscriptionOutput, images []
 		Color:       "white",
 	}
 	animationSubs := subtitles.CreateShortSubsWithStyles(transcript, &subStyles)
-
-	if err != nil {
-		return "", err
-	}
 
 	updateJobStatus(jobID, "generating ASS file", "", "")
 	fmt.Printf("%v", err)
@@ -538,7 +532,7 @@ func uploadToMinio(jobID string, minioClient *services.MinioService, outputFileP
 	return nil
 }
 
-func getImagesWithTimestamps(transcript *models.TranscriptionOutput, script string, numImages int32) ([]models.ImageWithTimestamp, error) {
+func getImagesWithTimestamps(transcript *models.TranscriptionOutput) ([]models.ImageWithTimestamp, error) {
 	rs, err := services.NewReplicateService()
 	deepseek, err := services.NewDeepSeekService()
 	if err != nil {
@@ -549,44 +543,73 @@ func getImagesWithTimestamps(transcript *models.TranscriptionOutput, script stri
 
 	var imagesWithTimestamps []models.ImageWithTimestamp
 
-	imageGenerationPrompts := fmt.Sprintf(`You are an image prompt generator tasked with creating high-quality prompts for generating ultra-realistic, high-definition images that align with the tone and narrative of a provided story. All images must adhere to a single, unified visual style, focusing on hyper-realism with detailed textures, lifelike lighting, and a cinematic feel. 
-
-The user will provide a story divided into segments with timestamps. Your task is to return a JSON object formatted as follows. The total duration of all images must sum to %.2f. Respond strictly in JSON format with no additional text.
-
-The images should appear sorted from the first that should appear to the last.
-
-JSON format:
-{
-    "numImages": number,
-    "images": [
-        { 
-		"prompt": "string - a vivid, detailed description of the scene, emphasizing ultra-realism, lighting, and camera settings", 
-		"duration": number - duration of the image in seconds 
-        }
-    ]
-}
-
-Key rules:
-1. Use a single, consistent style with detailed textures and lifelike lighting, the progression from an image to the next needs to make sense.
-2. Include specific lighting and camera settings (e.g., soft ambient light, shallow depth of field, wide-angle shot).
-3. Distribute images to represent key moments and maintain narrative flow, distribute images cohesively on the story. DON'T JUST DIVIDE THE NUMBER OF IMAGES WITH TOTAL DURATION.
-4. Ensure each prompt vividly describes the scene while maintaining coherence with the story’s tone.
-5. Describe well what the image should show and how, the image generator doesnt have the context of the story.
-6. The amount of images should make the video not boring, but not too fast either. 
-7. There should be at least an image every 12 seconds.
-`, totalDuration)
-
-	println("1222222222222222222222222222222222222")
-	println(imageGenerationPrompts)
-
 	var segmentStrings string
 
 	for _, v := range transcript.Segments {
 		segmentStrings = segmentStrings + fmt.Sprintf("{ segment: %s, start: %.3f, end: %.3f } \n", v.Text, v.Start, v.End)
 	}
 
+	imageGenerationPrompts := fmt.Sprintf(
+		`
+		### SYSTEM ###
+You are an **Image‑Prompt Composer**.
+
+Your job is to turn a timestamped story into a sequence of ultra‑realistic, cinematic image prompts—returned as a single JSON object and nothing else.
+
+INSTRUCTIONS
+1. Read the story supplied between the triple quotes: 
+   """
+   %s
+   """
+2. **Identify key moments** (scene changes, emotional peaks, environment shifts).
+3. Decide the number of images:  
+   • ≥ 1 image every 12 s.  
+   • Keep pacing engaging, not frantic.  
+4. Allocate each image’s on‑screen **duration** so that the sum equals %.2f (±0.01 s).
+5. For every image craft a **stand‑alone prompt** that fully describes:  
+   • Setting, subjects, action, mood.  
+   • Lighting style (e.g., golden‑hour rim light).  
+   • Camera details (lens, depth‑of‑field, framing, shot type).  
+   • Stylistic tags: “8 K, photorealistic, cinematic color grade”.  
+   (Assume the generator has no other context.)
+6. Maintain a *single, coherent visual style* across all images—hyper‑real textures, lifelike lighting.
+7. Output **only** the JSON below (no code fences, no comments).
+
+OUTPUT FORMAT
+{
+  "numImages": <integer>,
+  "images": [
+    {
+      "prompt": "<full scene description>",
+      "duration": <float>   // seconds
+    }
+    // … additional images …
+  ]
+}
+
+EXAMPLE
+{
+  "numImages": 3,
+  "images": [
+    {
+      "prompt": "Wide‑angle sunrise shot of an isolated desert road stretching toward crimson mountains, warm golden‑hour light casting long shadows, crisp 50 mm lens, shallow depth of field, hyper‑realistic 8 K, cinematic color grade",
+      "duration": 11.5
+    },
+    {
+      "prompt": "Macro close‑up of a weathered hand gripping a rusty compass, soft ambient backlight revealing skin texture, f/2.8, filmic grain, photorealistic 8 K",
+      "duration": 12.0
+    },
+    {
+      "prompt": "Lone traveler silhouetted beneath a vast starlit sky on a windswept plateau, cool moonlight, slow dolly‑out 35 mm, HDR, ultra‑real 8 K",
+      "duration": 13.0
+    }
+  ]
+}
+
+`, fmt.Sprintf("\n %v", segmentStrings), totalDuration)
+
 	promptForImage, err := deepseek.
-		GetCompletitionForImages(imageGenerationPrompts+fmt.Sprintf("\n %v", segmentStrings), "")
+		GetCompletitionForImages(imageGenerationPrompts, "")
 
 	println("%v", promptForImage)
 	for i := 0; i < int(promptForImage.NumImages); i++ {
@@ -605,53 +628,8 @@ Key rules:
 	}
 
 	fmt.Println("00000000000000000000000000000000000000000000000")
-	fmt.Println("%v", imagesWithTimestamps)
 
 	return imagesWithTimestamps, nil
-}
-
-func findTimestampForImage(script string, transcript *models.TranscriptionOutput, segmentToFind string) float64 {
-	result := strings.Split(script, segmentToFind)
-	wordCount := len(strings.Fields(result[0]))
-
-	var allWords []models.Word
-	for _, v := range transcript.Segments {
-		allWords = append(allWords, v.Words...)
-	}
-	println("=========================================")
-	println("=========================================")
-	println("=========================================")
-	fmt.Println("%v", result)
-	fmt.Println("%v", allWords)
-
-	if len(allWords)-1 <= wordCount {
-		wordCount = len(allWords) - 1
-	}
-
-	return allWords[wordCount].Start
-}
-
-func getRelevantText(transcript *models.TranscriptionOutput, timestamp float64) string {
-	var relevantText string
-	var currentSegmentIndex int
-
-	// Find the current segment
-	for i, segment := range transcript.Segments {
-		if segment.Start <= timestamp && segment.End > timestamp {
-			currentSegmentIndex = i
-			break
-		}
-	}
-
-	// Get text from the current segment to the start of the next segment (or end of transcript)
-	for i := currentSegmentIndex; i < len(transcript.Segments); i++ {
-		relevantText += transcript.Segments[i].Text + " "
-		if i < len(transcript.Segments)-1 && transcript.Segments[i+1].Start > timestamp {
-			break
-		}
-	}
-
-	return strings.TrimSpace(relevantText)
 }
 
 func enableCORS(next http.HandlerFunc) http.HandlerFunc {

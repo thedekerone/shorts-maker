@@ -90,16 +90,6 @@ func NewDeepSeekService() (*DeepSeekService, error) {
 }
 
 func (ds *DeepSeekService) GetCompletitionForImages(prompt string, systemPrompt string) (*ImagePromptGenerator, error) {
-	if systemPrompt == "" {
-		systemPrompt = `You are a image prompt generator, the user will show you a story and you have to return a JSON with the following format, return a go parsable answer, so dont include any visual help. JUST WRITE THE ANSWER, DONT ADD JSON FORMATTING OR BACKTICKS:
-		{
-			numImages: number,
-			images: [
-				{ prompt: "string", duration: number }
-			]
-		}`
-	}
-
 	reqBody := DeepSeekRequest{
 		Model:     "deepseek-reasoner",
 		MaxTokens: 8192,
