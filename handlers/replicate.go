@@ -340,7 +340,7 @@ func generateVoice(jobID string, predictions string, voiceid string) (string, *m
 	updateJobStatus(jobID, "generating_voice", "", "")
 	n := elevenlabs.CreateEleven()
 	if voiceid == "" {
-		voiceid = "pqHfZKP75CvOlQylNhV4"
+		voiceid = "NNl6r8mD7vthiJatiJt1"
 	}
 
 	vr := n.NewVoiceRequestMultilingual(predictions, voiceid)
