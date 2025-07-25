@@ -169,6 +169,7 @@ func generateAIShort(w http.ResponseWriter, r *http.Request) {
 		Webhook      string `json:"webhook"`
 		CaptionStyle string `json:"caption_style"`
 		VoiceId      string `json:"voice_id"`
+		Mode         string `json:"mode"`
 		MusicId      string `json:"music_id"`
 	}
 
@@ -200,7 +201,7 @@ func generateAIShort(w http.ResponseWriter, r *http.Request) {
 	jobsMutex.Unlock()
 
 	// Start the video generation process in a goroutine
-	go processVideoGeneration(jobID, script, webhook, requestBody.VoiceId)
+	go processVideoGeneration(jobID, script, webhook, requestBody.VoiceId, requestBody.Mode)
 
 	// Prepare the response
 	response := map[string]string{
@@ -241,7 +242,7 @@ func uploadGeneratedFile(mio *services.MinioService, filePath string, fileName s
 	return nil
 }
 
-func processVideoGeneration(jobID string, script string, webhook string, voiceId string) {
+func processVideoGeneration(jobID string, script string, webhook string, voiceId string, mode string) {
 	print("dasdasads")
 
 	minioClient, err := connectToMinio(jobID)
@@ -272,7 +273,7 @@ func processVideoGeneration(jobID string, script string, webhook string, voiceId
 		}
 	}
 
-	images, err := generateImages(jobID, transcript)
+	images, err := generateImages(jobID, transcript, mode)
 	if err != nil {
 		return
 	}
@@ -363,9 +364,9 @@ func generateTranscription(jobID string, rs *services.ReplicateService, voice st
 	return transcript, nil
 }
 
-func generateImages(jobID string, transcript *models.TranscriptionOutput) ([]models.ImageWithTimestamp, error) {
+func generateImages(jobID string, transcript *models.TranscriptionOutput, mode string) ([]models.ImageWithTimestamp, error) {
 	updateJobStatus(jobID, "generating_images", "", "")
-	images, err := images.GetImagesWithTimestamps(transcript)
+	images, err := images.GetImagesWithTimestamps(transcript, mode)
 	if err != nil {
 		updateJobStatus(jobID, "failed", "", "Error getting images: "+err.Error())
 		return nil, err

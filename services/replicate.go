@@ -131,20 +131,26 @@ func (rs *ReplicateService) GetCompletition(prompt string, systemPrompt string) 
 	return strings.Join(stringOutput, ""), nil
 }
 
-func (rs *ReplicateService) GetImages(prompt string, quantity int64) ([]string, error) {
+func (rs *ReplicateService) GetImages(prompt string, quantity int64, mode string) ([]string, error) {
 	ctx := context.TODO()
 	model := "black-forest-labs/flux-schnell"
+
+	aspect_ratio := "9:16"
+
+	if mode == "landscape" {
+		aspect_ratio = "16:9"
+	}
 
 	input := replicate.PredictionInput{
 		"prompt":                 prompt,
 		"disable_safety_checker": true,
 		"safety_tolerance":       6,
-		"aspect_ratio":           "9:16",
+		"aspect_ratio":           aspect_ratio,
 	}
 	output, err := rs.RunWithModel(ctx, model, input, nil)
 
 	if err != nil {
-		return rs.GetImages(prompt, quantity)
+		return rs.GetImages(prompt, quantity, mode)
 	}
 
 	if output == nil {

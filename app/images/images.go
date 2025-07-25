@@ -7,7 +7,7 @@ import (
 	"github.com/thedekerone/shorts-maker/services"
 )
 
-func GetImagesWithTimestamps(transcript *models.TranscriptionOutput) ([]models.ImageWithTimestamp, error) {
+func GetImagesWithTimestamps(transcript *models.TranscriptionOutput, mode string) ([]models.ImageWithTimestamp, error) {
 	rs, err := services.NewReplicateService()
 	deepseek, err := services.NewDeepSeekService()
 	if err != nil {
@@ -88,7 +88,7 @@ EXAMPLE
 
 	println("%v", promptForImage)
 	for i := 0; i < int(promptForImage.NumImages); i++ {
-		images, err := rs.GetImages(promptForImage.ImagesPrompt[i].Prompt, 1)
+		images, err := rs.GetImages(promptForImage.ImagesPrompt[i].Prompt, 1, mode)
 
 		if err != nil {
 			return nil, fmt.Errorf("error getting image %d: %w", i+1, err)
