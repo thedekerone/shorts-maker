@@ -95,7 +95,7 @@ func floatToAssTimeStamp(time float64) string {
 }
 
 func CreateAssFile(fileName string, transcription models.TranscriptionOutput) error {
-	baseAssFile, err := os.ReadFile(filepath.Join("assets", "base.ass"))
+	baseAssFile, err := os.ReadFile(filepath.Join("assets", "tilted.ass"))
 
 	if err != nil {
 		return errors.New("Failed to open base ASS file")
