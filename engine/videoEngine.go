@@ -19,9 +19,15 @@ const (
 	TransitionTypeSlide = "slide"
 )
 
-func createTransitionFilter(imageIndex int, image models.ImageWithTimestamp, totalDuration float64, fadeDuration float64, fps int, transitionType string) string {
+func createTransitionFilter(imageIndex int, image models.ImageWithTimestamp, totalDuration float64, fadeDuration float64, fps int, transitionType string, mode string) string {
+	aspect := "1080x1920"
+
+	if mode == "landscape" {
+		aspect = "1920x1080"
+	}
+
 	filter := fmt.Sprintf("[%d:v]scale=4000:-1,setsar=1,", imageIndex)
-	zoomFilter := fmt.Sprintf("zoompan=z='if(lte(ot,%.2f),1.4, max(zoom-0.003,1.15))':d=%.2f:x='iw/2-(iw/zoom/2)+sin(ot*%.2f/3)*100':y='ih/2-(ih/zoom/2)-cos(ot*%.2f/2)*30':s=1080x1920", image.Timestamp-rand.Float64()*(image.Timestamp), image.Timestamp*float64(fps-5), rand.Float64()*2+1, rand.Float64()*2+1)
+	zoomFilter := fmt.Sprintf("zoompan=z='if(lte(ot,%.2f),1.4, max(zoom-0.003,1.15))':d=%.2f:x='iw/2-(iw/zoom/2)+sin(ot*%.2f/3)*100':y='ih/2-(ih/zoom/2)-cos(ot*%.2f/2)*30':s=%s", image.Timestamp-rand.Float64()*(image.Timestamp), image.Timestamp*float64(fps-5), rand.Float64()*2+1, rand.Float64()*2+1, aspect)
 
 	switch transitionType {
 	case TransitionTypeFade:
@@ -59,7 +65,7 @@ func createConcatenationFilter(images []models.ImageWithTimestamp) string {
 	return fmt.Sprintf("%s concat=n=%d:v=1:a=0,format=yuv420p[v]", strings.Join(concats, ""), len(concats))
 }
 
-func CreateVideoFromImages(images []models.ImageWithTimestamp, output string, totalDuration float64, transitionType string) (*Video, error) {
+func CreateVideoFromImages(images []models.ImageWithTimestamp, output string, totalDuration float64, transitionType string, mode string) (*Video, error) {
 	var imagePaths []string
 	fps := 30
 	fadeDuration := 1.0
@@ -77,7 +83,7 @@ func CreateVideoFromImages(images []models.ImageWithTimestamp, output string, to
 		}
 		accumulatedDuration += v.Timestamp
 
-		filterComplex := createTransitionFilter(i, v, totalDuration, fadeDuration, fps, transitionType)
+		filterComplex := createTransitionFilter(i, v, totalDuration, fadeDuration, fps, transitionType, mode)
 		filterComplexes = append(filterComplexes, filterComplex)
 	}
 

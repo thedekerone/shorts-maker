@@ -287,7 +287,7 @@ func processVideoGeneration(jobID string, script string, webhook string, voiceId
 
 	}
 
-	outputFilePath, err := createVideo(jobID, transcript, images, voice)
+	outputFilePath, err := createVideo(jobID, transcript, images, voice, mode)
 	if err != nil {
 		return
 	}
@@ -374,14 +374,14 @@ func generateImages(jobID string, transcript *models.TranscriptionOutput, mode s
 	return images, nil
 }
 
-func createVideo(jobID string, transcript *models.TranscriptionOutput, images []models.ImageWithTimestamp, voice string) (string, error) {
+func createVideo(jobID string, transcript *models.TranscriptionOutput, images []models.ImageWithTimestamp, voice string, mode string) (string, error) {
 	ctx := context.Background()
 	updateJobStatus(jobID, "creating_subtitle_file", "", "")
 
 	updateJobStatus(jobID, "creating_video_from_images", "", "")
 	totalDuration := transcript.Segments[len(transcript.Segments)-1].End
 
-	path, err := engine.CreateVideoFromImages(images, os.TempDir()+pkg.GenerateRandomString(6)+".mp4", totalDuration, engine.TransitionTypeFade)
+	path, err := engine.CreateVideoFromImages(images, os.TempDir()+pkg.GenerateRandomString(6)+".mp4", totalDuration, engine.TransitionTypeFade, mode)
 	if err != nil {
 		updateJobStatus(jobID, "failed", "", "Error making video: "+err.Error())
 		return "", err
