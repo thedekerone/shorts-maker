@@ -133,7 +133,7 @@ func (rs *ReplicateService) GetCompletition(prompt string, systemPrompt string) 
 
 func (rs *ReplicateService) GetImages(prompt string, quantity int64, mode string) ([]string, error) {
 	ctx := context.TODO()
-	model := "black-forest-labs/flux-1.1-pro"
+	model := "bytedance/seedream-3"
 
 	aspect_ratio := "9:16"
 
@@ -144,6 +144,7 @@ func (rs *ReplicateService) GetImages(prompt string, quantity int64, mode string
 	input := replicate.PredictionInput{
 		"prompt":                 prompt,
 		"disable_safety_checker": true,
+		"size":                   "big",
 		"safety_tolerance":       6,
 		"aspect_ratio":           aspect_ratio,
 		"prompt_upsampling":      true,
