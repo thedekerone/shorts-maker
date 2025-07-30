@@ -407,7 +407,7 @@ func createVideo(jobID string, transcript *models.TranscriptionOutput, images []
 
 	updateJobStatus(jobID, "generating ASS file", "", "")
 	fmt.Printf("%v", err)
-	baseAssPath, err := filepath.Abs("handlers/assets/base.ass")
+	baseAssPath, err := filepath.Abs("handlers/assets/tilted.ass")
 	if err != nil {
 		updateJobStatus(jobID, "failed", "", "Error getting absolute path for base.ass: "+err.Error())
 		return "", err

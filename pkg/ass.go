@@ -72,9 +72,9 @@ func GetWordsFromSentence(sentence models.Segment) string {
 }
 
 func getWordTiming(word models.Word, offset float64) string {
-	time := int((word.End - word.Start + offset) * 100)
+	time := (word.End - word.Start + offset) * 100
 
-	return fmt.Sprintf("{\\k%d}%s", time, word.Word)
+	return fmt.Sprintf("{\\k%.3f}%s", time, word.Word)
 }
 
 func floatToAssTimeStamp(time float64) string {
