@@ -94,6 +94,21 @@ func (n *Eleven) NewVoiceRequestMultilingual(text string, voiceId string) *Voice
 	}
 	return &request
 }
+
+func (n *Eleven) NewVoiceRequestV3(text string, voiceId string) *VoiceRequest {
+	p := RequestParams{
+		Model: "eleven_v3",
+	}
+	request := VoiceRequest{
+		Text:    text,
+		VoiceId: voiceId,
+		Params:  p,
+		URL:     "https://api.elevenlabs.io/v1/text-to-speech",
+		ApiKey:  n.apiKey,
+	}
+	return &request
+}
+
 func (vr *VoiceRequest) Call(path string, withTimestamps bool) (*CallResponse, error) {
 	// Prepare the request body according to API specifications
 	requestBody := TextToSpeechRequest{
@@ -215,9 +230,9 @@ func getTranscriptionOutput(alignment *TTSAlignment) *models.TranscriptionOutput
 
 	// Process all characters
 	for i, char := range alignment.Characters {
-		if char == " " {
+		if char == " " || char == "\n" || char == "—" {
 			// Only add the word if it's not empty
-			if currentWord.Word != "" {
+			if len(currentWord.Word) > 0 {
 				currentWord.End = alignment.CharactersEndTimes[i-1]
 				words = append(words, currentWord)
 				wordStrings = append(wordStrings, currentWord.Word)

@@ -5,14 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"net/http"
-	"net/url"
-	"os"
-	"path/filepath"
-	"strings"
-	"sync"
-	"time"
-
 	"github.com/google/uuid"
 	"github.com/minio/minio-go/v7"
 	"github.com/thedekerone/shorts-maker/app/images"
@@ -22,6 +14,13 @@ import (
 	"github.com/thedekerone/shorts-maker/pkg"
 	"github.com/thedekerone/shorts-maker/services"
 	"github.com/thedekerone/shorts-maker/subtitles"
+	"net/http"
+	"net/url"
+	"os"
+	"path/filepath"
+	"strings"
+	"sync"
+	"time"
 )
 
 func generateUniqueName() string {
@@ -200,8 +199,10 @@ func generateAIShort(w http.ResponseWriter, r *http.Request) {
 	jobs[jobID] = job
 	jobsMutex.Unlock()
 
+	cleanScript := strings.ReplaceAll(script, `\n`, " ")
+
 	// Start the video generation process in a goroutine
-	go processVideoGeneration(jobID, script, webhook, requestBody.VoiceId, requestBody.Mode)
+	go processVideoGeneration(jobID, cleanScript, webhook, requestBody.VoiceId, requestBody.Mode)
 
 	// Prepare the response
 	response := map[string]string{
@@ -343,6 +344,7 @@ func generateVoice(jobID string, predictions string, voiceid string) (string, *m
 		voiceid = "NNl6r8mD7vthiJatiJt1"
 	}
 
+	print(predictions)
 	vr := n.NewVoiceRequestMultilingual(predictions, voiceid)
 
 	audio, err := vr.Call(os.TempDir()+pkg.GenerateRandomString(6)+".mp3", true)
