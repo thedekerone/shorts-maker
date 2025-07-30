@@ -12,11 +12,16 @@ import (
 	"github.com/thedekerone/shorts-maker/models"
 )
 
-// tiltEffect is an ASS override tag that applies subtle scaling animation.
-const tiltEffect = "{\\fscx50\\fscy50\\t(0,60,\\fscx55\\fscy55)\\t(60,140,\\fscx50\\fscy50)}"
+// Visual effects for realism
+const (
+	tiltEffect     = "{\\fscx50\\fscy50\\t(0,60,\\fscx55\\fscy55)\\t(60,140,\\fscx50\\fscy50)}"
+	baseStyle      = "{\\blur0.6\\bord2\\shad2\\c&H00FFFF&\\t(0,200,\\c&HFFFFFF&)}"
+	fadeEffect     = "\\fad(50,50)" // 50ms fade in/out
+	defaultOverlap = 0.05           // seconds overlap between words
+	punctExtension = 0.25           // extend after punctuation
+)
 
-// CreateDialogFromWords converts a speech segment into individual ASS dialogue
-// lines—one per word—so that each word can be animated independently.
+// CreateDialogFromWords generates more realistic ASS dialogue lines.
 func CreateDialogFromWords(seg models.Segment) (string, error) {
 	if len(seg.Words) == 0 {
 		return "", errors.New("segment contains no words")
@@ -24,15 +29,23 @@ func CreateDialogFromWords(seg models.Segment) (string, error) {
 
 	var b strings.Builder
 
-	for idx, w := range seg.Words {
-		start := w.Start
-		end := seg.End
+	// Optional grouping of filler words
+	wordGroups := groupWords(seg.Words)
 
-		if idx == 0 {
-			start = seg.Start
+	for _, group := range wordGroups {
+		start := group[0].Start
+		end := seg.End
+		text := joinGroupWords(group)
+
+		// Set end based on last word in group
+		last := group[len(group)-1]
+		if idx := indexOfWord(seg.Words, last); idx < len(seg.Words)-1 {
+			end = seg.Words[idx+1].Start + defaultOverlap
 		}
-		if idx < len(seg.Words)-1 {
-			end = seg.Words[idx+1].Start
+
+		// Adjust for punctuation pauses
+		if strings.ContainsAny(last.Word, ",.!?") {
+			end += punctExtension
 		}
 
 		// Sanity checks
@@ -44,11 +57,13 @@ func CreateDialogFromWords(seg models.Segment) (string, error) {
 		}
 
 		fmt.Fprintf(&b,
-			"Dialogue: 0,%s,%s,Default,,0000,0000,0000,,%s%s\n",
+			"Dialogue: 0,%s,%s,Default,,0000,0000,0000,,%s%s%s%s\n",
 			toASSTimestamp(start),
 			toASSTimestamp(end),
 			tiltEffect,
-			w.Word,
+			baseStyle,
+			fadeEffect,
+			text,
 		)
 	}
 
@@ -65,6 +80,43 @@ func CreateDialog(seg models.Segment) string {
 	)
 }
 
+// Group short filler words with the next longer one for smoother reading.
+func groupWords(words []models.Word) [][]models.Word {
+	var groups [][]models.Word
+	buf := []models.Word{}
+	for _, w := range words {
+		buf = append(buf, w)
+		if len(w.Word) > 2 || strings.ContainsAny(w.Word, ",.!?") {
+			groups = append(groups, buf)
+			buf = []models.Word{}
+		}
+	}
+	if len(buf) > 0 {
+		groups = append(groups, buf)
+	}
+	return groups
+}
+
+// Concatenate a group of words into one string
+func joinGroupWords(words []models.Word) string {
+	parts := make([]string, len(words))
+	for i, w := range words {
+		parts[i] = w.Word
+	}
+	return strings.Join(parts, " ")
+}
+
+// Helper to find a word’s index in the segment
+func indexOfWord(all []models.Word, target models.Word) int {
+	for i, w := range all {
+		if w.Start == target.Start && w.End == target.End && w.Word == target.Word {
+			return i
+		}
+	}
+	return -1
+}
+
+// Karaoke-style timing for full-line subtitles
 func joinWordsWithTiming(seg models.Segment) string {
 	var b strings.Builder
 
@@ -84,8 +136,17 @@ func joinWordsWithTiming(seg models.Segment) string {
 }
 
 func formatKTag(w models.Word, offset float64) string {
-	// \k expects centiseconds (1/100s) as an integer.
-	durationCs := int((w.End - w.Start + offset) * 100)
+	duration := (w.End - w.Start) + offset
+
+	// Extend slightly for punctuation
+	if strings.ContainsAny(w.Word, ",.!?") {
+		duration += punctExtension
+	}
+
+	// Scale duration with word length
+	duration += float64(len(w.Word)) * 0.015
+
+	durationCs := int(duration * 100) // centiseconds
 	return fmt.Sprintf("{\\k%d}%s", durationCs, w.Word)
 }
 
@@ -98,8 +159,7 @@ func toASSTimestamp(sec float64) string {
 	return fmt.Sprintf("%d:%02d:%02d.%02d", hrs, mins, secs, cs)
 }
 
-// CreateAssFile renders an ASS subtitle file on disk by merging a base template
-// with the generated dialogue lines.
+// CreateAssFile writes a full ASS file combining template and generated dialogue.
 func CreateAssFile(path string, tr models.TranscriptionOutput) error {
 	base, err := os.ReadFile(filepath.Join("assets", "tilted.ass"))
 	if err != nil {
