@@ -1,137 +1,131 @@
 package pkg
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
+	"time"
 
 	"github.com/thedekerone/shorts-maker/models"
 )
 
-func CreateDialogFromWords(segment models.Segment) (string, error) {
-	tiltEffect := "{\fscx50\fscy50\t(0,60,\fscx55\fscy55)\t(60,140,\fscx50\fscy50)}"
-	//borderEffect := "{\fade(200,200)\blur5}"
-	dialog := ""
+// tiltEffect is an ASS override tag that applies subtle scaling animation.
+const tiltEffect = "{\\fscx50\\fscy50\\t(0,60,\\fscx55\\fscy55)\\t(60,140,\\fscx50\\fscy50)}"
 
-	for i, word := range segment.Words {
-		var start float64
-		var end float64
+// CreateDialogFromWords converts a speech segment into individual ASS dialogue
+// lines—one per word—so that each word can be animated independently.
+func CreateDialogFromWords(seg models.Segment) (string, error) {
+	if len(seg.Words) == 0 {
+		return "", errors.New("segment contains no words")
+	}
 
-		if i != len(segment.Words)-1 {
+	var b strings.Builder
 
-			start = word.Start
-			end = segment.Words[i+1].Start
+	for idx, w := range seg.Words {
+		start := w.Start
+		end := seg.End
+
+		if idx == 0 {
+			start = seg.Start
+		}
+		if idx < len(seg.Words)-1 {
+			end = seg.Words[idx+1].Start
 		}
 
-		if i == 0 {
-			start = segment.Start
-		}
-
-		if i == len(segment.Words)-1 {
-			start = word.Start
-			end = segment.End
-		}
-
-		if start > end {
-			return "", errors.New("Start time is greater than end time")
-		}
-
+		// Sanity checks
 		if start < 0 {
 			start = 0
 		}
-
-		dialog += fmt.Sprintf("Dialogue: 0,%s,%s,Default,,0000,0000,0000,,%s%s\n", floatToAssTimeStamp(start), floatToAssTimeStamp(end), tiltEffect, word.Word)
-	}
-
-	return dialog, nil
-}
-
-func CreateDialog(segment models.Segment) (string, error) {
-	baseAssDialog := fmt.Sprintf("\nDialogue: 0,%s,%s,Default,,0000,0000,0000,,%s", floatToAssTimeStamp(segment.Start), floatToAssTimeStamp(segment.End), GetWordsFromSentence(segment))
-
-	return baseAssDialog, nil
-}
-
-func GetWordsFromSentence(sentence models.Segment) string {
-
-	words := ""
-
-	for i, word := range sentence.Words {
-		if i != len(sentence.Words)-1 {
-			words = words + getWordTiming(word, sentence.Words[i+1].Start-word.End) + " "
-		} else if i == 0 {
-			words = words + getWordTiming(word, word.Start-sentence.Start) + " "
-		} else {
-			words = words + getWordTiming(word, 0) + " "
+		if start > end {
+			return "", fmt.Errorf("start time %.3f greater than end time %.3f", start, end)
 		}
+
+		fmt.Fprintf(&b,
+			"Dialogue: 0,%s,%s,Default,,0000,0000,0000,,%s%s\n",
+			toASSTimestamp(start),
+			toASSTimestamp(end),
+			tiltEffect,
+			w.Word,
+		)
 	}
 
-	return words
-
+	return b.String(), nil
 }
 
-func getWordTiming(word models.Word, offset float64) string {
-	time := (word.End - word.Start + offset) * 100
-
-	return fmt.Sprintf("{\\k%.3f}%s", time, word.Word)
+// CreateDialog produces a single ASS dialogue line for the entire segment.
+func CreateDialog(seg models.Segment) string {
+	return fmt.Sprintf(
+		"\nDialogue: 0,%s,%s,Default,,0000,0000,0000,,%s",
+		toASSTimestamp(seg.Start),
+		toASSTimestamp(seg.End),
+		joinWordsWithTiming(seg),
+	)
 }
 
-func floatToAssTimeStamp(time float64) string {
-	// 145.345
+func joinWordsWithTiming(seg models.Segment) string {
+	var b strings.Builder
 
-	absoluteInteger := int(time) // returns 145
+	for i, w := range seg.Words {
+		var gap float64
+		switch {
+		case i == 0:
+			gap = w.Start - seg.Start
+		case i < len(seg.Words)-1:
+			gap = seg.Words[i+1].Start - w.End
+		}
 
-	seconds := float64(absoluteInteger%60) + (time - float64(absoluteInteger))
+		fmt.Fprintf(&b, "%s ", formatKTag(w, gap))
+	}
 
-	absoluteInteger = absoluteInteger - absoluteInteger%60
-
-	minutes := absoluteInteger / 60
-
-	absoluteInteger = absoluteInteger - minutes*60
-
-	hours := absoluteInteger / 3600
-
-	return fmt.Sprintf("%d:%02d:%05.2f", hours, minutes, seconds)
-
+	return strings.TrimSpace(b.String())
 }
 
-func CreateAssFile(fileName string, transcription models.TranscriptionOutput) error {
-	baseAssFile, err := os.ReadFile(filepath.Join("assets", "tilted.ass"))
+func formatKTag(w models.Word, offset float64) string {
+	// \k expects centiseconds (1/100s) as an integer.
+	durationCs := int((w.End - w.Start + offset) * 100)
+	return fmt.Sprintf("{\\k%d}%s", durationCs, w.Word)
+}
 
+func toASSTimestamp(sec float64) string {
+	d := time.Duration(sec * float64(time.Second))
+	hrs := int(d.Hours())
+	mins := int(d.Minutes()) % 60
+	secs := int(d.Seconds()) % 60
+	cs := int(d.Milliseconds()/10) % 100
+	return fmt.Sprintf("%d:%02d:%02d.%02d", hrs, mins, secs, cs)
+}
+
+// CreateAssFile renders an ASS subtitle file on disk by merging a base template
+// with the generated dialogue lines.
+func CreateAssFile(path string, tr models.TranscriptionOutput) error {
+	base, err := os.ReadFile(filepath.Join("assets", "tilted.ass"))
 	if err != nil {
-		return errors.New("Failed to open base ASS file")
+		return fmt.Errorf("read base ASS file: %w", err)
 	}
 
-	assFile, err := os.Create(fileName)
-
-	defer assFile.Close()
-
+	f, err := os.Create(path)
 	if err != nil {
-		return err
+		return fmt.Errorf("create output file: %w", err)
+	}
+	defer f.Close()
+
+	w := bufio.NewWriter(f)
+	if _, err = w.Write(base); err != nil {
+		return fmt.Errorf("write base template: %w", err)
 	}
 
-	segments := transcription.Segments
-
-	_, err = assFile.Write(baseAssFile)
-
-	if err != nil {
-		return errors.New("failed to write base file into new file")
-	}
-
-	for _, segment := range segments {
-		dialog, err := CreateDialogFromWords(segment)
-
+	for _, seg := range tr.Segments {
+		dlg, err := CreateDialogFromWords(seg)
 		if err != nil {
-			return errors.New("failed to create dialog format")
+			return fmt.Errorf("build dialog for segment: %w", err)
 		}
-		_, err = assFile.Write([]byte(dialog))
-
-		if err != nil {
-			return errors.New("failed to write dialog format")
+		if _, err = w.WriteString(dlg); err != nil {
+			return fmt.Errorf("write dialog: %w", err)
 		}
 	}
 
-	return nil
-
+	return w.Flush()
 }
