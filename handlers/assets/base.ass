@@ -14,3 +14,9 @@ Style: Default, Roboto-Black, 28, &H00FFFFFF, &H0000FFFF, &H00000000, &H64000000
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 ; Dialogue: 0,0:00:01.00,0:00:03.00,Default,,0,0,0,,{\fscx50\fscy50\t(0,60,\fscx55\fscy55)\t(60,140,\fscx50\fscy50)}Hello, world!
 
+Dialogue: 0,0:00:00.09,0:00:00.78,Default,,0,0,0,,{\fscx40\fscy40\t(0,60,\fscx45 \fscy45)\t(60,140,\fscx40\fscy40)} THE PLATYPUS
+Dialogue: 0,0:00:00.85,0:00:01.28,Default,,0,0,0,,{\fscx40\fscy40\t(0,60,\fscx45 \fscy45)\t(60,140,\fscx40\fscy40)} LOOKS LIKE
+Dialogue: 0,0:00:01.32,0:00:02.13,Default,,0,0,0,,{\fscx40\fscy40\t(0,60,\fscx45 \fscy45)\t(60,140,\fscx40\fscy40)} A COLLAGE
+Dialogue: 0,0:00:02.40,0:00:02.74,Default,,0,0,0,,{\fscx40\fscy40\t(0,60,\fscx45 \fscy45)\t(60,140,\fscx40\fscy40)} THE BILL
+Dialogue: 0,0:00:02.78,0:00:03.48,Default,,0,0,0,,{\fscx40\fscy40\t(0,60,\fscx45 \fscy45)\t(60,140,\fscx40\fscy40)} OF A DUCK,
+Dialogue: 0,0:00:03.65,0:00:04.13,Default,,0,0,0,,{\fscx40\fscy40\t(0,60,\fscx45 \fscy45)\t(60,140,\fscx40\fscy40)} THE TAIL

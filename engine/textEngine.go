@@ -255,32 +255,25 @@ func AddSubtitlesToVideo(ctx context.Context, videoPath string, subImages []Subt
 
 	return "CREATED", nil
 }
-func AddAssSubtitlesToVideo(
-	ctx context.Context,
-	videoPath, subtitlesPath, outputPath string,
-) (string, error) {
 
-	filter := fmt.Sprintf("subtitles=%s", subtitlesPath) // or "ass=%s"
+func AddAssSubtitlesToVideo(ctx context.Context, videoPath string, subtitlesPath string, outputPath string) (string, error) {
 
-	cmdArgs := []string{
-		"-y", // overwrite
-		"-i", videoPath,
-		"-vf", filter, // burn-in subs
-		"-c:v", "libx264",
-		"-crf", "23",
-		"-preset", "faster",
-		"-pix_fmt", "yuv420p", // <-- no alpha
-		"-movflags", "+faststart",
+	cmdArgs := append([]string{"-i", videoPath})
+	cmdArgs = append(cmdArgs,
+		"-vf", fmt.Sprintf("ass=%s", subtitlesPath),
+		"-crf", "18",
 		"-c:a", "copy",
-		outputPath,
-	}
+		outputPath, "-y")
 
 	cmd := exec.CommandContext(ctx, "ffmpeg", cmdArgs...)
 
-	fmt.Println("command:", cmd.String())
+	print("command: ")
+	print(cmd.String())
+	print("\n")
 
 	if err := cmd.Run(); err != nil {
 		return "", err
 	}
+
 	return "CREATED", nil
 }
