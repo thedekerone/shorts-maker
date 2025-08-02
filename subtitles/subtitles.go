@@ -208,6 +208,8 @@ func CreateAssFile(subtitles []Subtitle, basePath string) (string, error) {
 	println("TEXT TO ASS")
 
 	if err != nil {
+		println("error in assdsads ads ds dsa")
+		println(err.Error())
 		return "", err
 	}
 
