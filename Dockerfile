@@ -1,5 +1,5 @@
 # ------------ Build stage ------------
-FROM golang:1.22-alpine AS builder
+FROM golang:1.24.0 AS builder
 
 # Enable modules, set up workdir
 WORKDIR /app
