@@ -173,7 +173,7 @@ func CreateVideoFromClips(
 		// offset = cumulative duration minus 1 s fade
 		offset := 0.0
 		for i := 0; i < len(clips)-1; i++ {
-			d := clips[i].Length
+			d := clips[i].Timestamp
 			xfade := fmt.Sprintf(
 				"[v%d][a%d][v%d][a%d]xfade=transition=fade:duration=1:offset=%.2f[v%d][a%d];",
 				i, i, i+1, i+1, offset, i+1, i+1)
@@ -201,7 +201,7 @@ func CreateVideoFromClips(
 
 	total := 0.0
 	for _, c := range clips {
-		total += c.Length
+		total += c.Timestamp
 	}
 	return &Video{Path: output, Duration: total}, nil
 }
