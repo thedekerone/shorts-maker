@@ -409,6 +409,7 @@ func createVideoFromClips(
 		clips,
 		mergedPath,
 		engine.TransitionTypeFade, // or "none"
+		13.0,
 	)
 	if err != nil {
 		updateJobStatus(jobID, "failed", "", "merge clips: "+err.Error())

@@ -1,14 +1,10 @@
 package engine
 
 import (
-	"bytes"
 	"fmt"
 	"math/rand/v2"
-	"os"
 	"os/exec"
-	"path/filepath"
 	"strings"
-	"text/template"
 
 	"github.com/thedekerone/shorts-maker/models"
 )
@@ -68,6 +64,13 @@ func createConcatenationFilter(images []models.ImageWithTimestamp) string {
 	}
 	return fmt.Sprintf("%s concat=n=%d:v=1:a=0,format=yuv420p[v]", strings.Join(concats, ""), len(concats))
 }
+func createConcatenationFilterForClips(clips []models.VideoWithTimestamp) string {
+	var concats []string
+	for i := range clips {
+		concats = append(concats, fmt.Sprintf("[%d]", i))
+	}
+	return fmt.Sprintf("%s concat=n=%d:v=1:a=0,format=yuv420p[v]", strings.Join(concats, ""), len(concats))
+}
 
 func CreateVideoFromImages(images []models.ImageWithTimestamp, output string, totalDuration float64, transitionType string, mode string) (*Video, error) {
 	var imagePaths []string
@@ -120,136 +123,36 @@ func CreateVideoFromClips(
 	clips []models.VideoWithTimestamp,
 	output string,
 	transition string, // "none" | "fade"
+	totalDuration float64,
 ) (*Video, error) {
+	var clipsPaths []string
 
-	if len(clips) == 0 {
-		return nil, fmt.Errorf("no clips supplied")
+	for _, v := range clips {
+		clipsPaths = append(clipsPaths, "-i", v.Path)
 	}
 
-	switch transition {
-	case "none":
-		return concatFastPath(clips, output)
-	case "fade":
-		return crossFadePath(clips, output)
-	default:
-		return nil, fmt.Errorf("unsupported transition %q", transition)
-	}
-}
+	var filterComplexes []string
 
-// ---------- helpers ----------
+	concatenationFilter := createConcatenationFilterForClips(clips)
 
-func concatFastPath(clips []models.VideoWithTimestamp, output string) (*Video, error) {
-	tmp, err := os.CreateTemp("", "concat_*.txt")
-	if err != nil {
-		return nil, err
-	}
-	defer os.Remove(tmp.Name())
-
-	for _, c := range clips {
-		// concat demuxer expects:  file '/path'
-		fmt.Fprintf(tmp, "file '%s'\n", filepath.ToSlash(c.Path))
-	}
-	if err := tmp.Close(); err != nil {
-		return nil, err
-	}
-
-	cmd := exec.Command(
-		"ffmpeg", "-y",
-		"-f", "concat", "-safe", "0",
-		"-i", tmp.Name(),
-		"-c", "copy",
-		output,
-	)
-	if b, err := cmd.CombinedOutput(); err != nil {
-		return nil, fmt.Errorf("concat copy: %w\n%s", err, b)
-	}
-
-	var total float64
-	for _, c := range clips {
-		total += c.Timestamp
-	}
-	return &Video{Path: output, Duration: total}, nil
-}
-
-func crossFadePath(clips []models.VideoWithTimestamp, output string) (*Video, error) {
-	const fadeDur = 1.0 // seconds
-
-	// ---------- build argv ----------
-	var argv []string
-	for _, c := range clips {
-		argv = append(argv, "-i", c.Path)
-	}
-
-	// ---------- template-driven filter_complex ----------
-	type seg struct {
-		Idx       int
-		Offset    float64
-		FadeDur   float64
-		LastIndex bool
-	}
-
-	// compute offsets (start times where each cross-fade begins)
-	var segments []seg
-	offset := 0.0
-	for i, c := range clips[:len(clips)-1] {
-		segments = append(segments, seg{
-			Idx:       i,
-			Offset:    offset,
-			FadeDur:   fadeDur,
-			LastIndex: false,
-		})
-		offset += c.Timestamp - fadeDur
-	}
-	segments = append(segments, seg{Idx: len(clips) - 1, LastIndex: true})
-
-	// generate filter graph
-	var graph bytes.Buffer
-	tpl := template.Must(template.New("filt").Parse(`
-{{- /* normalise streams */ -}}
-{{- range $i, $c := .Clips }}
-	[{{$i}}:v]scale=1080:-2,format=yuv420p[v{{$i}}];
-	[{{$i}}:a]aformat=fltp:44100:stereo[a{{$i}}];
-{{- end}}
-{{- /* chain xfade + acrossfade */ -}}
-{{- range $s := .Segments }}
-	{{- if not $s.LastIndex }}
-	[v{{$s.Idx}}][v{{$s.Idx | add 1}}]xfade=transition=fade:duration={{printf "%.2f" $s.FadeDur}}:offset={{printf "%.2f" $s.Offset}}[v{{$s.Idx | add 1}}x];
-	[a{{$s.Idx}}][a{{$s.Idx | add 1}}]acrossfade=d={{printf "%.2f" $s.FadeDur}}[a{{$s.Idx | add 1}}x];
-	{{- end }}
-{{- end}}
-`))
-
-	// helper func for template math
-	tpl.Funcs(template.FuncMap{
-		"add": func(i int) int { return i + 1 },
-	})
-
-	if err := tpl.Execute(&graph, map[string]any{
-		"Clips":    clips,
-		"Segments": segments,
-	}); err != nil {
-		return nil, err
-	}
-
-	last := len(clips) - 1
-	argv = append(argv,
-		"-filter_complex", graph.String(),
-		"-map", fmt.Sprintf("[v%dx]", last),
-		"-map", fmt.Sprintf("[a%dx]", last),
-		"-c:v", "libx264", "-preset", "medium", "-crf", "20",
-		"-c:a", "aac", "-b:a", "192k",
+	cmdArgs := append(clipsPaths,
+		"-filter_complex", fmt.Sprintf("%s %s", strings.Join(filterComplexes, ""), concatenationFilter),
+		"-map", "[v]",
 		"-pix_fmt", "yuv420p",
-		"-y", output,
+		output, "-y",
 	)
 
-	cmd := exec.Command("ffmpeg", argv...)
-	if b, err := cmd.CombinedOutput(); err != nil {
-		return nil, fmt.Errorf("xfade encode: %w\n%s", err, b)
+	cmd := exec.Command("ffmpeg", cmdArgs...)
+	println(cmd.String())
+	if err := cmd.Run(); err != nil {
+		return nil, fmt.Errorf("error creating video: %w", err)
 	}
 
-	var total float64
-	for _, c := range clips {
-		total += c.Timestamp
+	video := Video{
+		Path:     output,
+		Duration: totalDuration,
 	}
-	return &Video{Path: output, Duration: total}, nil
+
+	return &video, nil
+
 }
