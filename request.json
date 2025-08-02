@@ -1,0 +1,18 @@
+{
+    "endpoint": "projects/cortos-ai-466916/locations/us-central1/publishers/google/models/veo-3.0-generate-001",
+    "instances": [
+        {
+            "prompt": "ENTER PROMPT HERE",
+        }
+    ],
+    "parameters": {
+        "aspectRatio": "16:9",
+        "sampleCount": 4,
+        "durationSeconds": "8",
+        "personGeneration": "allow_all",
+        "addWatermark": true,
+        "includeRaiReason": true,
+        "generateAudio": true,
+        "resolution": "720p",
+    }
+}

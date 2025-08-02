@@ -5,15 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/google/uuid"
-	"github.com/minio/minio-go/v7"
-	"github.com/thedekerone/shorts-maker/app/images"
-	"github.com/thedekerone/shorts-maker/elevenlabs"
-	"github.com/thedekerone/shorts-maker/engine"
-	"github.com/thedekerone/shorts-maker/models"
-	"github.com/thedekerone/shorts-maker/pkg"
-	"github.com/thedekerone/shorts-maker/services"
-	"github.com/thedekerone/shorts-maker/subtitles"
 	"net/http"
 	"net/url"
 	"os"
@@ -21,6 +12,17 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/google/uuid"
+	"github.com/minio/minio-go/v7"
+	"github.com/thedekerone/shorts-maker/app/images"
+	"github.com/thedekerone/shorts-maker/app/videos"
+	"github.com/thedekerone/shorts-maker/elevenlabs"
+	"github.com/thedekerone/shorts-maker/engine"
+	"github.com/thedekerone/shorts-maker/models"
+	"github.com/thedekerone/shorts-maker/pkg"
+	"github.com/thedekerone/shorts-maker/services"
+	"github.com/thedekerone/shorts-maker/subtitles"
 )
 
 func generateUniqueName() string {
@@ -274,13 +276,13 @@ func processVideoGeneration(jobID string, script string, webhook string, voiceId
 		}
 	}
 
-	images, err := generateImages(jobID, transcript, mode)
+	clips, err := generateClips(jobID, transcript, mode)
 	if err != nil {
 		return
 	}
 
-	for i, v := range images {
-		err = uploadGeneratedFile(minioClient, v.URL, fmt.Sprintf("generate_image_%d", i), jobID)
+	for i, v := range clips {
+		err = uploadGeneratedFile(minioClient, v.Path, fmt.Sprintf("generate_image_%d", i), jobID)
 		if err != nil {
 			println("Failed to upload image to minio")
 			return
@@ -288,7 +290,7 @@ func processVideoGeneration(jobID string, script string, webhook string, voiceId
 
 	}
 
-	outputFilePath, err := createVideo(jobID, transcript, images, voice, mode)
+	outputFilePath, err := createVideoFromClips(jobID, transcript, clips, voice, mode)
 	if err != nil {
 		return
 	}
@@ -374,6 +376,84 @@ func generateImages(jobID string, transcript *models.TranscriptionOutput, mode s
 		return nil, err
 	}
 	return images, nil
+}
+
+func generateClips(jobID string, transcript *models.TranscriptionOutput, mode string) ([]models.VideoWithTimestamp, error) {
+	updateJobStatus(jobID, "generating_images", "", "")
+	v, err := videos.GetVideosWithTimestamps(transcript, mode)
+	if err != nil {
+		updateJobStatus(jobID, "failed", "", "Error getting images: "+err.Error())
+		return nil, err
+	}
+	return v, nil
+}
+
+func createVideoFromClips(
+	jobID string,
+	transcript *models.TranscriptionOutput,
+	clips []models.VideoWithTimestamp, // NEW
+	voice string,
+	mode string,
+) (string, error) {
+
+	ctx := context.Background()
+
+	updateJobStatus(jobID, "merging_clips", "", "")
+	mergedPath := filepath.Join(os.TempDir(), pkg.GenerateRandomString(6)+".mp4")
+
+	vid, err := engine.CreateVideoFromClips(
+		clips,
+		mergedPath,
+		engine.TransitionTypeFade, // or "none"
+	)
+	if err != nil {
+		updateJobStatus(jobID, "failed", "", "merge clips: "+err.Error())
+		return "", err
+	}
+
+	updateJobStatus(jobID, "adding_audio_to_video", "", "")
+	outputPath, err := pkg.AddAudioToVideo(vid.Path, voice, os.TempDir())
+	if err != nil {
+		updateJobStatus(jobID, "failed", "", "Error adding audio to video: "+err.Error())
+		return "", err
+	}
+
+	outputFileName := fmt.Sprintf("%s.mp4", generateUniqueName())
+	outputFilePath := filepath.Join(os.TempDir(), outputFileName)
+	subStyles := subtitles.SubtitleStyles{
+		FontFamily:  "Roboto-Black",
+		FontSize:    72,
+		BorderColor: "black",
+		BorderWidth: 4,
+		Color:       "white",
+	}
+	animationSubs := subtitles.CreateShortSubsWithStyles(transcript, &subStyles)
+
+	updateJobStatus(jobID, "generating ASS file", "", "")
+	fmt.Printf("%v", err)
+	baseAssPath, err := filepath.Abs("handlers/assets/tilted.ass")
+	if err != nil {
+		updateJobStatus(jobID, "failed", "", "Error getting absolute path for base.ass: "+err.Error())
+		return "", err
+	}
+	subtitlesPath, err := subtitles.CreateAssFile(animationSubs, baseAssPath)
+
+	fmt.Printf(subtitlesPath)
+
+	fmt.Printf("%v", err)
+	if err != nil {
+		return "", err
+	}
+	updateJobStatus(jobID, "Adding subtitles to video", "", "")
+
+	_, err = engine.AddAssSubtitlesToVideo(ctx, outputPath, subtitlesPath, outputFilePath)
+
+	if err != nil {
+		return "", err
+
+	}
+
+	return outputFilePath, nil
 }
 
 func createVideo(jobID string, transcript *models.TranscriptionOutput, images []models.ImageWithTimestamp, voice string, mode string) (string, error) {

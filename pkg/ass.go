@@ -1,4 +1,4 @@
-package subtitles
+package pkg
 
 import (
 	"bufio"

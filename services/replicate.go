@@ -35,53 +35,6 @@ func NewReplicateService() (*ReplicateService, error) {
 	return &ReplicateService{Client: client}, nil
 }
 
-func (rs *ReplicateService) GetCompletitionForImages(prompt string, systemPrompt string) (*ImagePromptGenerator, error) {
-	ctx := context.TODO()
-	model := "meta/meta-llama-3-70b-instruct:fbfb20b472b2f3bdd101412a9f70a0ed4fc0ced78a77ff00970ee7a2383c575d"
-
-	if systemPrompt == "" {
-		systemPrompt = `You are a image prompt generator, the user will show you a story and you have to return a JSON with the following format:
-		{
-			numImages: number,
-			images: [
-				{ prompt: "string", duration: number }
-			]
-		}`
-	}
-
-	input := replicate.PredictionInput{
-		"system_prompt": systemPrompt,
-		"prompt":        prompt,
-		"max_tokens":    4096,
-	}
-
-	output, err := rs.Client.Run(ctx, model, input, nil)
-
-	if err != nil {
-		return nil, err
-	}
-
-	if output == nil {
-		return nil, errors.New("output is nil")
-	}
-
-	var jsonResponse ImagePromptGenerator
-
-	stringOutput := outputToStrings(output)
-	if len(stringOutput) == 0 {
-		return nil, errors.New("output is empty")
-	}
-	print(strings.Join(stringOutput, ""))
-
-	err = json.Unmarshal([]byte(strings.Join(stringOutput, "")), &jsonResponse)
-	if err != nil {
-		return nil, err
-	}
-
-	return &jsonResponse, nil
-
-}
-
 func (rs *ReplicateService) GetCompletition(prompt string, systemPrompt string) (string, error) {
 	ctx := context.TODO()
 	model := "meta/meta-llama-3-70b-instruct:fbfb20b472b2f3bdd101412a9f70a0ed4fc0ced78a77ff00970ee7a2383c575d"
