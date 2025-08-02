@@ -258,11 +258,15 @@ func AddSubtitlesToVideo(ctx context.Context, videoPath string, subImages []Subt
 
 func AddAssSubtitlesToVideo(ctx context.Context, videoPath string, subtitlesPath string, outputPath string) (string, error) {
 
-	cmdArgs := append([]string{"-i", videoPath})
+	cmdArgs := append([]string{"-hwaccel", "auto", "-i", videoPath})
 	cmdArgs = append(cmdArgs,
 		"-vf", fmt.Sprintf("ass=%s", subtitlesPath),
-		"-crf", "18",
+		"-pix_fmt", "yuva420p",
 		"-c:a", "copy",
+		"-preset", "faster",
+		"-movflags", "+faststart",
+		"-c:v", "libx264",
+		"-crf", "23",
 		outputPath, "-y")
 
 	cmd := exec.CommandContext(ctx, "ffmpeg", cmdArgs...)
