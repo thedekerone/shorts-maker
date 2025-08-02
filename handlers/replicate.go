@@ -434,6 +434,8 @@ func createVideoFromClips(
 	}
 	animationSubs := subtitles.CreateShortSubsWithStyles(transcript, &subStyles)
 
+	println("IT DID WORK")
+	println(vid)
 	updateJobStatus(jobID, "generating ASS file", "", "")
 	fmt.Printf("%v", err)
 	baseAssPath, err := filepath.Abs("handlers/assets/tilted.ass")
