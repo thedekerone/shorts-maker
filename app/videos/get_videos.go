@@ -39,69 +39,67 @@ func GetVideosWithTimestamps(
 			s.Text, s.Start, s.End)
 	}
 
-	imageGenerationPromptsTemplate := fmt.Sprintf(`
+	imageGenerationPrompts := fmt.Sprintf(
+		`
 		### SYSTEM ###
-You are a **Video-Prompt Composer**.
+You are an **Image‑Prompt Composer**.
 
-Your job is to turn a timestamped story into a sequence of ultra-realistic, cinematic **video-clip prompts**—returned as a single JSON object and nothing else.
+Your job is to turn a timestamped story into a sequence of ultra‑realistic, cinematic image prompts—returned as a single JSON object and nothing else.
 
-INSTRUCTIONS  
-1. Read the story supplied between the triple quotes:  
-   """  
-   %s  
-   """  
-
+INSTRUCTIONS
+1. Read the story supplied between the triple quotes: 
+   """
+   %s
+   """
 2. **Identify key moments** (scene changes, emotional peaks, environment shifts).
-
-3. Decide the number of clips:  
-   • Each clip **must** last **5 – 8 s**.  
-   • Pace the story so it feels engaging, not frantic.
-
-4. Allocate every clip’s **duration** (float) so that the **sum equals %.2f s (± 0.01 s)**.  
-   • Stay within the 5 – 8 s window for every individual clip.
-
-5. For every clip craft a **stand-alone prompt** that fully describes:  
-   • Setting, subjects, action, and mood.  
-   • Lighting style (e.g., golden-hour rim light).  
-   • Camera details (lens, depth-of-field, framing, shot type, motion—pan, dolly, aerial, etc.).  
-   • Stylistic tags: “8 K, 30 fps, photorealistic, cinematic color grade”.  
+3. Decide the number of images:  
+   • ≥ 1 image every 12 s.  
+   • Keep pacing engaging, not frantic.  
+4. Allocate each image’s on‑screen **duration** so that the sum equals %.2f (±0.01 s).
+5. For every image craft a **stand‑alone prompt** that fully describes:  
+   • Setting, subjects, action, mood.  
+   • Lighting style (e.g., golden‑hour rim light).  
+   • Camera details (lens, depth‑of‑field, framing, shot type).  
+   • Stylistic tags: “8 K, photorealistic, cinematic color grade”.  
    (Assume the generator has no other context.)
-
-6. Maintain a *single, coherent visual style* across all clips—hyper-real textures, lifelike lighting.
-
+6. Maintain a *single, coherent visual style* across all images—hyper‑real textures, lifelike lighting.
 7. Output **only** the JSON below (no code fences, no comments).
 
 OUTPUT FORMAT
 {
-  "numClips": <integer>,
-  "clips": [
+  "numImages": <integer>,
+  "images": [
     {
       "prompt": "<full scene description>",
-      "duration": <float>   // seconds (5-8)
+      "duration": <float>   // seconds
     }
-    // … additional clips …
+    // … additional images …
   ]
 }
 
 EXAMPLE
 {
-  "numClips": 2,
-  "clips": [
+  "numImages": 3,
+  "images": [
     {
-      "prompt": "Slow dolly-in at sunrise over an isolated desert road stretching toward crimson mountains, warm golden-hour light casting long shadows, crisp 50 mm lens, shallow depth of field, photorealistic 8 K, 30 fps, cinematic color grade",
-      "duration": 6.5
+      "prompt": "Wide‑angle sunrise shot of an isolated desert road stretching toward crimson mountains, warm golden‑hour light casting long shadows, crisp 50 mm lens, shallow depth of field, hyper‑realistic 8 K, cinematic color grade",
+      "duration": 11.5
     },
     {
-      "prompt": "Aerial tracking shot of a lone traveler silhouetted against a vast starlit sky on a windswept plateau, cool moonlight, subtle gimbal motion, 35 mm equivalent, HDR, photorealistic 8 K, 30 fps",
-      "duration": 7.2
+      "prompt": "Macro close‑up of a weathered hand gripping a rusty compass, soft ambient backlight revealing skin texture, f/2.8, filmic grain, photorealistic 8 K",
+      "duration": 12.0
+    },
+    {
+      "prompt": "Lone traveler silhouetted beneath a vast starlit sky on a windswept plateau, cool moonlight, slow dolly‑out 35 mm, HDR, ultra‑real 8 K",
+      "duration": 13.0
     }
   ]
 }
 
-		`, fmt.Sprintf("\n %v", segmentStrings), totalDuration)
+`, fmt.Sprintf("\n %v", segmentStrings), totalDuration)
 
 	// Same JSON-builder prompt you used for images
-	prompt := fmt.Sprintf(imageGenerationPromptsTemplate, segmentStrings, totalDuration)
+	prompt := fmt.Sprintf(imageGenerationPrompts, segmentStrings, totalDuration)
 
 	imgPlan, err := deepseek.GetCompletitionForImages(prompt, "")
 	if err != nil {
