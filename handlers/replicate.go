@@ -435,14 +435,16 @@ func createVideoFromClips(
 	animationSubs := subtitles.CreateShortSubsWithStyles(transcript, &subStyles)
 
 	println("IT DID WORK")
-	println(vid)
+	println(vid.Path)
+	println(outputPath)
 	updateJobStatus(jobID, "generating ASS file", "", "")
 	fmt.Printf("%v", err)
-	baseAssPath, err := filepath.Abs("handlers/assets/tilted.ass")
+	baseAssPath, err := filepath.Abs("handlers/assets/base.ass")
 	if err != nil {
 		updateJobStatus(jobID, "failed", "", "Error getting absolute path for base.ass: "+err.Error())
 		return "", err
 	}
+	print("base ass got")
 	subtitlesPath, err := subtitles.CreateAssFile(animationSubs, baseAssPath)
 
 	fmt.Printf(subtitlesPath)

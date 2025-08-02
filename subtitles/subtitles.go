@@ -202,12 +202,16 @@ func CreateAssFile(subtitles []Subtitle, basePath string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed to get absolute path: %w", err)
 	}
+	println("GOT TO ASS")
 
 	text, err := getTextFromFile(absBasePath)
+	println("TEXT TO ASS")
 
 	if err != nil {
 		return "", err
 	}
+
+	println("TEXT TOsfdad sdas adsdsa ads adsds ASS")
 
 	for _, v := range subtitles {
 		formattedString := fmt.Sprintf("Dialogue: 0,%s,%s,Default,,0,0,0,,{\\fscx40\\fscy40\\t(0,60,\\fscx45\\fscy45)\\t(60,140,\\fscx40\\fscy40)}%s\n", transformFloatToTimestamp(v.StartTime), transformFloatToTimestamp(v.EndTime), v.Text)
