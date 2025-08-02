@@ -44,7 +44,7 @@ func (vs *VeoService) StartGeneration(prompt string, duration int, resolution st
 
 	// Build JSON body.
 	params := map[string]interface{}{
-		"aspectRatio":      "16:9",
+		"aspectRatio":      "9:16",
 		"durationSeconds":  duration,
 		"sampleCount":      sampleCount,
 		"personGeneration": "allow_all",
@@ -74,6 +74,8 @@ func (vs *VeoService) StartGeneration(prompt string, duration int, resolution st
 	req, _ := http.NewRequest("POST", url, bytes.NewReader(bodyBytes))
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+token)
+
+	println(url)
 
 	resp, err := new(http.Client).Do(req)
 	if err != nil {

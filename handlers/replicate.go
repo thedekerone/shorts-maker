@@ -379,8 +379,12 @@ func generateImages(jobID string, transcript *models.TranscriptionOutput, mode s
 }
 
 func generateClips(jobID string, transcript *models.TranscriptionOutput, mode string) ([]models.VideoWithTimestamp, error) {
-	updateJobStatus(jobID, "generating_images", "", "")
+	updateJobStatus(jobID, "generating_clips", "", "")
+
+	print("GENERATING CLIPS START")
 	v, err := videos.GetVideosWithTimestamps(transcript, mode)
+	print("GENERATING CLIPS END")
+
 	if err != nil {
 		updateJobStatus(jobID, "failed", "", "Error getting images: "+err.Error())
 		return nil, err

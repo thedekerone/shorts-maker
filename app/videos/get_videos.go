@@ -27,6 +27,8 @@ func GetVideosWithTimestamps(
 		"us-central1",
 		"veo-2.0-generate-001",
 	)
+	println(vs.Location)
+
 	if err != nil {
 		return nil, fmt.Errorf("init veo: %w", err)
 	}
@@ -109,6 +111,7 @@ EXAMPLE
 	// ── 3.  Loop through each “image” entry, but request a clip instead───
 	var clips []models.VideoWithTimestamp
 	for i, entry := range imgPlan.ImagesPrompt {
+		println("trying to generate clip")
 		// constrain each clip to max 8 s (Veo-2 limit)
 		dur := entry.Duration
 		if dur > 8 {
@@ -122,7 +125,9 @@ EXAMPLE
 		}
 
 		paths, err := vs.GetVideos(entry.Prompt, int(dur), res, 1)
+		println(paths)
 		if err != nil {
+			println(err)
 			return nil, fmt.Errorf("clip %d: %w", i+1, err)
 		}
 		if len(paths) == 0 {
