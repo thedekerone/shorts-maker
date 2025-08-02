@@ -29,7 +29,7 @@ RUN chmod +x /usr/local/bin/entrypoint.sh
 ENV GOOGLE_APPLICATION_CREDENTIALS=/var/secrets/google/key.json \
     PORT=8080
 
-WORKDIR /app        # optional
+WORKDIR /app        
 EXPOSE 8080
 
 # Script runs first; it should finish by exec-ing the Go binary
