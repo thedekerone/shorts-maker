@@ -1,4 +1,4 @@
-package pkg
+package subtitles
 
 import (
 	"bufio"
@@ -12,50 +12,40 @@ import (
 	"github.com/thedekerone/shorts-maker/models"
 )
 
-// Visual effects for realism
 const (
-	tiltEffect     = "{\\fscx50\\fscy50\\t(0,60,\\fscx55\\fscy55)\\t(60,140,\\fscx50\\fscy50)}"
-	baseStyle      = "{\\blur0.6\\bord2\\shad2\\c&H00FFFF&\\t(0,200,\\c&HFFFFFF&)}"
-	fadeEffect     = "\\fad(50,50)" // 50ms fade in/out
-	defaultOverlap = 0.05           // seconds overlap between words
-	punctExtension = 0.25           // extend after punctuation
+	tiltEffect            = "{\\fscx50\\fscy50\\t(0,60,\\fscx55\\fscy55)\\t(60,140,\\fscx50\\fscy50)}"
+	baseStyle             = "{\\blur0.6\\bord2\\shad2\\c&H00FFFF&\\t(0,200,\\c&HFFFFFF&)}"
+	fadeEffect            = "\\fad(50,50)"
+	defaultOverlapSeconds = 0.05
+	punctExtensionSeconds = 0.25
+	punctuationRunes      = ",.!?"
 )
 
-// CreateDialogFromWords generates more realistic ASS dialogue lines.
-func CreateDialogFromWords(seg models.Segment) (string, error) {
+var ErrEmptySegment = errors.New("segment contains no words")
+
+func BuildDialogLines(seg models.Segment) (string, error) {
 	if len(seg.Words) == 0 {
-		return "", errors.New("segment contains no words")
+		return "", ErrEmptySegment
 	}
 
 	var b strings.Builder
+	groups := groupWords(seg.Words)
 
-	// Optional grouping of filler words
-	wordGroups := groupWords(seg.Words)
-
-	for _, group := range wordGroups {
-		start := group[0].Start
+	for gi, grp := range groups {
+		start := grp[0].Start
 		end := seg.End
-		text := joinGroupWords(group)
-
-		// Set end based on last word in group
-		last := group[len(group)-1]
-		if idx := indexOfWord(seg.Words, last); idx < len(seg.Words)-1 {
-			end = seg.Words[idx+1].Start + defaultOverlap
+		if gi < len(groups)-1 {
+			end = groups[gi+1][0].Start + defaultOverlapSeconds
 		}
-
-		// Adjust for punctuation pauses
-		if strings.ContainsAny(last.Word, ",.!?") {
-			end += punctExtension
+		if containsPunctuation(grp[len(grp)-1].Word) {
+			end += punctExtensionSeconds
 		}
-
-		// Sanity checks
 		if start < 0 {
 			start = 0
 		}
 		if start > end {
-			return "", fmt.Errorf("start time %.3f greater than end time %.3f", start, end)
+			return "", fmt.Errorf("inconsistent timing: start=%.3f > end=%.3f", start, end)
 		}
-
 		fmt.Fprintf(&b,
 			"Dialogue: 0,%s,%s,Default,,0000,0000,0000,,%s%s%s%s\n",
 			toASSTimestamp(start),
@@ -63,41 +53,67 @@ func CreateDialogFromWords(seg models.Segment) (string, error) {
 			tiltEffect,
 			baseStyle,
 			fadeEffect,
-			text,
+			joinGroupWords(grp),
 		)
 	}
-
 	return b.String(), nil
 }
 
-// CreateDialog produces a single ASS dialogue line for the entire segment.
-func CreateDialog(seg models.Segment) string {
+func BuildSingleDialogLine(seg models.Segment) string {
 	return fmt.Sprintf(
-		"\nDialogue: 0,%s,%s,Default,,0000,0000,0000,,%s",
+		"Dialogue: 0,%s,%s,Default,,0000,0000,0000,,%s\n",
 		toASSTimestamp(seg.Start),
 		toASSTimestamp(seg.End),
 		joinWordsWithTiming(seg),
 	)
 }
 
-// Group short filler words with the next longer one for smoother reading.
-func groupWords(words []models.Word) [][]models.Word {
-	var groups [][]models.Word
-	buf := []models.Word{}
-	for _, w := range words {
-		buf = append(buf, w)
-		if len(w.Word) > 2 || strings.ContainsAny(w.Word, ",.!?") {
-			groups = append(groups, buf)
-			buf = []models.Word{}
+func CreateASSFile(dstPath, templateDir string, tr models.TranscriptionOutput) error {
+	headerPath := filepath.Join(templateDir, "tilted.ass")
+	header, err := os.ReadFile(headerPath)
+	if err != nil {
+		return fmt.Errorf("read template %q: %w", headerPath, err)
+	}
+
+	f, err := os.Create(dstPath)
+	if err != nil {
+		return fmt.Errorf("create %q: %w", dstPath, err)
+	}
+	defer f.Close()
+
+	if _, err = f.Write(header); err != nil {
+		return fmt.Errorf("write header: %w", err)
+	}
+
+	bw := bufio.NewWriter(f)
+	for _, seg := range tr.Segments {
+		lines, err := BuildDialogLines(seg)
+		if err != nil {
+			return fmt.Errorf("segment at %.2fs: %w", seg.Start, err)
+		}
+		if _, err = bw.WriteString(lines); err != nil {
+			return fmt.Errorf("write dialogue: %w", err)
 		}
 	}
-	if len(buf) > 0 {
+	return bw.Flush()
+}
+
+func groupWords(words []models.Word) [][]models.Word {
+	var groups [][]models.Word
+	var buf []models.Word
+	for _, w := range words {
+		buf = append(buf, w)
+		if len(w.Word) > 2 || containsPunctuation(w.Word) {
+			groups = append(groups, buf)
+			buf = nil
+		}
+	}
+	if len(buf) != 0 {
 		groups = append(groups, buf)
 	}
 	return groups
 }
 
-// Concatenate a group of words into one string
 func joinGroupWords(words []models.Word) string {
 	parts := make([]string, len(words))
 	for i, w := range words {
@@ -106,86 +122,46 @@ func joinGroupWords(words []models.Word) string {
 	return strings.Join(parts, " ")
 }
 
-// Helper to find a word’s index in the segment
-func indexOfWord(all []models.Word, target models.Word) int {
-	for i, w := range all {
-		if w.Start == target.Start && w.End == target.End && w.Word == target.Word {
-			return i
-		}
-	}
-	return -1
-}
-
-// Karaoke-style timing for full-line subtitles
 func joinWordsWithTiming(seg models.Segment) string {
 	var b strings.Builder
-
 	for i, w := range seg.Words {
-		var gap float64
-		switch {
-		case i == 0:
-			gap = w.Start - seg.Start
-		case i < len(seg.Words)-1:
-			gap = seg.Words[i+1].Start - w.End
-		}
-
-		fmt.Fprintf(&b, "%s ", formatKTag(w, gap))
+		gap := leadingGap(seg, i)
+		fmt.Fprintf(&b, "%s ", buildKTag(w, gap))
 	}
-
 	return strings.TrimSpace(b.String())
 }
 
-func formatKTag(w models.Word, offset float64) string {
-	duration := (w.End - w.Start) + offset
-
-	// Extend slightly for punctuation
-	if strings.ContainsAny(w.Word, ",.!?") {
-		duration += punctExtension
+func leadingGap(seg models.Segment, idx int) float64 {
+	switch idx {
+	case 0:
+		return seg.Words[0].Start - seg.Start
+	case len(seg.Words) - 1:
+		return 0
+	default:
+		return seg.Words[idx+1].Start - seg.Words[idx].End
 	}
+}
 
-	// Scale duration with word length
-	duration += float64(len(w.Word)) * 0.015
+func buildKTag(w models.Word, gap float64) string {
+	dur := (w.End - w.Start) + gap
+	if containsPunctuation(w.Word) {
+		dur += punctExtensionSeconds
+	}
+	dur += float64(len(w.Word)) * 0.015
+	centiseconds := int(dur * 100)
+	return fmt.Sprintf("{\\k%d}%s", centiseconds, w.Word)
+}
 
-	durationCs := int(duration * 100) // centiseconds
-	return fmt.Sprintf("{\\k%d}%s", durationCs, w.Word)
+func containsPunctuation(s string) bool {
+	return strings.ContainsAny(s, punctuationRunes)
 }
 
 func toASSTimestamp(sec float64) string {
 	d := time.Duration(sec * float64(time.Second))
-	hrs := int(d.Hours())
-	mins := int(d.Minutes()) % 60
-	secs := int(d.Seconds()) % 60
-	cs := int(d.Milliseconds()/10) % 100
-	return fmt.Sprintf("%d:%02d:%02d.%02d", hrs, mins, secs, cs)
-}
-
-// CreateAssFile writes a full ASS file combining template and generated dialogue.
-func CreateAssFile(path string, tr models.TranscriptionOutput) error {
-	base, err := os.ReadFile(filepath.Join("assets", "tilted.ass"))
-	if err != nil {
-		return fmt.Errorf("read base ASS file: %w", err)
-	}
-
-	f, err := os.Create(path)
-	if err != nil {
-		return fmt.Errorf("create output file: %w", err)
-	}
-	defer f.Close()
-
-	w := bufio.NewWriter(f)
-	if _, err = w.Write(base); err != nil {
-		return fmt.Errorf("write base template: %w", err)
-	}
-
-	for _, seg := range tr.Segments {
-		dlg, err := CreateDialogFromWords(seg)
-		if err != nil {
-			return fmt.Errorf("build dialog for segment: %w", err)
-		}
-		if _, err = w.WriteString(dlg); err != nil {
-			return fmt.Errorf("write dialog: %w", err)
-		}
-	}
-
-	return w.Flush()
+	totalSeconds := int(d.Seconds())
+	hrs := totalSeconds / 3600
+	mins := (totalSeconds % 3600) / 60
+	secs := totalSeconds % 60
+	centis := int(d.Milliseconds()/10) % 100
+	return fmt.Sprintf("%d:%02d:%02d.%02d", hrs, mins, secs, centis)
 }
