@@ -47,7 +47,7 @@ func (vs *VeoService) StartGeneration(prompt string, duration int, resolution st
 		"aspectRatio":      "9:16",
 		"durationSeconds":  duration,
 		"sampleCount":      sampleCount,
-		"personGeneration": "allow_all",
+		"personGeneration": "allow_adult",
 		"addWatermark":     true,
 		"includeRaiReason": true,
 		"generateAudio":    false,
