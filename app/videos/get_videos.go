@@ -43,62 +43,70 @@ func GetVideosWithTimestamps(
 
 	imageGenerationPrompts := fmt.Sprintf(
 		`
-		### SYSTEM ###
-You are an **Image‑Prompt Composer**.
+		### SYSTEM
 
-Your job is to turn a timestamped story into a sequence of ultra‑realistic, cinematic image prompts—returned as a single JSON object and nothing else.
+You are a **Veo Storyboard Composer**.
 
-INSTRUCTIONS
-1. Read the story supplied between the triple quotes: 
+Your job is to turn a timestamped story into a sequence of ultra-realistic, cinematic **video-clip prompts**—returned as one JSON object and nothing else.
+
+---
+
+#### INSTRUCTIONS
+
+1. **Read the story** supplied between the triple quotes:
    """
    %s
    """
-2. **Identify key moments** (scene changes, emotional peaks, environment shifts).
-3. Decide the number of images:  
-   • ≥ 1 image every 12 s.  
-   • Keep pacing engaging, not frantic.  
-4. Allocate each image’s on‑screen **duration** so that the sum equals %.2f (±0.01 s).
-5. For every image craft a **stand‑alone prompt** that fully describes:  
-   • Setting, subjects, action, mood.  
-   • Lighting style (e.g., golden‑hour rim light).  
-   • Camera details (lens, depth‑of‑field, framing, shot type).  
-   • Stylistic tags: “8 K, photorealistic, cinematic color grade”.  
-   (Assume the generator has no other context.)
-6. Maintain a *single, coherent visual style* across all images—hyper‑real textures, lifelike lighting.
-7. Output **only** the JSON below (no code fences, no comments).
+2. **Map the narrative beats**—scene changes, emotional peaks, location or time shifts.
+3. **Determine clip count**
+   • At least **1 clip every 12 s** of story runtime.
+   • Keep pacing engaging, never frantic.
+4. **Duration constraints**
+   • **Each clip must be exactly 5, 6, 7, or 8 seconds** (integer values only).
+   • The sum of all durations **must equal %.2f s** (+ 0.9) it's better to get a longer sum than less than required.
+5. **For every clip craft a stand-alone Veo prompt** describing:
+   • Setting, subjects, action, mood.
+   • Lighting style (e.g., golden-hour rim light, neon-noir backlighting).
+   • Camera language: lens focal length, shot size, movement (e.g., slow dolly-in), depth of field.
+   • Stylistic tags: “8 K, 24 fps, photorealistic, cinematic LUT”.
+   *(Assume Veo has no other context.)*
+6. **Maintain a single, coherent visual grammar** across all clips—consistent color grade, texture fidelity, hyper-real lighting.
+7. **Output only** the JSON object below—no code fences, comments, or extra keys.
 
-OUTPUT FORMAT
+---
+
+#### OUTPUT SCHEMA
+
 {
-  "numImages": <integer>,
-  "images": [
-    {
-      "prompt": "<full scene description>",
-      "duration": <float>   // seconds
-    }
-    // … additional images …
-  ]
+"numClips": <integer>,
+"clips": \[
+{
+"prompt": "<full clip description>",
+"duration": <integer>   // 5, 6, 7, or 8
+}
+// … more clips …
+]
 }
 
-EXAMPLE
+---
+
+#### EXAMPLE
+
 {
-  "numImages": 3,
-  "images": [
-    {
-      "prompt": "Wide‑angle sunrise shot of an isolated desert road stretching toward crimson mountains, warm golden‑hour light casting long shadows, crisp 50 mm lens, shallow depth of field, hyper‑realistic 8 K, cinematic color grade",
-      "duration": 11.5
-    },
-    {
-      "prompt": "Macro close‑up of a weathered hand gripping a rusty compass, soft ambient backlight revealing skin texture, f/2.8, filmic grain, photorealistic 8 K",
-      "duration": 12.0
-    },
-    {
-      "prompt": "Lone traveler silhouetted beneath a vast starlit sky on a windswept plateau, cool moonlight, slow dolly‑out 35 mm, HDR, ultra‑real 8 K",
-      "duration": 13.0
-    }
-  ]
+"numClips": 2,
+"clips": \[
+{
+"prompt": "Low-angle sunrise shot of an empty desert highway stretching toward blazing vermilion mesas, warm rim light, 35 mm anamorphic lens, gentle camera push-in, shallow DOF, 8 K, 24 fps, photorealistic, cinematic color grade",
+"duration": 6
+},
+{
+"prompt": "Macro close-up of a weather-beaten hand tightening a brass compass, soft ambient rim glow accentuating skin creases, f/2.8, locked-off camera, tactile hyper-real detail, 8 K, 24 fps, cinematic LUT",
+"duration": 7
+}
+]
 }
 
-`, fmt.Sprintf("\n %v", segmentStrings), totalDuration)
+		`, fmt.Sprintf("\n %v", segmentStrings), totalDuration)
 
 	// Same JSON-builder prompt you used for images
 	prompt := fmt.Sprintf(imageGenerationPrompts, segmentStrings, totalDuration)
