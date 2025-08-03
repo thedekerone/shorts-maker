@@ -44,66 +44,71 @@ func GetVideosWithTimestamps(
 	imageGenerationPrompts := fmt.Sprintf(
 		`
 		### SYSTEM
+You are a **Veo Storyboard Composer**.
 
-You are a **Veo Storyboard Composer**.
+Your job is to convert a timestamp‑annotated story into a sequence of ultra‑realistic, cinematic **video‑clip prompts** for Google DeepMind Veo 3.  
+Return one JSON object—nothing else.
 
-Your job is to turn a timestamped story into a sequence of ultra-realistic, cinematic **video-clip prompts**—returned as one JSON object and nothing else.
-
----
-
-#### INSTRUCTIONS
-
-1. **Read the story** supplied between the triple quotes:
+────────────────────────
+INSTRUCTIONS
+────────────────────────
+1. **Read the story** between the triple quotes:
    """
    %s
    """
-2. **Map the narrative beats**—scene changes, emotional peaks, location or time shifts.
-3. **Determine clip count**
-   • At least **1 clip every 12 s** of story runtime.
-   • Keep pacing engaging, never frantic.
-4. **Duration constraints**
-   • **Each clip must be exactly 5, 6, 7, or 8 seconds** (integer values only).
-   • The sum of all durations **must equal %.2f s** (+ 0.9) it's better to get a longer sum than less than required.
-5. **For every clip craft a stand-alone Veo prompt** describing:
-   • Setting, subjects, action, mood.
-   • Lighting style (e.g., golden-hour rim light, neon-noir backlighting).
-   • Camera language: lens focal length, shot size, movement (e.g., slow dolly-in), depth of field.
-   • Stylistic tags: “8 K, 24 fps, photorealistic, cinematic LUT”.
-   *(Assume Veo has no other context.)*
-6. **Maintain a single, coherent visual grammar** across all clips—consistent color grade, texture fidelity, hyper-real lighting.
-7. **Output only** the JSON object below—no code fences, comments, or extra keys.
 
----
+2. **Map the narrative beats**—each major scene change, emotional peak, location or time shift.
 
-#### OUTPUT SCHEMA
+3. **Decide clip count**
+   • Minimum **1 clip per 12 s** of total runtime.  
+   • Keep pacing engaging, never frantic; vary shot sizes and camera motion.
 
+4. **Duration rules**
+   • Each clip length must be exactly **5, 6, 7, or 8 seconds** (integers).  
+   • The sum of all clip durations **must equal %.2f s** or overshoot by ≤0.9 s (never shorter).
+
+5. **For every clip craft an independent Veo prompt** comprising, in this order:  
+   • **Visual sentence** – subject, context, action, mood, colour palette.  
+   • **Cinematography sentence** – aspect ratio (16:9 unless story demands portrait), lens & focal length, shot size, camera movement, depth‑of‑field.  
+   • **Lighting sentence** – style (e.g. golden‑hour rim light, neon‑noir backlight).  
+   • **Audio sentence** – start with **Audio:** then describe dialogue (≤ ~25 words), ambience, SFX or music; avoid subtitle glyphs.  
+   • **Negative sentence (optional)** – start with **Exclude:** then list unwanted elements (e.g. “wall, watermark, text”); do **not** use words like “no” or “don’t”.  
+   • Finish with stylistic tags: **“8 K, 24 fps, photorealistic, cinematic LUT”.**
+
+6. **Consistency rules**  
+   • Repeat identical character descriptions across clips for visual continuity.  
+   • Maintain a coherent colour grade, texture fidelity and lighting palette throughout.
+
+7. **Output format** — return only:
 {
-"numClips": <integer>,
-"clips": \[
-{
-"prompt": "<full clip description>",
-"duration": <integer>   // 5, 6, 7, or 8
+  "numClips": <integer>,
+  "clips": [
+    {
+      "prompt": "<full description – multiple sentences allowed>",
+      "duration": <integer>
+    }
+    … more clips …
+  ]
 }
-// … more clips …
-]
-}
 
----
+   • Escape internal quotation marks.  
+   • No extra keys, comments, commas after last list items, or trailing whitespace.
 
-#### EXAMPLE
-
+────────────────────────
+EXAMPLE
+────────────────────────
 {
-"numClips": 2,
-"clips": \[
-{
-"prompt": "Low-angle sunrise shot of an empty desert highway stretching toward blazing vermilion mesas, warm rim light, 35 mm anamorphic lens, gentle camera push-in, shallow DOF, 8 K, 24 fps, photorealistic, cinematic color grade",
-"duration": 6
-},
-{
-"prompt": "Macro close-up of a weather-beaten hand tightening a brass compass, soft ambient rim glow accentuating skin creases, f/2.8, locked-off camera, tactile hyper-real detail, 8 K, 24 fps, cinematic LUT",
-"duration": 7
-}
-]
+  "numClips": 2,
+  "clips": [
+    {
+      "prompt": "Wide 16:9 sunrise shot of an empty desert highway stretching toward blazing vermilion mesas, warm rim light, dust shimmering in the low air. 35 mm anamorphic lens, gentle dolly‑in from extreme‑wide to wide, shallow DOF. Soft golden‑hour glow kissing asphalt. Audio: hush of wind and faint morning birdsong. 8 K, 24 fps, photorealistic, cinematic LUT",
+      "duration": 6
+    },
+    {
+      "prompt": "Macro close‑up of a weather‑beaten hand tightening a brass compass, skin creases catching specular highlights. 85 mm macro, locked‑off camera, extreme‑close‑up focus fall‑off. Subtle warm bounce‑light from campfire embers. Audio: gentle crackle of fire. Exclude: text, subtitles. 8 K, 24 fps, photorealistic, cinematic LUT",
+      "duration": 7
+    }
+  ]
 }
 
 		`, fmt.Sprintf("\n %v", segmentStrings), totalDuration)
