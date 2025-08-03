@@ -10,6 +10,14 @@ import (
 	"os"
 )
 
+type ClipPromptGenerator struct {
+	NumClips int `json:"numClips"`
+	Clips    []struct {
+		Prompt   string `json:"prompt"`
+		Duration int    `json:"duration"` // must be 5, 6, 7, or 8
+	} `json:"clips"`
+}
+
 type DeepSeekService struct {
 	APIKey     string
 	BaseURL    string
@@ -151,4 +159,60 @@ func (ds *DeepSeekService) GetCompletitionForImages(prompt string, systemPrompt 
 	}
 
 	return &jsonResponse, nil
+}
+
+func (ds *DeepSeekService) GetCompletitionForClips(prompt, systemPrompt string) (*ClipPromptGenerator, error) {
+	reqBody := DeepSeekRequest{
+		Model:     "deepseek-reasoner",
+		MaxTokens: 8192,
+		Messages: []Message{
+			{Role: "system", Content: systemPrompt},
+			{Role: "user", Content: prompt},
+		},
+		Stream: false,
+	}
+
+	jsonBody, err := json.Marshal(reqBody)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", ds.BaseURL, bytes.NewBuffer(jsonBody))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+ds.APIKey)
+
+	resp, err := ds.HTTPClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("API request failed with status code: %d", resp.StatusCode)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var apiResp DeepSeekResponse
+	if err := json.Unmarshal(body, &apiResp); err != nil {
+		return nil, err
+	}
+
+	if len(apiResp.Choices) == 0 {
+		return nil, errors.New("no completions returned")
+	}
+
+	// The assistant’s JSON for the clips is inside Choices[0].Message.Content
+	var clips ClipPromptGenerator
+	if err := json.Unmarshal([]byte(apiResp.Choices[0].Message.Content), &clips); err != nil {
+		return nil, err
+	}
+
+	return &clips, nil
 }

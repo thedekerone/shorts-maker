@@ -111,14 +111,14 @@ Your job is to turn a timestamped story into a sequence of ultra-realistic, cine
 	// Same JSON-builder prompt you used for images
 	prompt := fmt.Sprintf(imageGenerationPrompts, segmentStrings, totalDuration)
 
-	imgPlan, err := deepseek.GetCompletitionForImages(prompt, "")
+	imgPlan, err := deepseek.GetCompletitionForClips(prompt, imageGenerationPrompts)
 	if err != nil {
 		return nil, fmt.Errorf("deepseek completion: %w", err)
 	}
 
 	// ── 3.  Loop through each “image” entry, but request a clip instead───
 	var clips []models.VideoWithTimestamp
-	for i, entry := range imgPlan.ImagesPrompt {
+	for i, entry := range imgPlan.Clips {
 		println("trying to generate clip")
 		// constrain each clip to max 8 s (Veo-2 limit)
 		dur := entry.Duration
@@ -143,8 +143,8 @@ Your job is to turn a timestamped story into a sequence of ultra-realistic, cine
 		}
 
 		clips = append(clips, models.VideoWithTimestamp{
-			Path:      paths[0],       // local tmp .mp4
-			Timestamp: entry.Duration, // original storyboard time
+			Path:      paths[0],                // local tmp .mp4
+			Timestamp: float64(entry.Duration), // original storyboard time
 		})
 	}
 	return clips, nil
