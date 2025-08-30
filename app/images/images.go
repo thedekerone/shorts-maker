@@ -38,7 +38,7 @@ INSTRUCTIONS
    """
 2. **Identify key moments** (scene changes, emotional peaks, environment shifts).
 3. Decide the number of images:  
-   • ≥ 1 image every 12 s.  
+   • ≥ 1 image every ~5 s.  
    • Keep pacing engaging, not frantic.  
 4. Allocate each image’s on‑screen **duration** so that the sum equals %.2f (±0.01 s).
 5. For every image craft a **stand‑alone prompt** that fully describes:  
