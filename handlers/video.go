@@ -38,7 +38,7 @@ func getVideo(w http.ResponseWriter, r *http.Request, minioClient *services.Mini
 		if resp.StatusCode == http.StatusNotFound || resp.Code == "NoSuchKey" {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`{"url":undefined}`))
+			w.Write([]byte(`{"url":""}`))
 			return
 		}
 		log.Printf("StatObject failed: %v", err)
@@ -73,7 +73,7 @@ func getThumb(w http.ResponseWriter, r *http.Request, minioClient *services.Mini
 		if resp.StatusCode == http.StatusNotFound || resp.Code == "NoSuchKey" {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`{"url":undefined}`))
+			w.Write([]byte(`{"url":""}`))
 			return
 		}
 		log.Printf("StatObject failed: %v", err)
