@@ -276,13 +276,13 @@ func processVideoGeneration(jobID string, script string, webhook string, voiceId
 		}
 	}
 
-	clips, err := generateClips(jobID, transcript, mode)
+	clips, err := generateImages(jobID, transcript, mode)
 	if err != nil {
 		return
 	}
 
 	for i, v := range clips {
-		err = uploadGeneratedFile(minioClient, v.Path, fmt.Sprintf("generate_image_%d", i), jobID)
+		err = uploadGeneratedFile(minioClient, v.URL, fmt.Sprintf("generate_image_%d", i), jobID)
 		if err != nil {
 			println("Failed to upload image to minio")
 			return
@@ -290,7 +290,7 @@ func processVideoGeneration(jobID string, script string, webhook string, voiceId
 
 	}
 
-	outputFilePath, err := createVideoFromClips(jobID, transcript, clips, voice, mode)
+	outputFilePath, err := createVideo(jobID, transcript, clips, voice, mode)
 	if err != nil {
 		return
 	}
