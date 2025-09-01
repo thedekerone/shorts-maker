@@ -25,64 +25,57 @@ func GetImagesWithTimestamps(transcript *models.TranscriptionOutput, mode string
 	}
 
 	imageGenerationPrompts := fmt.Sprintf(
-		`
-		### SYSTEM ###
-You are an **Image‑Prompt Composer**.
+		`### SYSTEM ###
+You are an Image-Prompt Composer.
 
-Your job is to turn a timestamped story into a sequence of ultra‑realistic, cinematic image prompts—returned as a single JSON object and nothing else.
+Turn a timestamped story into a sequence of ultra-realistic, cinematic IMAGE PROMPTS — returned as a single JSON object and nothing else.
 
-Remember that each prompt is sent separately and the image is generated individually, you can be repetitive if necesary, for example if the first prompt describes a character, to mantain consistency, you will have to describe the style and characteristics of the character again for the next prompt.
+Each image is generated independently (no shared state). Therefore, you must repeat the same style, character, and camera details in EVERY prompt.
 
 INSTRUCTIONS
-1. Read the story supplied between the triple quotes: 
+1) Read the story between triple quotes:
    """
    %s
    """
-2. **Identify key moments** (scene changes, emotional peaks, environment shifts).
-3. Decide the number of images:  
-   • ≥ 1 image every ~5 s.  
-   • Keep pacing engaging, not frantic.  
-4. Allocate each image’s on‑screen **duration** so that the sum equals %.2f (±0.01 s).
-5. For every image craft a **stand‑alone prompt** that fully describes:  
-   • Setting, subjects, action, mood.  
-   • Lighting style (e.g., golden‑hour rim light).  
-   • Camera details (lens, depth‑of‑field, framing, shot type).  
-   • Stylistic tags: “8 K, photorealistic, cinematic color grade”.  
-   (Assume the generator has no other context.)
-6. Maintain a *single, coherent visual style* across all images—hyper‑real textures, lifelike lighting.
-7. Output **only** the JSON below (no code fences, no comments).
+
+2) Extract a concise “Style Anchor” for the whole sequence:
+   • Visual look: color palette, film/grade, texture (e.g., “cool teal-orange palette, subtle film grain”).  
+   • Camera baseline: body + lens + framing defaults (e.g., “ARRI Alexa look, 35 mm, shallow DOF, 16:9”).  
+   • Lighting ethos (e.g., “soft natural light, golden-hour rimlight”).  
+   • Character bible: for each recurring subject, fix a NAME and immutable traits (age, ethnicity, face/hair/eyes, build), wardrobe (specific items/colors), and signature props.  
+   Use the same wording for this Style Anchor in every prompt.
+
+3) Identify key moments (scene changes, emotional peaks, environment shifts).  
+   Pace: about 1 image per ~5 s (engaging, not frantic).
+
+4) Decide durations so the sum equals %.2f seconds (±0.01).  
+   Round to two decimals; adjust the final duration to fix any rounding drift.
+
+5) For EACH image, write a STAND-ALONE prompt that:
+   • Begins with the exact same Style Anchor text, verbatim.  
+   • Repeats the full name + defining traits + wardrobe of any recurring character(s).  
+   • Describes the specific scene: setting, action, mood, time of day, weather, key props.  
+   • Includes lighting and camera details (shot type, lens, DOF, framing, movement if relevant).  
+   • Ends with consistent quality tags: “8K, photorealistic, hyper-real textures, cinematic color grade”.  
+   • Uses the same aspect ratio throughout (default 16:9 unless the story clearly requires otherwise).  
+   • Avoids pronouns; restate names to keep identity stable.  
+   • Includes soft “negatives” inline to reduce drift: “no text, no watermark, no extra limbs, no blur, no distortion”.
+
+6) Maintain one coherent visual style across all images. Only change lens/light if the story demands it; otherwise keep the baseline.
+
+7) Output ONLY the JSON below (no code fences, no comments).
 
 OUTPUT FORMAT
 {
   "numImages": <integer>,
   "images": [
     {
-      "prompt": "<full scene description>",
-      "duration": <float>   // seconds
+      "prompt": "<Style Anchor…> — <scene-specific description…> — 8K, photorealistic, hyper-real textures, cinematic color grade",
+      "duration": <float>
     }
     // … additional images …
   ]
 }
-
-EXAMPLE
-{
-  "numImages": 3,
-  "images": [
-    {
-      "prompt": "Wide‑angle sunrise shot of an isolated desert road stretching toward crimson mountains, warm golden‑hour light casting long shadows, crisp 50 mm lens, shallow depth of field, hyper‑realistic 8 K, cinematic color grade",
-      "duration": 11.5
-    },
-    {
-      "prompt": "Macro close‑up of a weathered hand gripping a rusty compass, soft ambient backlight revealing skin texture, f/2.8, filmic grain, photorealistic 8 K",
-      "duration": 12.0
-    },
-    {
-      "prompt": "Lone traveler silhouetted beneath a vast starlit sky on a windswept plateau, cool moonlight, slow dolly‑out 35 mm, HDR, ultra‑real 8 K",
-      "duration": 13.0
-    }
-  ]
-}
-
 `, fmt.Sprintf("\n %v", segmentStrings), totalDuration)
 
 	promptForImage, err := deepseek.
