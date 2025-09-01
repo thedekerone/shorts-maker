@@ -86,7 +86,7 @@ func (rs *ReplicateService) GetCompletition(prompt string, systemPrompt string) 
 
 func (rs *ReplicateService) GetImages(prompt string, quantity int64, mode string) ([]string, error) {
 	ctx := context.TODO()
-	model := "bytedance/seedream-3"
+	model := "stability-ai/stable-diffusion-3"
 
 	aspect_ratio := "9:16"
 
