@@ -263,6 +263,11 @@ func processVideoGeneration(jobID string, script string, webhook string, voiceId
 		return
 	}
 
+	shotPlan := elevenlabs.BuildShotPlan(transcript, 0.7, 4.0, 7.0)
+
+	print("SSHOTPLANSHOTPLANSHOTPLANSHOTPLANSHOTPLANSHOTPLANSHOTPLANSHOTPLANSHOTPLANHOTPLAN")
+	fmt.Printf("%v", shotPlan)
+
 	err = uploadGeneratedFile(minioClient, voice, "voice_script", jobID)
 	if err != nil {
 		println("Failed to upload voice to minio")

@@ -218,59 +218,93 @@ func (vr *VoiceRequest) Call(path string, withTimestamps bool) (*CallResponse, e
 
 func getTranscriptionOutput(alignment *TTSAlignment) *models.TranscriptionOutput {
 	if alignment == nil || len(alignment.Characters) == 0 {
-		return &models.TranscriptionOutput{
-			Segments: []models.Segment{},
-			Language: "en",
+		return &models.TranscriptionOutput{Segments: []models.Segment{}, Language: "en"}
+	}
+
+	chars := alignment.Characters
+	starts := alignment.CharactersStartTimes
+	ends := alignment.CharactersEndTimes
+
+	n := min3(len(chars), len(starts), len(ends))
+	if n == 0 {
+		return &models.TranscriptionOutput{Segments: []models.Segment{}, Language: "en"}
+	}
+
+	isDigit := func(s string) bool {
+		// fast-path ASCII digits; Characters should be single runes
+		if len(s) != 1 {
+			return false
+		}
+		r := []rune(s)[0]
+		return r >= '0' && r <= '9'
+	}
+
+	// separators incl. comma & dot, but keep numeric tokens like 3.14 or 1,234 together
+	isSep := func(i int) bool {
+		s := chars[i]
+		switch s {
+		case " ", "\n", "\t", "—":
+			return true
+		case ".", ",":
+			// don't split if between digits (decimals or thousands separators)
+			if i > 0 && i+1 < n && isDigit(chars[i-1]) && isDigit(chars[i+1]) {
+				return false
+			}
+			return true
+		default:
+			return false
 		}
 	}
 
-	var words []models.Word
-	var wordStrings []string
-	var currentWord models.Word
+	words := make([]models.Word, 0, n/3)
+	var text strings.Builder
+	text.Grow(n + n/3)
 
-	// Process all characters
-	for i, char := range alignment.Characters {
-		if char == " " || char == "\n" || char == "—" {
-			// Only add the word if it's not empty
-			if len(currentWord.Word) > 0 {
-				currentWord.End = alignment.CharactersEndTimes[i-1]
-				words = append(words, currentWord)
-				wordStrings = append(wordStrings, currentWord.Word)
+	var cur strings.Builder
+	var curStart float64
+	inWord := false
+
+	flush := func(endIdx int) {
+		if !inWord {
+			return
+		}
+		w := models.Word{
+			Word:  cur.String(),
+			Start: curStart,
+			End:   ends[endIdx],
+		}
+		words = append(words, w)
+		if text.Len() > 0 {
+			text.WriteByte(' ')
+		}
+		text.WriteString(w.Word)
+		cur.Reset()
+		inWord = false
+	}
+
+	for i := 0; i < n; i++ {
+		if isSep(i) {
+			if inWord {
+				flush(i - 1) // end previous word at the last non-separator char
 			}
-
-			// Reset current word
-			currentWord = models.Word{}
 			continue
 		}
-
-		// Set the start time for a new word
-		if currentWord.Start <= 0.0 {
-			currentWord.Start = alignment.CharactersStartTimes[i]
+		if !inWord {
+			curStart = starts[i]
+			inWord = true
 		}
-
-		// Add this character to the current word
-		currentWord.Word += char
+		cur.WriteString(chars[i])
+	}
+	if inWord {
+		flush(n - 1)
 	}
 
-	// Add the last word if it exists (handles case where text doesn't end with a space)
-	if currentWord.Word != "" {
-		lastIndex := len(alignment.Characters) - 1
-		currentWord.End = alignment.CharactersEndTimes[lastIndex]
-		words = append(words, currentWord)
-		wordStrings = append(wordStrings, currentWord.Word)
-	}
-
-	// Handle the case where no words were found
 	if len(words) == 0 {
-		return &models.TranscriptionOutput{
-			Segments: []models.Segment{},
-			Language: "en",
-		}
+		return &models.TranscriptionOutput{Segments: []models.Segment{}, Language: "en"}
 	}
 
-	// Create the segment from the words
 	segment := models.Segment{
-		Text:  strings.Join(wordStrings, " "),
+		Text:  text.String(),
 		Start: words[0].Start,
 		End:   words[len(words)-1].End,
 		Words: words,
@@ -280,4 +314,14 @@ func getTranscriptionOutput(alignment *TTSAlignment) *models.TranscriptionOutput
 		Segments: []models.Segment{segment},
 		Language: "en",
 	}
+}
+
+func min3(a, b, c int) int {
+	if a > b {
+		a = b
+	}
+	if a > c {
+		a = c
+	}
+	return a
 }
