@@ -60,7 +60,7 @@ INSTRUCTIONS
    Use the SAME wording for these traits every time that character appears.
 
 5) Identify key moments (scene changes, emotional peaks, environment shifts).  
-   Pacing: roughly 1 image per ~5 seconds (engaging, not frantic). Use timestamps if provided.
+   Pacing: roughly 1 image per ~6-8 seconds (engaging, not frantic). Use timestamps if provided.
 
 6) Assign **durations** so the total equals **%.2f** seconds (±0.01). Round to two decimals; adjust the final item to correct any rounding drift.
 
