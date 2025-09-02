@@ -3,25 +3,26 @@ package images
 import (
 	"fmt"
 
+	"github.com/thedekerone/shorts-maker/elevenlabs"
 	"github.com/thedekerone/shorts-maker/models"
 	"github.com/thedekerone/shorts-maker/services"
 )
 
-func GetImagesWithTimestamps(transcript *models.TranscriptionOutput, mode string) ([]models.ImageWithTimestamp, error) {
+func GetImagesWithTimestamps(shotPlan *elevenlabs.ShotPlan, mode string) ([]models.ImageWithTimestamp, error) {
 	rs, err := services.NewReplicateService()
 	deepseek, err := services.NewDeepSeekService()
 	if err != nil {
 		return nil, fmt.Errorf("error creating replicate service: %w", err)
 	}
 
-	totalDuration := transcript.Segments[len(transcript.Segments)-1].End
+	totalDuration := shotPlan.TotalEnd
 
 	var imagesWithTimestamps []models.ImageWithTimestamp
 
-	var segmentStrings string
+	var shotStrings string
 
-	for _, v := range transcript.Segments {
-		segmentStrings = segmentStrings + fmt.Sprintf("{ segment: %s, start: %.3f, end: %.3f } \n", v.Text, v.Start, v.End)
+	for _, v := range shotPlan.Shots {
+		shotStrings = shotStrings + fmt.Sprintf("{ shot: %s, start: %.3f, end: %.3f } \n", v.Text, v.Start, v.End)
 	}
 
 	imageGenerationPrompts := fmt.Sprintf(
@@ -39,7 +40,7 @@ HARD RULES
 • Avoid pronouns for recurring subjects; restate names and traits every time.
 
 INSTRUCTIONS
-1) Read the story between triple quotes:
+1) Read the story between triple quotes, this comes with the text(part of the story) of the image to generate as well as the start and end of that part of the story:
    """
    %s
    """
@@ -87,7 +88,7 @@ OUTPUT FORMAT
     // … additional images …
   ]
 }
-`, fmt.Sprintf("\n %v", segmentStrings), totalDuration)
+`, fmt.Sprintf("\n %v", shotStrings), totalDuration)
 
 	promptForImage, err := deepseek.
 		GetCompletitionForImages(imageGenerationPrompts, "")

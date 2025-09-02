@@ -265,7 +265,8 @@ func processVideoGeneration(jobID string, script string, webhook string, voiceId
 
 	shotPlan := elevenlabs.BuildShotPlan(transcript, 0.7, 4.0, 7.0)
 
-	print("SSHOTPLANSHOTPLANSHOTPLANSHOTPLANSHOTPLANSHOTPLANSHOTPLANSHOTPLANSHOTPLANHOTPLAN")
+	fmt.Printf("SSHOTPLANSHOTPLANSHOTPLANSHOTPLANSHOTPLANSHOTPLANSHOTPLANSHOTPLANSHOTPLANHOTPLAN")
+
 	fmt.Printf("%v", shotPlan)
 
 	err = uploadGeneratedFile(minioClient, voice, "voice_script", jobID)
@@ -281,7 +282,7 @@ func processVideoGeneration(jobID string, script string, webhook string, voiceId
 		}
 	}
 
-	clips, err := generateImages(jobID, transcript, mode)
+	clips, err := generateImages(jobID, &shotPlan, mode)
 	if err != nil {
 		return
 	}
@@ -373,9 +374,9 @@ func generateTranscription(jobID string, rs *services.ReplicateService, voice st
 	return transcript, nil
 }
 
-func generateImages(jobID string, transcript *models.TranscriptionOutput, mode string) ([]models.ImageWithTimestamp, error) {
+func generateImages(jobID string, shotPlan *elevenlabs.ShotPlan, mode string) ([]models.ImageWithTimestamp, error) {
 	updateJobStatus(jobID, "generating_images", "", "")
-	images, err := images.GetImagesWithTimestamps(transcript, mode)
+	images, err := images.GetImagesWithTimestamps(shotPlan, mode)
 	if err != nil {
 		updateJobStatus(jobID, "failed", "", "Error getting images: "+err.Error())
 		return nil, err
