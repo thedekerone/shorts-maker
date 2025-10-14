@@ -103,7 +103,7 @@ OUTPUT FORMAT (strict JSON only)
   "numImages": <integer>,
   "images": [
     {
-      "prompt": "<STYLE ANCHOR: …> <CHARACTERS: …> <SCENE: …> <LIGHTING: …> <COMPOSITION: …> <MOOD CUES: …> <QUALITY TAGS: …> <NEGATIVES: …>",
+      "prompt": "<STYLE ANCHOR: …> <CHARACTERS: …> <SCENE: …>  <NEGATIVES: …>",
       "duration": <float>
     }
     // one object per shot, in order
