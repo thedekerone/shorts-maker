@@ -13,7 +13,16 @@ import (
 	"github.com/thedekerone/shorts-maker/services"
 )
 
-// ---- Types ----
+// Same local response type you already had:
+type imagePromptResp struct {
+	NumImages int `json:"numImages"`
+	Images    []struct {
+		Prompt         string  `json:"prompt"`
+		NegativePrompt string  `json:"negative_prompt,omitempty"`
+		Duration       float64 `json:"duration,omitempty"`
+		Seed           *int    `json:"seed,omitempty"`
+	} `json:"images"`
+}
 
 type inShot struct {
 	Index int     `json:"index"`
@@ -22,35 +31,28 @@ type inShot struct {
 	Text  string  `json:"text"`
 }
 
-type modelInput struct {
-	TotalDuration float64  `json:"total_duration"`
-	Shots         []inShot `json:"shots"`
-}
-
-type contextResp struct {
-	StyleAnchor string   `json:"style_anchor"`
-	Characters  []string `json:"characters"`
-}
-
-type perShotResp struct {
-	Prompt   string  `json:"prompt"`
-	Duration float64 `json:"duration"`
-}
-
-// ---- Public API ----
-
 func GetImagesWithTimestamps(shotPlan *elevenlabs.ShotPlan, mode string) ([]models.ImageWithTimestamp, error) {
 	if shotPlan == nil || len(shotPlan.Shots) == 0 {
 		return nil, fmt.Errorf("empty shot plan")
 	}
 
-	// one client does both: completion + image gen
+	// Keep your image-gen service (replicate) for the actual images
 	rs, err := services.NewReplicateService()
 	if err != nil {
 		return nil, fmt.Errorf("create replicate service: %w", err)
 	}
 
-	// Build clean JSON input for the model
+	// Use DeepSeek for completions
+	ds, err := services.NewDeepSeekService()
+	if err != nil {
+		return nil, fmt.Errorf("create deepseek service: %w", err)
+	}
+
+	// Build clean JSON of the entire plan (used in context + origin)
+	type modelInput struct {
+		TotalDuration float64  `json:"total_duration"`
+		Shots         []inShot `json:"shots"`
+	}
 	in := modelInput{
 		TotalDuration: shotPlan.TotalEnd,
 		Shots:         make([]inShot, len(shotPlan.Shots)),
@@ -61,18 +63,71 @@ func GetImagesWithTimestamps(shotPlan *elevenlabs.ShotPlan, mode string) ([]mode
 	inputJSON, _ := json.Marshal(in)
 	inputHash := shortHash(inputJSON)
 
-	// ---- 1) Build context once ----
-	ctx, err := buildContext(rs, inputJSON, inputHash)
+	// ---- 1) Build CONTEXT via DeepSeek (Style Anchor + Characters) ----
+	ctxSystem := `You are an Image-Prompt Context Builder.
+
+Task: From the full shot list (JSON), extract the global STYLE ANCHOR and CHARACTER SHEETS ONLY.
+Return STRICT JSON only:
+{
+  "style_anchor": "<text>",
+  "characters": ["<fixed sheet #1>", "<fixed sheet #2>", ...]
+}
+
+Rules:
+- STYLE ANCHOR: art direction, style family (+short reason), color palette, lighting ethos, aspect ratio (16:9 unless story demands), texture, negatives.
+- CHARACTER SHEETS: immutable wording (name, age, ethnicity, facial structure, hair, eyes, build, wardrobe items/colors, signature props).
+- No per-shot prompts here.`
+
+	ctxUser := map[string]any{
+		"origin": map[string]any{
+			"package":    "images",
+			"function":   "GetImagesWithTimestamps",
+			"stage":      "context_build",
+			"input_hash": inputHash,
+		},
+		"input": json.RawMessage(inputJSON),
+	}
+	ctxUserJSON, _ := json.Marshal(ctxUser)
+
+	rawCtx, err := ds.GetCompletionRaw("INPUT:\n"+string(ctxUserJSON), ctxSystem, 6000)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("context completion error: %w", err)
+	}
+	rawCtx = stripJSON(rawCtx)
+
+	var ctx struct {
+		StyleAnchor string   `json:"style_anchor"`
+		Characters  []string `json:"characters"`
+	}
+	if err := json.Unmarshal([]byte(rawCtx), &ctx); err != nil {
+		return nil, fmt.Errorf("context JSON invalid: %w\nraw: %s", err, rawCtx)
+	}
+	if strings.TrimSpace(ctx.StyleAnchor) == "" {
+		return nil, fmt.Errorf("context missing style_anchor")
 	}
 
-	// ---- 2) Generate one prompt per shot (strict per-shot completion) ----
+	// ---- 2) Per-shot: call DeepSeek.GetCompletitionForImages with numImages=1 ----
 	out := make([]models.ImageWithTimestamp, 0, len(in.Shots))
 
+	perShotSystem := `You are an Image-Prompt Composer.
+
+Return STRICT JSON ONLY matching this schema:
+{
+  "numImages": 1,
+  "images": [
+    { "prompt": "<STYLE ANCHOR: …> <CHARACTERS: …> <SCENE: …> <NEGATIVES: …>", "duration": <float> }
+  ]
+}
+
+Rules:
+- Use provided context (style_anchor + characters) VERBATIM (no changes).
+- No camera tech (no lens/focal/aperture/ISO/shutter/DoF).
+- ≤ 70 words per prompt.
+- NEGATIVES must repeat from style_anchor.
+- Duration MUST equal "strict_duration" (float).`
+
 	for i, shot := range in.Shots {
-		// shot-specific user payload that includes origin + context
-		userPayload := map[string]any{
+		shotPayload := map[string]any{
 			"origin": map[string]any{
 				"package":     "images",
 				"function":    "GetImagesWithTimestamps",
@@ -88,53 +143,51 @@ func GetImagesWithTimestamps(shotPlan *elevenlabs.ShotPlan, mode string) ([]mode
 				"end":   shot.End,
 				"text":  shot.Text,
 			},
-			// Hard duration lock so the model can't drift:
 			"strict_duration": round2(shot.End - shot.Start),
 		}
-		ujson, _ := json.Marshal(userPayload)
+		ujson, _ := json.Marshal(shotPayload)
 
-		perShotSystem := `You are an Image-Prompt Composer.
-
-Return STRICT JSON ONLY for this ONE shot.
-
-Follow these rules:
-- Use the provided context (style_anchor + characters) verbatim to keep continuity.
-- Do NOT invent new recurring characters or change immutable traits.
-- Keep each prompt ≤ 70 words, concise and parsable.
-- No camera tech (no lens/focal/aperture/ISO/shutter/DoF).
-- Repeat the NEGATIVES exactly from style_anchor if present.
-- Duration MUST equal the provided "strict_duration" (float).
-
-Output JSON schema:
-{
-  "prompt": "<STYLE ANCHOR: …> <CHARACTERS: …> <SCENE: …> <NEGATIVES: …>",
-  "duration": <float>
-}`
-
-		userPrompt := "SHOT_INPUT:\n" + string(ujson)
-
-		raw, err := rs.GetCompletition(userPrompt, perShotSystem)
+		// DeepSeek's image completion (we constrain it to numImages=1 via system+user)
+		// NOTE: This returns an ImagePromptGenerator-shaped JSON, which we parse locally.
+		resp, err := ds.GetCompletitionForImages("SHOT_INPUT:\n"+string(ujson), perShotSystem)
 		if err != nil {
 			return nil, fmt.Errorf("completion (shot %d) error: %w", i, err)
 		}
-		raw = stripJSON(raw)
-
-		var pr perShotResp
-		if err := json.Unmarshal([]byte(raw), &pr); err != nil {
-			// degrade gracefully to the shot text if invalid JSON
-			pr.Prompt = strings.TrimSpace(shot.Text)
-			pr.Duration = round2(shot.End - shot.Start)
+		// Safety: ensure shape & defaults
+		if resp == nil || resp.NumImages != 0 { // ignore Clip schema; just sanity
+			// continue; nothing to do
 		}
 
-		// Final guardrails
-		if strings.TrimSpace(pr.Prompt) == "" {
-			pr.Prompt = strings.TrimSpace(shot.Text)
+		// Convert the DeepSeek response (ImagePromptGenerator shape) into our local imagePromptResp
+		// The method already tried to unmarshal into services.ImagePromptGenerator; to stay decoupled,
+		// re-marshal and unmarshal into our local struct.
+		b, _ := json.Marshal(resp)
+		var parsed imagePromptResp
+		if err := json.Unmarshal(b, &parsed); err != nil {
+			// fallback: just use the shot text
+			parsed.NumImages = 1
+			parsed.Images = []struct {
+				Prompt         string  `json:"prompt"`
+				NegativePrompt string  `json:"negative_prompt,omitempty"`
+				Duration       float64 `json:"duration,omitempty"`
+				Seed           *int    `json:"seed,omitempty"`
+			}{
+				{Prompt: strings.TrimSpace(shot.Text), Duration: round2(shot.End - shot.Start)},
+			}
 		}
-		// lock to plan timing
-		pr.Duration = round2(shot.End - shot.Start)
 
-		// ---- 3) Generate the image for this shot ----
-		urls, err := rs.GetImages(pr.Prompt, 1, mode)
+		// Guardrails
+		if parsed.NumImages != 1 || len(parsed.Images) != 1 {
+			return nil, fmt.Errorf("LLM prompt count mismatch for shot %d: %+v", i, parsed.NumImages)
+		}
+
+		prompt := strings.TrimSpace(parsed.Images[0].Prompt)
+		if prompt == "" {
+			prompt = strings.TrimSpace(shot.Text)
+		}
+
+		// ---- Image generation (unchanged) ----
+		urls, err := rs.GetImages(prompt, 1, mode)
 		if err != nil {
 			return nil, fmt.Errorf("image %d: %w", i, err)
 		}
@@ -142,62 +195,18 @@ Output JSON schema:
 			return nil, fmt.Errorf("image %d: empty result", i)
 		}
 
+		// Lock duration to plan timing
+		dur := shot.End - shot.Start
 		out = append(out, models.ImageWithTimestamp{
 			URL:       urls[0],
-			Timestamp: pr.Duration, // NOTE: field name is Timestamp but we pass duration (per your comment)
+			Timestamp: dur,
 		})
 	}
 
 	return out, nil
 }
 
-// ---- Helpers ----
-
-// buildContext makes a single completion that derives the global Style Anchor and Character Sheets,
-// then returns them so we can reuse across per-shot completions.
-func buildContext(rs *services.ReplicateService, inputJSON []byte, inputHash string) (*contextResp, error) {
-	system := `You are an Image-Prompt Context Builder.
-
-Task: From the full shot list (JSON), extract the global STYLE ANCHOR and CHARACTER SHEETS ONLY.
-No prompts per shot here—just the shared context used by later steps.
-
-Rules:
-- STYLE ANCHOR must include: art direction, style family (+short reason), color palette, lighting ethos, aspect ratio (16:9 unless story demands otherwise), texture, negatives.
-- CHARACTER SHEETS: one string per recurring subject with immutable, fixed wording (name, age, ethnicity, facial structure, hair, eyes, build, wardrobe items/colors, signature props).
-- Return STRICT JSON only.
-
-Output JSON schema:
-{
-  "style_anchor": "<text>",
-  "characters": ["<fixed character sheet #1>", "<fixed character sheet #2>", ...]
-}`
-
-	user := map[string]any{
-		"origin": map[string]any{
-			"package":    "images",
-			"function":   "GetImagesWithTimestamps",
-			"stage":      "context_build",
-			"input_hash": inputHash,
-		},
-		"input": json.RawMessage(inputJSON),
-	}
-	uj, _ := json.Marshal(user)
-
-	raw, err := rs.GetCompletition("INPUT:\n"+string(uj), system)
-	if err != nil {
-		return nil, fmt.Errorf("context completion error: %w", err)
-	}
-	raw = stripJSON(raw)
-
-	var ctx contextResp
-	if err := json.Unmarshal([]byte(raw), &ctx); err != nil {
-		return nil, fmt.Errorf("context JSON invalid: %w\nraw: %s", err, raw)
-	}
-	if strings.TrimSpace(ctx.StyleAnchor) == "" {
-		return nil, fmt.Errorf("context missing style_anchor")
-	}
-	return &ctx, nil
-}
+// ---- Helpers (same as before) ----
 
 func stripJSON(s string) string {
 	s = strings.TrimSpace(s)

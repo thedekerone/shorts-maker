@@ -216,3 +216,55 @@ func (ds *DeepSeekService) GetCompletitionForClips(prompt, systemPrompt string) 
 
 	return &clips, nil
 }
+
+// Add this to your services file alongside DeepSeekService methods:
+
+func (ds *DeepSeekService) GetCompletionRaw(prompt, systemPrompt string, maxTokens int) (string, error) {
+	reqBody := DeepSeekRequest{
+		Model:     "deepseek-reasoner",
+		MaxTokens: maxTokens,
+		Messages: []Message{
+			{Role: "system", Content: systemPrompt},
+			{Role: "user", Content: prompt},
+		},
+		Stream: false,
+	}
+
+	jsonBody, err := json.Marshal(reqBody)
+	if err != nil {
+		return "", err
+	}
+
+	req, err := http.NewRequest("POST", ds.BaseURL, bytes.NewBuffer(jsonBody))
+	if err != nil {
+		return "", err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+ds.APIKey)
+
+	resp, err := ds.HTTPClient.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		b, _ := io.ReadAll(resp.Body)
+		return "", fmt.Errorf("API request failed: %d: %s", resp.StatusCode, string(b))
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	var apiResp DeepSeekResponse
+	if err := json.Unmarshal(body, &apiResp); err != nil {
+		return "", err
+	}
+	if len(apiResp.Choices) == 0 {
+		return "", errors.New("no completions returned")
+	}
+
+	return apiResp.Choices[0].Message.Content, nil
+}
