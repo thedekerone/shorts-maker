@@ -42,7 +42,7 @@ func (rs *ReplicateService) GetCompletition(prompt string, systemPrompt string) 
 	input := replicate.PredictionInput{
 		"system_prompt": systemPrompt,
 		"prompt":        prompt,
-		"max_tokens":    2000,
+		"max_tokens":    8000,
 	}
 
 	output, err := rs.Client.Run(ctx, model, input, nil)
