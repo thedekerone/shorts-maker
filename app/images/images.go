@@ -91,10 +91,6 @@ INSTRUCTIONS
    • STYLE ANCHOR: <paste the exact Style Anchor text verbatim>
    • CHARACTERS: <repeat full name + fixed traits + wardrobe for all visible recurring characters>
    • SCENE: <setting, time of day, weather, key props, physical actions; objective description only>
-   • LIGHTING: <use the lighting ethos; describe direction/quality/intensity without camera jargon>
-   • COMPOSITION: <framing only: “wide establishing view”, “medium two-shot”, “tight portrait”, “over-shoulder”, “low angle”, “symmetrical composition”>
-   • MOOD CUES: <one plain sentence stating the emotional tone>
-   • QUALITY TAGS: “8K, photorealistic, hyper-real textures, cinematic color grade”
    • NEGATIVES: <repeat negatives from the Style Anchor>
    Keep each prompt ≤ 70 words (concise and parsable).
 
