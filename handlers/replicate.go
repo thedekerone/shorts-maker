@@ -348,7 +348,7 @@ func createReplicateService(jobID string) (*services.ReplicateService, error) {
 func generateVoice(jobID string, predictions string, voiceid string) (string, *models.TranscriptionOutput, error) {
 	updateJobStatus(jobID, "generating_voice", "", "")
 	n := elevenlabs.CreateEleven()
-	if voiceid == "" {
+	if voiceid == "" || voiceid == "default" {
 		voiceid = "NNl6r8mD7vthiJatiJt1"
 	}
 
