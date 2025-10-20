@@ -100,7 +100,7 @@ func NewDeepSeekService() (*DeepSeekService, error) {
 func (ds *DeepSeekService) GetCompletitionForImages(prompt string, systemPrompt string) (*ImagePromptGenerator, error) {
 	reqBody := DeepSeekRequest{
 		Model:     "deepseek-reasoner",
-		MaxTokens: 80000,
+		MaxTokens: 12000,
 		Messages: []Message{
 			{Role: "system", Content: systemPrompt},
 			{Role: "user", Content: prompt},
