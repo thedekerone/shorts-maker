@@ -19,6 +19,7 @@ type ReplicateService struct {
 
 type ImagePromptGenerator struct {
 	NumImages    int             `json:"numImages"`
+	StylePrompt  string          `json:"stylePrompt"`
 	ImagesPrompt []ImagesPrompts `json:"images"`
 }
 

@@ -11,8 +11,9 @@ import (
 )
 
 type imagePromptResp struct {
-	NumImages int `json:"numImages"`
-	Images    []struct {
+	NumImages   int    `json:"numImages"`
+	StylePrompt string `json:"stylePrompt"`
+	Images      []struct {
 		Prompt         string  `json:"prompt"`
 		NegativePrompt string  `json:"negative_prompt,omitempty"`
 		Duration       float64 `json:"duration,omitempty"` // ignored; we lock to ShotPlan
@@ -99,9 +100,10 @@ INSTRUCTIONS
 OUTPUT FORMAT (strict JSON only)
 {
   "numImages": <integer>,
+  "stylePrompt": <STYLE ANCHOR: …>,
   "images": [
     {
-      "prompt": "<STYLE ANCHOR: …> <CHARACTERS: …> <SCENE: …>  <NEGATIVES: …>",
+      "prompt": " <CHARACTERS: …> <SCENE: …>  <NEGATIVES: …>",
       "duration": <float>
     }
     // one object per shot, in order
@@ -135,7 +137,7 @@ VALIDATION
 			prompt = strings.TrimSpace(shotPlan.Shots[i].Text)
 		}
 
-		urls, err := rs.GetImages(prompt, 1, mode)
+		urls, err := rs.GetImages("STYLE: "+promptResults.StylePrompt+".\n "+prompt, 1, mode)
 		if err != nil {
 			return nil, fmt.Errorf("image %d: %w", i, err)
 		}
