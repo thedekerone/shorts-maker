@@ -83,7 +83,7 @@ INSTRUCTIONS
    • Aspect ratio: “16:9” (use a different ratio only if the story clearly demands it).
    • Texture: “hyper-real surface detail, clean edges”.
    • Negatives: “no text, no watermark, no logo, no extra fingers, normal human anatomy, no motion blur, no distortion”.
-4) Build CHARACTER SHEETS for each recurring subject (name + immutable traits: age, ethnicity, facial structure, hair, eyes, build, wardrobe items/colors, signature props).
+4) Build CHARACTER SHEETS for each recurring subject (name + immutable traits: age, ethnicity, facial structure, hair, eyes, build, wardrobe items/colors, signature props). REMEMBER THAT NOT EVERY IMAGE NEEDS TO HAVE A CHARACTER, SPECIALLY WHEN SOMETHING ABSTRACT OR A CONCEPT IS BEING TALKED ABOUT.
    Use the same wording for these traits every time that character appears.
 5) Shot planning & pacing
    - Produce exactly one image per input shot, in the same order.
