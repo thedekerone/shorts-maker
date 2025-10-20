@@ -58,14 +58,17 @@ func GetImagesWithTimestamps(shotPlan *elevenlabs.ShotPlan, mode string) ([]mode
 Your job: turn a timestamped story broken into shots into a sequence of ultra-realistic, cinematic IMAGE PROMPTS.
 Return a single JSON object and nothing else.
 
-Each image is generated independently (no shared state). To keep visuals cohesive, you must repeat the same Style Anchor and character details in every prompt.
+Each image is generated independently (no shared state). Keep visuals cohesive across images.
 
 HARD RULES
-- No camera tech: don’t mention cameras, lenses, focal lengths, apertures, ISO, shutter speed, or depth-of-field.
-- Keep a consistent look across all images: art direction, palette, lighting ethos, texture/grain, aspect ratio.
-- Use clear labeled sections inside each prompt; simple, declarative phrasing.
-- No pronouns for recurring subjects; restate names and fixed traits every time.
-- Output ONLY strict JSON (no markdown, no comments, no extra text).
+
+Keep a consistent look across all images.
+
+Use clear labeled sections inside each prompt; simple, declarative phrasing.
+
+Avoid pronouns for recurring subjects; restate names and fixed traits when a character appears.
+
+Output ONLY strict JSON (no markdown, no comments, no extra text).
 
 INPUT FORMAT (from the user)
 You will receive a list of shots with text, start, and end timestamps, and may also receive a total_duration. Example:
@@ -74,49 +77,69 @@ You will receive a list of shots with text, start, and end timestamps, and may a
 ...
 
 INSTRUCTIONS
-1) Read all shots and infer the story’s mood & genre (e.g., hopeful, melancholic, tense; drama, thriller, adventure).
-2) Choose a matching Style Family (e.g., “gritty neo-noir”, “warm nostalgic drama”, “cold techno-thriller”, “sun-bleached road movie”) that supports that mood.
-3) Create a single STYLE ANCHOR to use verbatim in every prompt:
-   • Art direction: “photorealistic, cinematic, natural materials, subtle film grain”.
-   • Style family (from step 2) and a short reason it fits the mood.
-   • Color palette: fixed hues/accents (e.g., “teal and amber highlights, muted neutrals”).
-   • Lighting ethos: general terms only (e.g., “soft directional sunlight with gentle rim light” or “overcast diffuse light”).
-   • Aspect ratio: “16:9” (use a different ratio only if the story clearly demands it).
-   • Texture: “hyper-real surface detail, clean edges”.
-   • Negatives: “no text, no watermark, no logo, no extra fingers, normal human anatomy, no motion blur, no distortion”.
-4) Build CHARACTER SHEETS for each recurring subject (name + immutable traits: age, ethnicity, facial structure, hair, eyes, build, wardrobe items/colors, signature props). REMEMBER THAT NOT EVERY IMAGE NEEDS TO HAVE A CHARACTER, SPECIALLY WHEN SOMETHING ABSTRACT OR A CONCEPT IS BEING TALKED ABOUT.
-   Use the same wording for these traits every time that character appears.
-5) Shot planning & pacing
-   - Produce exactly one image per input shot, in the same order.
-   - If a shot provides start and end, set that image’s duration = end − start (round to 2 decimals).
-   - If total_duration is provided and shot timestamps are missing, pace ~6–8s per image and ensure the sum of durations equals total_duration (adjust the final item to correct rounding drift).
-6) For each image, write a stand-alone prompt with these labeled sections (labels included in the text):
-   • STYLE ANCHOR: <paste the exact Style Anchor text verbatim>
-   • CHARACTERS: <repeat full name + fixed traits + wardrobe for all visible recurring characters>
-   • SCENE: <setting, time of day, weather, key props, physical actions; objective description only>
-   • NEGATIVES: <repeat negatives from the Style Anchor>
-   Keep each prompt ≤ 70 words (concise and parsable).
+
+Read all shots and infer the story’s mood & genre (e.g., hopeful, melancholic, tense; drama, thriller, adventure).
+
+Choose a matching Style Family (e.g., “gritty neo-noir”, “warm nostalgic drama”, “cold techno-thriller”, “sun-bleached road movie”, “whimsical watercolor fable”).
+
+Create a single STYLE ANCHOR and reuse it verbatim for all images. The anchor must be a single line beginning with:
+STYLE: <medium/technique>, <palette>, <lighting>, <lens/framing>, <texture/grain>, <overall vibe>; negatives: <comma-separated negatives>
+Examples:
+
+STYLE: rough sketch drawing, soft pastel colors, overcast diffused light, 50mm framing, paper grain, intimate melancholic drama; negatives: overexposed, underexposed, blur, duplicate limbs, extra fingers, text, watermark, logo, frame text, gore
+
+STYLE: photoreal 35mm film, muted teal-orange palette, golden hour rim light, shallow depth of field, subtle film grain, warm nostalgic road movie; negatives: overexposed, underexposed, posterization, CGI look, banding, text, watermark, logo
+
+Shot planning & pacing
+
+Produce exactly one image per input shot, in the same order.
+
+If a shot provides start and end, set that image’s duration = end − start (round to 2 decimals).
+
+If total_duration is provided and timestamps are missing, pace ~6–8s per image and ensure the sum of durations equals total_duration (adjust the final item to correct rounding drift).
+
+Image prompting
+
+For each image, decide what should be shown so the story makes sense:
+• If a character is essential, include a brief, fixed description (age, visible traits, clothing colors, signature prop) in the SCENE text and repeat it consistently whenever that character reappears.
+• If the moment is conceptual/abstract, depict clear, concrete visuals that communicate the idea (objects, environments, diagrams, symbols).
+
+Write a stand-alone prompt with these labeled sections (keep ≤ 70 words total):
+• SCENE: <setting, time of day, weather, key props, physical actions or abstract elements; objective description only; simple sentences>
+• NEGATIVES: <repeat the negatives from the STYLE line verbatim>
+
+Maintain the same camera language and palette implied by the STYLE line.
 
 OUTPUT FORMAT (strict JSON only)
 {
-  "numImages": <integer>,
-  "stylePrompt": <STYLE ANCHOR: …>,
-  "images": [
-    {
-      "prompt": " <CHARACTERS: …> <SCENE: …>  <NEGATIVES: …>",
-      "duration": <float>
-    }
-    // one object per shot, in order
-  ]
+"numImages": <integer>,
+"stylePrompt": "STYLE: <medium/technique>, <palette>, <lighting>, <lens/framing>, <texture/grain>, <overall vibe>; negatives: <comma-separated negatives>",
+"images": [
+{
+"prompt": "<SCENE: …> <NEGATIVES: …>",
+"duration": <float>
+}
+// one object per shot, in order
+]
 }
 
 VALIDATION
-- numImages must equal the number of input shots.
-- If shot timestamps are present, each duration must equal end − start (rounded to two decimals).
-- If total_duration is provided, the sum of durations must equal total_duration (±0.01). Correct any rounding drift on the final item.
 
-(Strict mode option: If shot timestamps are present, you must not change durations; use exactly end − start.)
-`
+numImages must equal the number of input shots.
+
+If shot timestamps are present, each duration must equal end − start (rounded to two decimals).
+
+If total_duration is provided, the sum of durations must equal total_duration (±0.01). Correct any rounding drift on the final item.
+
+Strict mode option: If shot timestamps are present, do not change durations; use exactly end − start.
+
+QUALITY CHECKS
+
+A single STYLE line exists, begins with “STYLE:”, includes a “; negatives: …” list, and is reused verbatim across all images.
+
+Each image prompt contains exactly two labeled sections: SCENE and NEGATIVES.
+
+Wording is concise, objective, and, when characters recur, uses the same fixed descriptors every time.`
 
 	userPrompt := "INPUT:\n" + string(inputJSON)
 
@@ -137,7 +160,7 @@ VALIDATION
 			prompt = strings.TrimSpace(shotPlan.Shots[i].Text)
 		}
 
-		urls, err := rs.GetImages("STYLE: "+promptResults.StylePrompt+".\n "+prompt, 1, mode)
+		urls, err := rs.GetImages(promptResults.StylePrompt+".\n\n "+prompt, 1, mode)
 		if err != nil {
 			return nil, fmt.Errorf("image %d: %w", i, err)
 		}
