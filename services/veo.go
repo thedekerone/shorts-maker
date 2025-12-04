@@ -148,7 +148,7 @@ func (vs *VeoService) PollGeneration(operationName string) ([]string, error) {
 			continue
 		}
 
-		fmt.Print("%v", res)
+		fmt.Printf("%+v", res)
 		if len(res.Response.Videos) == 0 {
 			continue
 		}

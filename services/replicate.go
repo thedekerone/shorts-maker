@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -116,6 +117,63 @@ func (rs *ReplicateService) GetImages(prompt string, quantity int64, mode string
 	}
 
 	return imagePaths, nil
+}
+
+func (rs *ReplicateService) GenerateKlingVideo(prompt string, startImagePath string, durationSeconds int, qualityMode string) (string, error) {
+	ctx := context.TODO()
+
+	if durationSeconds != 5 && durationSeconds != 10 {
+		return "", fmt.Errorf("unsupported Kling duration %d", durationSeconds)
+	}
+
+	startImageFile, err := rs.Client.CreateFileFromPath(ctx, startImagePath, nil)
+	if err != nil {
+		return "", fmt.Errorf("create start image file: %w", err)
+	}
+
+	mode := strings.ToLower(strings.TrimSpace(qualityMode))
+	if mode != "pro" {
+		mode = "standard"
+	}
+
+	input := replicate.PredictionInput{
+		"prompt":      prompt,
+		"start_image": startImageFile,
+		"duration":    durationSeconds,
+		"mode":        mode,
+	}
+
+	output, err := rs.RunWithModel(ctx, "kwaivgi/kling-v2.1", input, nil)
+	if err != nil {
+		return "", fmt.Errorf("kling prediction failed: %w", err)
+	}
+
+	videoURLs := outputToStrings(output)
+	if len(videoURLs) == 0 || videoURLs[0] == "" {
+		return "", errors.New("kling prediction returned empty output")
+	}
+
+	resp, err := http.Get(videoURLs[0])
+	if err != nil {
+		return "", fmt.Errorf("download kling video: %w", err)
+	}
+	if resp.StatusCode != http.StatusOK {
+		resp.Body.Close()
+		return "", fmt.Errorf("kling video download returned status %d", resp.StatusCode)
+	}
+	defer resp.Body.Close()
+
+	tempFile, err := os.CreateTemp("", "kling_video_*.mp4")
+	if err != nil {
+		return "", fmt.Errorf("create temp video: %w", err)
+	}
+	defer tempFile.Close()
+
+	if _, err := io.Copy(tempFile, resp.Body); err != nil {
+		return "", fmt.Errorf("write kling video: %w", err)
+	}
+
+	return tempFile.Name(), nil
 }
 
 func (rs *ReplicateService) GetVoice(text string) (string, error) {

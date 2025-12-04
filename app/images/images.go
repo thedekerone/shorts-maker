@@ -174,6 +174,7 @@ Wording is concise, objective, and, when characters recur, uses the same fixed d
 		out = append(out, models.ImageWithTimestamp{
 			URL:       urls[0],
 			Timestamp: dur,
+			Prompt:    promptResults.StylePrompt + ".\n\n " + prompt,
 		})
 	}
 

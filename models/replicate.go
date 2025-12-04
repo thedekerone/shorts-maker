@@ -51,6 +51,7 @@ type Word struct {
 type ImageWithTimestamp struct {
 	URL       string
 	Timestamp float64
+	Prompt    string
 }
 
 type ImagePrompt struct {

@@ -282,12 +282,12 @@ func processVideoGeneration(jobID string, script string, webhook string, voiceId
 		}
 	}
 
-	clips, err := generateImages(jobID, &shotPlan, mode)
+	stills, err := generateImages(jobID, &shotPlan, mode)
 	if err != nil {
 		return
 	}
 
-	for i, v := range clips {
+	for i, v := range stills {
 		err = uploadGeneratedFile(minioClient, v.URL, fmt.Sprintf("generate_image_%d", i), jobID)
 		if err != nil {
 			println("Failed to upload image to minio")
@@ -296,7 +296,12 @@ func processVideoGeneration(jobID string, script string, webhook string, voiceId
 
 	}
 
-	outputFilePath, err := createVideo(jobID, transcript, clips, voice, mode)
+	klingClips, err := generateKlingVideos(jobID, rs, stills, mode)
+	if err != nil {
+		return
+	}
+
+	outputFilePath, err := createVideoFromClips(jobID, transcript, klingClips, voice, mode)
 	if err != nil {
 		return
 	}
@@ -384,6 +389,37 @@ func generateImages(jobID string, shotPlan *elevenlabs.ShotPlan, mode string) ([
 	return images, nil
 }
 
+func generateKlingVideos(jobID string, rs *services.ReplicateService, stills []models.ImageWithTimestamp, mode string) ([]models.VideoWithTimestamp, error) {
+	if len(stills) == 0 {
+		return nil, fmt.Errorf("no stills provided for Kling generation")
+	}
+
+	updateJobStatus(jobID, "generating_kling_videos", "", "")
+	qualityMode := klingQualityMode(mode)
+
+	clipped := make([]models.VideoWithTimestamp, 0, len(stills))
+	for i, still := range stills {
+		prompt := strings.TrimSpace(still.Prompt)
+		if prompt == "" {
+			prompt = "Cinematic shot, photorealistic"
+		}
+
+		dur := klingDurationForShot(still.Timestamp)
+		videoPath, err := rs.GenerateKlingVideo(prompt, still.URL, dur, qualityMode)
+		if err != nil {
+			updateJobStatus(jobID, "failed", "", fmt.Sprintf("Error generating Kling video %d: %v", i, err))
+			return nil, err
+		}
+
+		clipped = append(clipped, models.VideoWithTimestamp{
+			Path:      videoPath,
+			Timestamp: float64(dur),
+		})
+	}
+
+	return clipped, nil
+}
+
 func generateClips(jobID string, transcript *models.TranscriptionOutput, mode string) ([]models.VideoWithTimestamp, error) {
 	updateJobStatus(jobID, "generating_clips", "", "")
 
@@ -396,6 +432,20 @@ func generateClips(jobID string, transcript *models.TranscriptionOutput, mode st
 		return nil, err
 	}
 	return v, nil
+}
+
+func klingQualityMode(mode string) string {
+	if strings.EqualFold(mode, "landscape") {
+		return "pro"
+	}
+	return "standard"
+}
+
+func klingDurationForShot(duration float64) int {
+	if duration >= 8 {
+		return 10
+	}
+	return 5
 }
 
 func createVideoFromClips(
@@ -411,11 +461,16 @@ func createVideoFromClips(
 	updateJobStatus(jobID, "merging_clips", "", "")
 	mergedPath := filepath.Join(os.TempDir(), pkg.GenerateRandomString(6)+".mp4")
 
+	totalDuration := 0.0
+	for _, clip := range clips {
+		totalDuration += clip.Timestamp
+	}
+
 	vid, err := engine.CreateVideoFromClips(
 		clips,
 		mergedPath,
 		engine.TransitionTypeFade, // or "none"
-		13.0,
+		totalDuration,
 	)
 	if err != nil {
 		updateJobStatus(jobID, "failed", "", "merge clips: "+err.Error())
