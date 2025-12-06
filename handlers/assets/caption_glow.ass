@@ -1,0 +1,12 @@
+; Title: Glow Caption
+; ScriptType: v4.00+
+Collisions: Normal
+PlayDepth: 0
+Timer: 100.0000
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Default, Montserrat-ExtraBold, 34, &H00FFFFFF, &H00FFFFFF, &H00337BFF, &H00000000, -1, 0, 0, 0, 100, 100, 0, 0, 1, 4, 0, 5, 15, 15, 0, 1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text

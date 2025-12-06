@@ -1,0 +1,12 @@
+; Title: Background Caption
+; ScriptType: v4.00+
+Collisions: Normal
+PlayDepth: 0
+Timer: 100.0000
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Default, Roboto-Black, 34, &H00FFFFFF, &H00FFFFFF, &H64000000, &H80202020, -1, 0, 0, 0, 100, 100, 0, 0, 3, 0, 0, 5, 12, 12, 0, 1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text

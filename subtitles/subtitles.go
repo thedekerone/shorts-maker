@@ -4,9 +4,11 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"math"
 	"os"
 	"path/filepath"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/google/uuid"
 	"github.com/thedekerone/shorts-maker/engine"
@@ -26,6 +28,12 @@ type Subtitle struct {
 	Style     *SubtitleStyles
 	StartTime float32
 	EndTime   float32
+	Tokens    []SubtitleToken
+}
+
+type SubtitleToken struct {
+	Text     string
+	Duration float32
 }
 
 func getDefaultStyles() SubtitleStyles {
@@ -65,91 +73,140 @@ func CreateSubtitles(transcript *models.TranscriptionOutput) []Subtitle {
 	return subtitles
 }
 
-func CreateShortLengthSubtitles(transcript *models.TranscriptionOutput) []Subtitle {
-	var subtitles []Subtitle
-	defaultStyles := getDefaultStyles()
+func CreateShortSubsWithStyles(transcript *models.TranscriptionOutput, styles *SubtitleStyles, karaoke bool) []Subtitle {
+	if transcript == nil {
+		return nil
+	}
 
-	for _, segment := range transcript.Segments {
+	if styles == nil {
+		defaultStyles := getDefaultStyles()
+		styles = &defaultStyles
+	}
 
-		for _, w := range segment.Words {
+	const (
+		maxCaptionChars = 28
+		maxCaptionWords = 6
+		minGapSeconds   = 0.05
+		minDuration     = 0.35
+	)
 
-			subtitles = append(subtitles, Subtitle{
-				Text:      w.Word,
-				EndTime:   float32(w.End),
-				StartTime: float32(w.Start),
-				Style:     &defaultStyles,
-			})
+	var (
+		subtitles []Subtitle
+		chunk     []models.Word
+		lastEnd   float32
+	)
+
+	flushChunk := func() {
+		if len(chunk) == 0 {
+			return
 		}
 
-	}
+		text := buildCaptionText(chunk)
+		if text == "" {
+			chunk = chunk[:0]
+			return
+		}
 
-	return subtitles
+		start := float32(chunk[0].Start)
+		if start < lastEnd+minGapSeconds {
+			start = lastEnd + minGapSeconds
+		}
 
-}
+		end := float32(chunk[len(chunk)-1].End)
+		if end <= start+minDuration {
+			end = start + minDuration
+		}
 
-func CreateSubtitlesWithStyles(transcript *models.TranscriptionOutput, styles *SubtitleStyles) []Subtitle {
-	var subtitles []Subtitle
-
-	for _, segment := range transcript.Segments {
-		subtitles = append(subtitles, Subtitle{
-			Text:      segment.Text,
-			EndTime:   float32(segment.End),
-			StartTime: float32(segment.Start),
-			Style:     styles,
-		})
-	}
-
-	return subtitles
-}
-
-func CreateShortSubsWithStyles(transcript *models.TranscriptionOutput, styles *SubtitleStyles) []Subtitle {
-	var subtitles []Subtitle
-	maxChars := 6
-
-	var prevEnd float32
-	for _, segment := range transcript.Segments {
-		var combined []models.Word
-		lenSum := 0
-
-		fmt.Printf("%v", segment.Words)
-
-		for i, w := range segment.Words {
-			combined = append(combined, w)
-			lenSum = len(w.Word) + lenSum
-
-			if lenSum >= maxChars || i == len(segment.Words)-1 {
-				sentence := ""
-
-				for _, w := range combined {
-					sentence = sentence + " " + strings.ToUpper(w.Word)
+		tokens := make([]SubtitleToken, 0, len(chunk))
+		if karaoke {
+			for _, w := range chunk {
+				word := strings.TrimSpace(w.Word)
+				if word == "" {
+					continue
 				}
-
-				start := float32(combined[0].Start)
-
-				if float32(combined[0].Start) == 0 && i != 0 {
-					start = prevEnd + 0.1
+				dur := float32(w.End - w.Start)
+				if dur <= 0 {
+					dur = minDuration
 				}
-
-				subtitles = append(subtitles, Subtitle{
-					Text:      sentence,
-					EndTime:   float32(combined[len(combined)-1].End),
-					StartTime: start,
-					Style:     styles,
-				})
-
-				prevEnd = float32(combined[len(combined)-1].End)
-
-				combined = make([]models.Word, 0)
-				lenSum = 0
+				tokens = append(tokens, SubtitleToken{Text: word, Duration: dur})
 			}
 		}
 
+		subtitles = append(subtitles, Subtitle{
+			Text:      text,
+			StartTime: start,
+			EndTime:   end,
+			Style:     styles,
+			Tokens:    tokens,
+		})
+
+		lastEnd = end
+		chunk = chunk[:0]
 	}
+
+	addWord := func(w models.Word) {
+		chunk = append(chunk, w)
+		if captionLength(chunk) >= maxCaptionChars || len(chunk) >= maxCaptionWords {
+			flushChunk()
+		}
+	}
+
+	for _, segment := range transcript.Segments {
+		if len(segment.Words) == 0 {
+			text := strings.TrimSpace(segment.Text)
+			if text == "" {
+				continue
+			}
+			chunk = chunk[:0]
+			chunk = append(chunk, models.Word{Word: text, Start: segment.Start, End: segment.End})
+			flushChunk()
+			continue
+		}
+
+		for _, w := range segment.Words {
+			addWord(w)
+		}
+
+		flushChunk()
+	}
+
+	flushChunk()
 
 	return subtitles
 }
 
+func buildCaptionText(words []models.Word) string {
+	var builder strings.Builder
+	for _, w := range words {
+		trimmed := strings.TrimSpace(w.Word)
+		if trimmed == "" {
+			continue
+		}
+		if builder.Len() > 0 {
+			builder.WriteByte(' ')
+		}
+		builder.WriteString(strings.ToUpper(trimmed))
+	}
+	return builder.String()
+}
+
+func captionLength(words []models.Word) int {
+	length := 0
+	for i, w := range words {
+		word := strings.TrimSpace(w.Word)
+		if word == "" {
+			continue
+		}
+		length += utf8.RuneCountInString(word)
+		if i < len(words)-1 {
+			length++
+		}
+	}
+	return length
+}
+
 func CreateSubtitleImage(subs *Subtitle, subtitlesPath string) (engine.SubtitleImage, error) {
+
 	var subImage engine.SubtitleImage
 
 	subtitlesId := uuid.New().ID()
@@ -196,7 +253,7 @@ func getTextStyles(s *SubtitleStyles) *engine.TextStyle {
 }
 
 // Dialogue: 0,0:00:01.00,0:00:03.00,Default,,0,0,0,,{\fscx50\fscy50\t(0,60,\fscx55\fscy55)\t(60,140,\fscx50\fscy50)}Hello, world!
-func CreateAssFile(subtitles []Subtitle, basePath string) (string, error) {
+func CreateAssFile(subtitles []Subtitle, basePath string, textPrefix string, karaoke bool) (string, error) {
 	// Ensure the basePath is an absolute path
 	absBasePath, err := filepath.Abs(basePath)
 	if err != nil {
@@ -216,9 +273,7 @@ func CreateAssFile(subtitles []Subtitle, basePath string) (string, error) {
 	println("TEXT TOsfdad sdas adsdsa ads adsds ASS")
 
 	for _, v := range subtitles {
-		formattedString := fmt.Sprintf("Dialogue: 0,%s,%s,Default,,0,0,0,,{\\fscx40\\fscy40\\t(0,60,\\fscx45\\fscy45)\\t(60,140,\\fscx40\\fscy40)}%s\n", transformFloatToTimestamp(v.StartTime), transformFloatToTimestamp(v.EndTime), v.Text)
-
-		text = text + formattedString
+		text += formatDialogueLine(v, textPrefix, karaoke)
 	}
 
 	println("subs---------------------")
@@ -235,6 +290,49 @@ func CreateAssFile(subtitles []Subtitle, basePath string) (string, error) {
 	}
 
 	return tempFile.Name(), nil
+}
+
+func formatDialogueLine(sub Subtitle, textPrefix string, karaoke bool) string {
+	start := transformFloatToTimestamp(sub.StartTime)
+	end := transformFloatToTimestamp(sub.EndTime)
+
+	var builder strings.Builder
+	builder.WriteString("Dialogue: 0,")
+	builder.WriteString(start)
+	builder.WriteByte(',')
+	builder.WriteString(end)
+	builder.WriteString(",Default,,0,0,0,,")
+	builder.WriteString(textPrefix)
+
+	if karaoke && len(sub.Tokens) > 0 {
+		builder.WriteString(buildKaraokeText(sub.Tokens))
+	} else {
+		builder.WriteString(escapeASSText(sub.Text))
+	}
+
+	builder.WriteByte('\n')
+	return builder.String()
+}
+
+func buildKaraokeText(tokens []SubtitleToken) string {
+	var builder strings.Builder
+	for i, token := range tokens {
+		if token.Text == "" {
+			continue
+		}
+		dur := math.Max(1, float64(token.Duration)*100)
+		builder.WriteString(fmt.Sprintf("{\\k%d}%s", int(dur), escapeASSText(strings.ToUpper(token.Text))))
+		if i < len(tokens)-1 {
+			builder.WriteByte(' ')
+		}
+	}
+	return builder.String()
+}
+
+func escapeASSText(text string) string {
+	text = strings.ReplaceAll(text, "{", "(")
+	text = strings.ReplaceAll(text, "}", ")")
+	return text
 }
 
 func transformFloatToTimestamp(time float32) string {
