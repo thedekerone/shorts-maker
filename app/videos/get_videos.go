@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/thedekerone/shorts-maker/models"
+	"github.com/thedekerone/shorts-maker/prompts"
 	"github.com/thedekerone/shorts-maker/services"
 )
 
@@ -16,9 +17,9 @@ func GetVideosWithTimestamps(
 ) ([]models.VideoWithTimestamp, error) {
 
 	// ── 1.  Open services ────────────────────────────────────────────────
-	deepseek, err := services.NewDeepSeekService()
+	promptSvc, err := services.NewPromptService()
 	if err != nil {
-		return nil, fmt.Errorf("init deepseek: %w", err)
+		return nil, fmt.Errorf("init prompt service: %w", err)
 	}
 
 	// Initialise VeoService.  Keep IDs in env vars or config.
@@ -33,7 +34,7 @@ func GetVideosWithTimestamps(
 		return nil, fmt.Errorf("init veo: %w", err)
 	}
 
-	// ── 2.  Build the prompt for DeepSeek (unchanged) ────────────────────
+	// ── 2.  Build the storyboard prompt ─────────────────────────────────
 	totalDuration := transcript.Segments[len(transcript.Segments)-1].End
 	var segmentStrings string
 	for _, s := range transcript.Segments {
@@ -41,89 +42,17 @@ func GetVideosWithTimestamps(
 			s.Text, s.Start, s.End)
 	}
 
-	imageGenerationPrompts := fmt.Sprintf(
-		`
-		### SYSTEM
-You are a **Veo Storyboard Composer**.
+	systemPrompt := prompts.ClipSystemPrompt()
+	userPrompt := fmt.Sprintf("STORY_SEGMENTS:\n%s\n\nTOTAL_DURATION: %.2f", segmentStrings, totalDuration)
 
-Your job is to convert a timestamp‑annotated story into a sequence of ultra‑realistic, cinematic **video‑clip prompts** for Veo 2.  
-Return exactly one JSON object—nothing else.
-
-────────────────────────
-INSTRUCTIONS
-────────────────────────
-1. **Read the story** between the triple quotes:
-   """
-   %s
-   """
-
-2. **Map narrative beats**—every major scene change, emotional peak, location or time shift.
-
-3. **Decide clip count**
-   • Minimum **1 clip per 12 s** of runtime.  
-   • Keep pacing engaging, never frantic.
-
-4. **Duration rules**
-   • Each clip must be **5, 6, 7, or 8 seconds** (integer).  
-   • Total duration must reach **%.2f s**—overshoot by ≤ 0.9 s if needed (never under).
-
-5. **For each clip write a concise Veo 2 prompt** (1–3 sentences) in this order:  
-   • **Visual:** subject, setting, action, mood, colour palette.  
-   • **Cinematography:** lens & focal length, shot size, camera movement, depth‑of‑field.  
-   • **Lighting:** e.g. golden‑hour rim light, neon‑noir backlight.  
-   • **Negative (optional):** begin with **Exclude:** then list unwanted items (e.g. “logo, watermark, text”).  
-   • Finish with stylistic tags such as **“photorealistic, cinematic LUT”.**  
-   **Do NOT mention aspect ratio, FPS, or resolution.**
-
-6. **Consistency**  
-   • Repeat character descriptions for continuity.  
-   • Maintain one coherent colour grade and lighting style across all clips.
-
-7. **Output format—return only:**
-{
-  "numClips": <integer>,
-  "clips": [
-    {
-      "prompt": "<full description>",
-      "duration": <integer>
-    }
-    … more clips …
-  ]
-}
-
-   • Escape internal quotation marks.  
-   • No extra keys, comments, trailing commas, or whitespace.
-
-────────────────────────
-EXAMPLE
-────────────────────────
-{
-  "numClips": 2,
-  "clips": [
-    {
-      "prompt": "Sunrise shot of an empty desert highway stretching toward blazing vermilion mesas, warm rim light, dust shimmering. 35 mm anamorphic lens, slow dolly‑in, shallow depth of field. Soft golden‑hour glow. Audio: hush of wind and faint birdsong. photorealistic, cinematic LUT",
-      "duration": 6
-    },
-    {
-      "prompt": "Macro close‑up of a weather‑beaten hand tightening a brass compass, skin creases catching specular highlights. 85 mm macro, locked camera, extreme‑close‑up focus fall‑off. Subtle warm firelight. Audio: gentle crackle of embers. Exclude: text, subtitles. photorealistic, cinematic LUT",
-      "duration": 7
-    }
-  ]
-}
-
-		`, fmt.Sprintf("\n %v", segmentStrings), totalDuration)
-
-	// Same JSON-builder prompt you used for images
-	prompt := fmt.Sprintf(imageGenerationPrompts, segmentStrings, totalDuration)
-
-	imgPlan, err := deepseek.GetCompletitionForClips(prompt, imageGenerationPrompts)
+	clipPlan, err := promptSvc.GenerateClipPlan(userPrompt, systemPrompt)
 	if err != nil {
-		return nil, fmt.Errorf("deepseek completion: %w", err)
+		return nil, fmt.Errorf("prompt completion: %w", err)
 	}
 
-	// ── 3.  Loop through each “image” entry, but request a clip instead───
+	// ── 3.  Loop through each clip entry and request a Veo generation ─────
 	var clips []models.VideoWithTimestamp
-	for i, entry := range imgPlan.Clips {
+	for i, entry := range clipPlan.Clips {
 		println("trying to generate clip")
 		// constrain each clip to max 8 s (Veo-2 limit)
 		dur := entry.Duration

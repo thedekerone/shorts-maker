@@ -59,7 +59,7 @@ type ImagePrompt struct {
 	Section string `json:"section"`
 }
 
-// ImagePlan bundles the style + per-shot prompts returned by DeepSeek
+// ImagePlan bundles the style + per-shot prompts returned by the prompt service
 // for downstream consumers (Kling segment building, etc.).
 type ImagePlan struct {
 	StylePrompt string
