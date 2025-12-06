@@ -64,28 +64,22 @@ func (rs *ReplicateService) GetCompletition(prompt string, systemPrompt string) 
 
 func (rs *ReplicateService) GetImages(prompt string, quantity int64, mode string) ([]string, error) {
 	ctx := context.TODO()
-	model := "google/imagen-4"
+	model := "google/nano-banana"
 
-	aspect_ratio := "9:16"
-
+	aspectRatio := "9:16"
 	if mode == "landscape" {
-		aspect_ratio = "16:9"
+		aspectRatio = "16:9"
 	}
 
 	input := replicate.PredictionInput{
-		"prompt":                 prompt,
-		"disable_safety_checker": true,
-		"size":                   "big",
-		"safety_tolerance":       6,
-		"aspect_ratio":           aspect_ratio,
-		"prompt_upsampling":      true,
-		"output_format":          "png",
-		"output_quality":         100,
+		"prompt":        prompt,
+		"aspect_ratio":  aspectRatio,
+		"output_format": "jpg",
 	}
-	output, err := rs.RunWithModel(ctx, model, input, nil)
 
+	output, err := rs.RunWithModel(ctx, model, input, nil)
 	if err != nil {
-		return rs.GetImages(prompt, quantity, mode)
+		return nil, fmt.Errorf("nano banana prediction: %w", err)
 	}
 
 	if output == nil {
@@ -108,8 +102,7 @@ func (rs *ReplicateService) GetImages(prompt string, quantity int64, mode string
 		}
 		defer tempFile.Close()
 
-		_, err = io.Copy(tempFile, resp.Body)
-		if err != nil {
+		if _, err = io.Copy(tempFile, resp.Body); err != nil {
 			return nil, err
 		}
 

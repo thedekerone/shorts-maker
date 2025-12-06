@@ -58,3 +58,10 @@ type ImagePrompt struct {
 	Prompt  string `json:"prompt"`
 	Section string `json:"section"`
 }
+
+// ImagePlan bundles the style + per-shot prompts returned by DeepSeek
+// for downstream consumers (Kling segment building, etc.).
+type ImagePlan struct {
+	StylePrompt string
+	Shots       []ImageWithTimestamp
+}

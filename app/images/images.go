@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"sync"
 
 	"github.com/thedekerone/shorts-maker/elevenlabs"
 	"github.com/thedekerone/shorts-maker/models"
@@ -21,8 +22,11 @@ type imagePromptResp struct {
 	} `json:"images"`
 }
 
-func GetImagesWithTimestamps(shotPlan *elevenlabs.ShotPlan, mode string) ([]models.ImageWithTimestamp, error) {
+func GetImagesWithTimestamps(shotPlan *elevenlabs.ShotPlan, mode string, userStyle string) (*models.ImagePlan, error) {
 	deepseek, err := services.NewDeepSeekService()
+	if err != nil {
+		return nil, fmt.Errorf("create deepseek service: %w", err)
+	}
 
 	if shotPlan == nil || len(shotPlan.Shots) == 0 {
 		return nil, fmt.Errorf("empty shot plan")
@@ -152,31 +156,76 @@ Wording is concise, objective, and, when characters recur, uses the same fixed d
 		return nil, fmt.Errorf("LLM prompt count mismatch: got %d for %d shots", len(promptResults.ImagesPrompt), len(shotPlan.Shots))
 	}
 
-	out := make([]models.ImageWithTimestamp, 0, len(promptResults.ImagesPrompt))
+	styleAnchor := strings.TrimSpace(userStyle)
+	if styleAnchor == "" {
+		styleAnchor = strings.TrimSpace(promptResults.StylePrompt)
+	}
+	if styleAnchor == "" {
+		styleAnchor = "STYLE: cinematic film, balanced palette, soft rim light, 35mm framing, subtle grain, modern short; negatives: blur, duplicate limbs, extra fingers, text, watermark"
+	}
+
+	stylePrefix := styleAnchor
+	if !strings.HasSuffix(stylePrefix, ".") {
+		stylePrefix += "."
+	}
+
+	const maxConcurrentImageJobs = 3
+
+	type imageJob struct {
+		index  int
+		shot   elevenlabs.Shot
+		prompt string
+	}
+
+	jobs := make([]imageJob, len(promptResults.ImagesPrompt))
 	for i, p := range promptResults.ImagesPrompt {
 		prompt := strings.TrimSpace(p.Prompt)
 		if prompt == "" {
-			// degrade gracefully to the shot text
 			prompt = strings.TrimSpace(shotPlan.Shots[i].Text)
 		}
-
-		urls, err := rs.GetImages(promptResults.StylePrompt+".\n\n "+prompt, 1, mode)
-		if err != nil {
-			return nil, fmt.Errorf("image %d: %w", i, err)
-		}
-		if len(urls) == 0 || urls[0] == "" {
-			return nil, fmt.Errorf("image %d: empty result", i)
-		}
-
-		// Use your plan’s timing (duration = End-Start). If your field is truly a duration,
-		// consider renaming models.ImageWithTimestamp.Timestamp -> Duration.
-		dur := shotPlan.Shots[i].End - shotPlan.Shots[i].Start
-		out = append(out, models.ImageWithTimestamp{
-			URL:       urls[0],
-			Timestamp: dur,
-			Prompt:    promptResults.StylePrompt + ".\n\n " + prompt,
-		})
+		jobs[i] = imageJob{index: i, shot: shotPlan.Shots[i], prompt: prompt}
 	}
 
-	return out, nil
+	out := make([]models.ImageWithTimestamp, len(jobs))
+
+	var (
+		wg       sync.WaitGroup
+		sem      = make(chan struct{}, maxConcurrentImageJobs)
+		once     sync.Once
+		firstErr error
+	)
+
+	for _, job := range jobs {
+		wg.Add(1)
+		go func(job imageJob) {
+			defer wg.Done()
+			sem <- struct{}{}
+			defer func() { <-sem }()
+
+			finalPrompt := stylePrefix + "\n\n " + job.prompt
+			urls, err := rs.GetImages(finalPrompt, 1, mode)
+			if err != nil {
+				once.Do(func() { firstErr = fmt.Errorf("image %d: %w", job.index, err) })
+				return
+			}
+			if len(urls) == 0 || urls[0] == "" {
+				once.Do(func() { firstErr = fmt.Errorf("image %d: empty result", job.index) })
+				return
+			}
+
+			dur := job.shot.End - job.shot.Start
+			out[job.index] = models.ImageWithTimestamp{
+				URL:       urls[0],
+				Timestamp: dur,
+				Prompt:    finalPrompt,
+			}
+		}(job)
+	}
+
+	wg.Wait()
+	if firstErr != nil {
+		return nil, firstErr
+	}
+
+	return &models.ImagePlan{StylePrompt: styleAnchor, Shots: out}, nil
 }

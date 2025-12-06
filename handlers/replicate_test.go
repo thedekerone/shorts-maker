@@ -1,43 +1,125 @@
-package handlers_test
+package handlers
 
 import (
-	"os"
+	"bytes"
+	"net/http/httptest"
 	"testing"
 
-	"github.com/thedekerone/shorts-maker/engine"
 	"github.com/thedekerone/shorts-maker/models"
-	"github.com/thedekerone/shorts-maker/pkg"
 )
 
-func TestImageVideo(t *testing.T) {
-	// Test audio transcription
-
-	imagesForVideo := []string{
-		"/var/folders/27/3tlwn24s2d7bgwgclkt3y2hw0000gn/T/image_3028651160.jpg",
-		"/var/folders/27/3tlwn24s2d7bgwgclkt3y2hw0000gn/T/image_3180086704.jpg",
-		"/var/folders/27/3tlwn24s2d7bgwgclkt3y2hw0000gn/T/image_3028651160.jpg",
-		"/var/folders/27/3tlwn24s2d7bgwgclkt3y2hw0000gn/T/image_3180086704.jpg",
+func TestNormalizeMode(t *testing.T) {
+	tests := []struct {
+		in  string
+		out string
+	}{
+		{"", "portrait"},
+		{" Portrait ", "portrait"},
+		{"LANDSCAPE", "landscape"},
 	}
 
-	var images []models.ImageWithTimestamp
-	totalDuration := 40.0
-	interval := totalDuration / float64(len(imagesForVideo))
+	for _, tt := range tests {
+		if got := normalizeMode(tt.in); got != tt.out {
+			t.Fatalf("normalizeMode(%q) = %q, want %q", tt.in, got, tt.out)
+		}
+	}
+}
 
-	for _, v := range imagesForVideo {
-		images = append(images, models.ImageWithTimestamp{
-			URL:       v,
-			Timestamp: interval,
-		})
+func TestResolveWebhookURL(t *testing.T) {
+	tests := []struct {
+		name string
+		in   string
+		out  string
+	}{
+		{"empty", "", ""},
+		{"relative", "/hook", defaultWebhookBase + "/hook"},
+		{"absolute", "https://example.com/h", "https://example.com/h"},
 	}
 
-	t.Log("Creating video from images...")
+	for _, tt := range tests {
+		if got := resolveWebhookURL(tt.in); got != tt.out {
+			t.Fatalf("resolveWebhookURL(%s) = %q, want %q", tt.name, got, tt.out)
+		}
+	}
+}
 
-	path, err := engine.CreateVideoFromImages(images, os.TempDir()+pkg.GenerateRandomString(6)+".mp4", 20.0, engine.TransitionTypeFade, "")
-	t.Log("Created video with images...")
+func TestFilterEmpty(t *testing.T) {
+	input := []string{"a", " ", "b"}
+	want := []string{"a", "b"}
+	got := filterEmpty(input)
+	if len(got) != len(want) {
+		t.Fatalf("filterEmpty len = %d, want %d", len(got), len(want))
+	}
+	for i := range want {
+		if got[i] != want[i] {
+			t.Fatalf("filterEmpty[%d] = %q, want %q", i, got[i], want[i])
+		}
+	}
+}
 
+func TestBuildKlingSegments(t *testing.T) {
+	stills := []models.ImageWithTimestamp{
+		{URL: "one.png", Timestamp: 3, Prompt: "A"},
+		{URL: "two.png", Timestamp: 3, Prompt: "B"},
+		{URL: "three.png", Timestamp: 4, Prompt: "C"},
+		{URL: "four.png", Timestamp: 2, Prompt: "D"},
+	}
+
+	segments := buildKlingSegments(stills)
+	if len(segments) == 0 {
+		t.Fatalf("expected segments")
+	}
+	for _, seg := range segments {
+		if seg.Duration != 5 && seg.Duration != 10 {
+			t.Fatalf("segment duration %d invalid", seg.Duration)
+		}
+		if seg.StartImage.URL == "" {
+			t.Fatalf("segment missing start image")
+		}
+		if seg.Prompt == "" {
+			t.Fatalf("segment missing prompt")
+		}
+	}
+}
+
+func TestSetJobVideoURL(t *testing.T) {
+	job := &Job{ID: "job1"}
+	jobsMutex.Lock()
+	jobs[job.ID] = job
+	jobsMutex.Unlock()
+
+	setJobVideoURL(job.ID, "kling_video", "https://foo")
+	if job.KlingURL == "" || job.URL != job.KlingURL {
+		t.Fatalf("kling url not set properly: %+v", job)
+	}
+
+	setJobVideoURL(job.ID, "image_video", "https://bar")
+	if job.ImagesURL != "https://bar" {
+		t.Fatalf("image url not set")
+	}
+}
+
+func TestParseGenerationRequest(t *testing.T) {
+	body := `{"script":"hello\nworld","webhook":"/hook","voice_id":"v","mode":"Landscape"}`
+	req := httptest.NewRequest("POST", "/", bytes.NewBufferString(body))
+	got, err := parseGenerationRequest(req)
 	if err != nil {
-		t.Fatalf("%v", err)
+		t.Fatalf("parseGenerationRequest error: %v", err)
 	}
+	if got.Script != "hello world" {
+		t.Fatalf("script cleaned mismatch: %q", got.Script)
+	}
+	if got.Webhook != defaultWebhookBase+"/hook" {
+		t.Fatalf("webhook mismatch: %q", got.Webhook)
+	}
+	if got.Mode != "landscape" {
+		t.Fatalf("mode mismatch: %q", got.Mode)
+	}
+}
 
-	t.Log(path)
+func TestParseGenerationRequestRequiresScript(t *testing.T) {
+	req := httptest.NewRequest("POST", "/", bytes.NewBufferString(`{"script":""}`))
+	if _, err := parseGenerationRequest(req); err == nil {
+		t.Fatal("expected error for empty script")
+	}
 }
