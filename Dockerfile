@@ -1,16 +1,20 @@
-FROM golang:1.24.0 AS builder
+FROM golang:1.24.0-bookworm AS builder
 WORKDIR /app
 COPY go.mod go.sum ./
 RUN --mount=type=cache,target=/go/pkg go mod download
 COPY . .
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /bin/app ./cmd/server
+RUN apt-get update && apt-get install -y --no-install-recommends build-essential pkg-config && \
+    CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -o /bin/app ./cmd/server && \
+    apt-get purge -y build-essential pkg-config && apt-get autoremove -y && rm -rf /var/lib/apt/lists/*
 
-FROM alpine:3.20
-RUN apk add --no-cache \
+FROM debian:bookworm-slim
+RUN apt-get update && apt-get install -y --no-install-recommends \
         ffmpeg \
         ca-certificates \
         fontconfig \
-        font-roboto-flex && \
+        fonts-roboto \
+        libsqlite3-0 && \
+    rm -rf /var/lib/apt/lists/* && \
     fc-cache -f -v
 COPY --from=builder /bin/app /bin/app
 COPY --from=builder /app/assets /app/assets
