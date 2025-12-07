@@ -27,6 +27,7 @@ func HandleReplicateRequest(m *http.ServeMux, minioClient *services.MinioService
 	m.HandleFunc(prefix+"/generate-kling-short", enableCORS(generateKlingShort))
 	m.HandleFunc(prefix+"/generate-image-short", enableCORS(generateImageShort))
 	m.HandleFunc(prefix+"/job-status", enableCORS(getJobStatus))
+	m.HandleFunc(prefix+"/retry", enableCORS(retryJob))
 	m.HandleFunc(prefix+"/test-sign-url", testSignURL)
 
 	m.HandleFunc(prefix+"/get-completition", handleCompletition)
@@ -196,13 +197,15 @@ func enqueueGenerationJob(req generationRequest, opts generationOptions) (string
 		MusicID:         req.MusicID,
 		Webhook:         req.Webhook,
 		Status:          "queued",
+		GenerateKling:   opts.GenerateKling,
+		GenerateImages:  opts.GenerateImages,
 	}
 
 	if err := jobStore.CreateJob(context.Background(), record); err != nil {
 		return "", err
 	}
 
-	go runJob(jobID, opts)
+	go runJob(jobID)
 
 	return jobID, nil
 }
@@ -257,7 +260,48 @@ func getJobStatus(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-func runJob(jobID string, opts generationOptions) {
+func retryJob(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	if jobStore == nil {
+		http.Error(w, "job store not configured", http.StatusInternalServerError)
+		return
+	}
+
+	jobID := r.URL.Query().Get("jobId")
+	if jobID == "" {
+		var body struct {
+			JobID string `json:"jobId"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&body); err == nil {
+			jobID = body.JobID
+		}
+	}
+	if jobID == "" {
+		http.Error(w, "jobId is required", http.StatusBadRequest)
+		return
+	}
+
+	ctx := context.Background()
+	if _, err := jobStore.GetJob(ctx, jobID); err != nil {
+		http.Error(w, "Job not found", http.StatusNotFound)
+		return
+	}
+
+	if err := jobStore.MarkForRetry(ctx, jobID); err != nil {
+		http.Error(w, "Failed to mark retry", http.StatusInternalServerError)
+		return
+	}
+
+	go runJob(jobID)
+
+	w.WriteHeader(http.StatusAccepted)
+	w.Write([]byte(`{"status":"queued"}`))
+}
+
+func runJob(jobID string) {
 	if jobStore == nil {
 		log.Printf("job %s: no store configured", jobID)
 		return
@@ -268,6 +312,11 @@ func runJob(jobID string, opts generationOptions) {
 	if err != nil {
 		log.Printf("job %s: load failed: %v", jobID, err)
 		return
+	}
+
+	opts := generationOptions{GenerateKling: record.GenerateKling, GenerateImages: record.GenerateImages}
+	if !opts.GenerateKling && !opts.GenerateImages {
+		opts.GenerateImages = true
 	}
 
 	if err := jobStore.UpdateStatus(ctx, jobID, "running", "", ""); err != nil {
@@ -283,7 +332,7 @@ func runJob(jobID string, opts generationOptions) {
 		if updated.RetryCount < updated.MaxRetries {
 			log.Printf("job %s: retrying (%d/%d)", jobID, updated.RetryCount, updated.MaxRetries)
 			time.AfterFunc(10*time.Second, func() {
-				runJob(jobID, opts)
+				runJob(jobID)
 			})
 		}
 	}

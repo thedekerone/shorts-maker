@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -26,6 +27,8 @@ type JobRecord struct {
 	Status          string
 	RetryCount      int
 	MaxRetries      int
+	GenerateKling   bool
+	GenerateImages  bool
 	KlingURL        string
 	ImagesURL       string
 	ThumbURL        string
@@ -73,6 +76,8 @@ func (s *Store) migrate() error {
 		status TEXT NOT NULL,
 		retry_count INTEGER NOT NULL DEFAULT 0,
 		max_retries INTEGER NOT NULL DEFAULT 3,
+		generate_kling INTEGER NOT NULL DEFAULT 0,
+		generate_images INTEGER NOT NULL DEFAULT 0,
 		kling_url TEXT,
 		images_url TEXT,
 		thumb_url TEXT,
@@ -83,7 +88,23 @@ func (s *Store) migrate() error {
 	);
 	CREATE INDEX IF NOT EXISTS idx_jobs_status ON jobs(status);
 	`)
-	return err
+	if err != nil {
+		return err
+	}
+
+	if err := s.addColumn("generate_kling", "INTEGER NOT NULL DEFAULT 0"); err != nil {
+		return err
+	}
+	if err := s.addColumn("generate_images", "INTEGER NOT NULL DEFAULT 0"); err != nil {
+		return err
+	}
+	if err := s.addColumn("thumb_url", "TEXT"); err != nil {
+		return err
+	}
+	if err := s.addColumn("current_url", "TEXT"); err != nil {
+		return err
+	}
+	return nil
 }
 
 // Close releases the underlying database connection.
@@ -98,9 +119,9 @@ func (s *Store) CreateJob(ctx context.Context, job JobRecord) error {
 	}
 	now := time.Now().UTC()
 	_, err := s.db.ExecContext(ctx, `
-	INSERT INTO jobs (id, script, voice_id, mode, visual_style, caption_style, caption_position, music_id, webhook, status, retry_count, max_retries, created_at, updated_at)
-	VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?)
-	`, job.ID, job.Script, job.VoiceID, job.Mode, job.VisualStyle, job.CaptionStyle, job.CaptionPosition, job.MusicID, job.Webhook, job.Status, job.MaxRetries, now, now)
+	INSERT INTO jobs (id, script, voice_id, mode, visual_style, caption_style, caption_position, music_id, webhook, status, retry_count, max_retries, generate_kling, generate_images, created_at, updated_at)
+	VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?)
+	`, job.ID, job.Script, job.VoiceID, job.Mode, job.VisualStyle, job.CaptionStyle, job.CaptionPosition, job.MusicID, job.Webhook, job.Status, job.MaxRetries, boolToInt(job.GenerateKling), boolToInt(job.GenerateImages), now, now)
 	return err
 }
 
@@ -150,15 +171,19 @@ func (s *Store) UpdateVideoURL(ctx context.Context, id, variant, url string) err
 func (s *Store) GetJob(ctx context.Context, id string) (JobRecord, error) {
 	row := s.db.QueryRowContext(ctx, `
 	SELECT id, script, voice_id, mode, visual_style, caption_style, caption_position, music_id, webhook, status, retry_count, max_retries,
+		generate_kling, generate_images,
 		COALESCE(kling_url, ''), COALESCE(images_url, ''), COALESCE(thumb_url, ''), COALESCE(current_url, ''), COALESCE(error, ''), created_at, updated_at
 	FROM jobs WHERE id=?
 	`, id)
 
 	var job JobRecord
-	err := row.Scan(&job.ID, &job.Script, &job.VoiceID, &job.Mode, &job.VisualStyle, &job.CaptionStyle, &job.CaptionPosition, &job.MusicID, &job.Webhook, &job.Status, &job.RetryCount, &job.MaxRetries, &job.KlingURL, &job.ImagesURL, &job.ThumbURL, &job.CurrentURL, &job.Error, &job.CreatedAt, &job.UpdatedAt)
+	var genK, genI int
+	err := row.Scan(&job.ID, &job.Script, &job.VoiceID, &job.Mode, &job.VisualStyle, &job.CaptionStyle, &job.CaptionPosition, &job.MusicID, &job.Webhook, &job.Status, &job.RetryCount, &job.MaxRetries, &genK, &genI, &job.KlingURL, &job.ImagesURL, &job.ThumbURL, &job.CurrentURL, &job.Error, &job.CreatedAt, &job.UpdatedAt)
 	if errors.Is(err, sql.ErrNoRows) {
 		return JobRecord{}, fmt.Errorf("job %s not found", id)
 	}
+	job.GenerateKling = genK == 1
+	job.GenerateImages = genI == 1
 	return job, err
 }
 
@@ -195,6 +220,11 @@ func (s *Store) IncrementRetry(ctx context.Context, id string, errMsg string) (J
 	return job, nil
 }
 
+func (s *Store) MarkForRetry(ctx context.Context, id string) error {
+	_, err := s.db.ExecContext(ctx, `UPDATE jobs SET status = ?, error = '', retry_count = 0, updated_at = ? WHERE id = ?`, "queued", time.Now().UTC(), id)
+	return err
+}
+
 // UpdateWebhook sets webhook URL (used when retrying manually).
 func (s *Store) UpdateWebhook(ctx context.Context, id, webhook string) error {
 	_, err := s.db.ExecContext(ctx, `UPDATE jobs SET webhook=?, updated_at=? WHERE id=?`, webhook, time.Now().UTC(), id)
@@ -206,4 +236,22 @@ func nullIfEmpty(val string) any {
 		return nil
 	}
 	return val
+}
+
+func boolToInt(b bool) int {
+	if b {
+		return 1
+	}
+	return 0
+}
+
+func (s *Store) addColumn(name, def string) error {
+	stmt := fmt.Sprintf("ALTER TABLE jobs ADD COLUMN %s %s", name, def)
+	if _, err := s.db.Exec(stmt); err != nil {
+		if strings.Contains(strings.ToLower(err.Error()), "duplicate column name") {
+			return nil
+		}
+		return err
+	}
+	return nil
 }
