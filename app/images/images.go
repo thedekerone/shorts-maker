@@ -82,8 +82,9 @@ func GetImagesWithTimestamps(shotPlan *elevenlabs.ShotPlan, mode string, userSty
 	}
 
 	basePrompts := alignImagePrompts(promptResults.ImagesPrompt, shotPlan.Shots)
-	jobs := make([]imageJob, len(basePrompts))
-	for i, prompt := range basePrompts {
+	linkedPrompts := linkPromptsWithContext(basePrompts, shotPlan.Shots)
+	jobs := make([]imageJob, len(linkedPrompts))
+	for i, prompt := range linkedPrompts {
 		jobs[i] = imageJob{index: i, shot: shotPlan.Shots[i], prompt: prompt}
 	}
 
@@ -172,6 +173,29 @@ func alignImagePrompts(entries []services.ImagesPrompts, shots []elevenlabs.Shot
 		log.Printf("LLM prompt count mismatch: got %d for %d shots", len(entries), len(shots))
 	}
 	return prompts
+}
+
+func linkPromptsWithContext(prompts []string, shots []elevenlabs.Shot) []string {
+	linked := make([]string, len(prompts))
+	for i, prompt := range prompts {
+		trimmed := strings.TrimSpace(prompt)
+		if i == 0 {
+			linked[i] = fmt.Sprintf("OPENING SHOT: %s", trimmed)
+			continue
+		}
+
+		prev := "previous beat"
+		if i-1 < len(shots) {
+			prev = sanitizeShotText(shots[i-1].Text)
+		}
+		curr := "current beat"
+		if i < len(shots) {
+			curr = sanitizeShotText(shots[i].Text)
+		}
+
+		linked[i] = fmt.Sprintf("CONTINUATION from previous moment (%s) into current action (%s). %s", prev, curr, trimmed)
+	}
+	return linked
 }
 
 func fallbackPromptFromShot(shot elevenlabs.Shot) string {
