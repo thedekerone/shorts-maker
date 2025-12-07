@@ -84,10 +84,11 @@ func CreateShortSubsWithStyles(transcript *models.TranscriptionOutput, styles *S
 	}
 
 	const (
-		maxCaptionChars = 28
-		maxCaptionWords = 6
+		maxCaptionChars = 32
+		maxCaptionWords = 8
 		minGapSeconds   = 0.05
-		minDuration     = 0.35
+		minDuration     = 0.4
+		maxDuration     = 4.0
 	)
 
 	var (
@@ -96,7 +97,7 @@ func CreateShortSubsWithStyles(transcript *models.TranscriptionOutput, styles *S
 		lastEnd   float32
 	)
 
-	flushChunk := func() {
+	flushChunk := func(force bool) {
 		if len(chunk) == 0 {
 			return
 		}
@@ -144,10 +145,28 @@ func CreateShortSubsWithStyles(transcript *models.TranscriptionOutput, styles *S
 		chunk = chunk[:0]
 	}
 
+	shouldBreak := func(chunk []models.Word, next models.Word) bool {
+		if len(chunk) == 0 {
+			return false
+		}
+
+		duration := float32(chunk[len(chunk)-1].End - chunk[0].Start)
+		if duration >= maxDuration {
+			return true
+		}
+
+		gap := next.Start - chunk[len(chunk)-1].End
+		return gap >= 1.2
+	}
+
 	addWord := func(w models.Word) {
-		chunk = append(chunk, w)
-		if captionLength(chunk) >= maxCaptionChars || len(chunk) >= maxCaptionWords {
-			flushChunk()
+		nextChunk := append(chunk, w)
+		chunk = nextChunk
+
+		trimmed := strings.TrimSpace(w.Word)
+		duration := float32(chunk[len(chunk)-1].End - chunk[0].Start)
+		if captionLength(chunk) >= maxCaptionChars || len(chunk) >= maxCaptionWords || duration >= maxDuration || wordEndsSentence(trimmed) {
+			flushChunk(false)
 		}
 	}
 
@@ -159,18 +178,21 @@ func CreateShortSubsWithStyles(transcript *models.TranscriptionOutput, styles *S
 			}
 			chunk = chunk[:0]
 			chunk = append(chunk, models.Word{Word: text, Start: segment.Start, End: segment.End})
-			flushChunk()
+			flushChunk(true)
 			continue
 		}
 
-		for _, w := range segment.Words {
+		for idx, w := range segment.Words {
 			addWord(w)
+			if idx < len(segment.Words)-1 && shouldBreak(chunk, segment.Words[idx+1]) {
+				flushChunk(false)
+			}
 		}
 
-		flushChunk()
+		flushChunk(true)
 	}
 
-	flushChunk()
+	flushChunk(true)
 
 	return subtitles
 }
@@ -203,6 +225,19 @@ func captionLength(words []models.Word) int {
 		}
 	}
 	return length
+}
+
+func wordEndsSentence(word string) bool {
+	trimmed := strings.TrimSpace(word)
+	if trimmed == "" {
+		return false
+	}
+	switch trimmed[len(trimmed)-1] {
+	case '.', '!', '?':
+		return true
+	default:
+		return false
+	}
 }
 
 func CreateSubtitleImage(subs *Subtitle, subtitlesPath string) (engine.SubtitleImage, error) {
