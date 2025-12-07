@@ -185,7 +185,7 @@ func enqueueGenerationJob(req generationRequest, opts generationOptions) (string
 	jobs[jobID] = job
 	jobsMutex.Unlock()
 
-	go processVideoGeneration(jobID, req.Script, req.Webhook, req.VoiceID, req.Mode, req.VisualStyle, req.CaptionStyle, opts)
+	go processVideoGeneration(jobID, req.Script, req.Webhook, req.VoiceID, req.Mode, req.VisualStyle, req.CaptionStyle, req.CaptionPosition, opts)
 
 	return jobID, nil
 }

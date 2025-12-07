@@ -7,7 +7,7 @@ Follow these rules:
 1. Output strict JSON identical to the schema below (no commentary, markdown, or extra fields):
    {
      "numImages": <integer>,
-     "stylePrompt": "STYLE: ...; negatives: ...",
+     "stylePrompt": "STYLE: ...",
      "images": [
        { "prompt": "<SCENE ...> <NEGATIVES ...>", "duration": <float> }
      ]

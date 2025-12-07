@@ -41,13 +41,14 @@ type generationOptions struct {
 }
 
 type generationRequest struct {
-	Script       string `json:"script"`
-	Webhook      string `json:"webhook"`
-	CaptionStyle string `json:"caption_style"`
-	VoiceID      string `json:"voice_id"`
-	Mode         string `json:"mode"`
-	MusicID      string `json:"music_id"`
-	VisualStyle  string `json:"visual_style"`
+	Script          string `json:"script"`
+	Webhook         string `json:"webhook"`
+	CaptionStyle    string `json:"caption_style"`
+	CaptionPosition string `json:"caption_position"`
+	VoiceID         string `json:"voice_id"`
+	Mode            string `json:"mode"`
+	MusicID         string `json:"music_id"`
+	VisualStyle     string `json:"visual_style"`
 }
 
 func cleanURL(u string) string {

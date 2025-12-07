@@ -3,6 +3,7 @@ package images
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"strings"
 	"sync"
 
@@ -80,12 +81,9 @@ func GetImagesWithTimestamps(shotPlan *elevenlabs.ShotPlan, mode string, userSty
 		prompt string
 	}
 
-	jobs := make([]imageJob, len(promptResults.ImagesPrompt))
-	for i, p := range promptResults.ImagesPrompt {
-		prompt := strings.TrimSpace(p.Prompt)
-		if prompt == "" {
-			prompt = strings.TrimSpace(shotPlan.Shots[i].Text)
-		}
+	basePrompts := alignImagePrompts(promptResults.ImagesPrompt, shotPlan.Shots)
+	jobs := make([]imageJob, len(basePrompts))
+	for i, prompt := range basePrompts {
 		jobs[i] = imageJob{index: i, shot: shotPlan.Shots[i], prompt: prompt}
 	}
 
@@ -105,22 +103,47 @@ func GetImagesWithTimestamps(shotPlan *elevenlabs.ShotPlan, mode string, userSty
 			sem <- struct{}{}
 			defer func() { <-sem }()
 
-			finalPrompt := stylePrefix + "\n\n " + job.prompt
-			urls, err := rs.GetImages(finalPrompt, 1, mode)
-			if err != nil {
-				once.Do(func() { firstErr = fmt.Errorf("image %d: %w", job.index, err) })
-				return
+			variants := buildPromptVariants(stylePrefix, job.prompt, job.shot)
+			var (
+				imagePath  string
+				promptUsed string
+				lastErr    error
+			)
+
+			for attempt, candidate := range variants {
+				urls, err := rs.GetImages(candidate, 1, mode)
+				if err != nil {
+					lastErr = err
+					log.Printf("image job %d attempt %d failed: %v", job.index, attempt+1, err)
+					continue
+				}
+				if len(urls) == 0 || urls[0] == "" {
+					lastErr = fmt.Errorf("empty output")
+					log.Printf("image job %d attempt %d returned empty output", job.index, attempt+1)
+					continue
+				}
+
+				imagePath = urls[0]
+				promptUsed = candidate
+				break
 			}
-			if len(urls) == 0 || urls[0] == "" {
-				once.Do(func() { firstErr = fmt.Errorf("image %d: empty result", job.index) })
+
+			if imagePath == "" {
+				once.Do(func() {
+					if lastErr != nil {
+						firstErr = fmt.Errorf("image %d failed after retries: %w", job.index, lastErr)
+					} else {
+						firstErr = fmt.Errorf("image %d failed after retries", job.index)
+					}
+				})
 				return
 			}
 
 			dur := job.shot.End - job.shot.Start
 			out[job.index] = models.ImageWithTimestamp{
-				URL:       urls[0],
+				URL:       imagePath,
 				Timestamp: dur,
-				Prompt:    finalPrompt,
+				Prompt:    promptUsed,
 			}
 		}(job)
 	}
@@ -131,4 +154,54 @@ func GetImagesWithTimestamps(shotPlan *elevenlabs.ShotPlan, mode string, userSty
 	}
 
 	return &models.ImagePlan{StylePrompt: styleAnchor, Shots: out}, nil
+}
+
+const safePromptSuffix = " Ensure scene remains fully clothed, public-friendly, PG-rated; no gore, nudity, or explicit content."
+
+func alignImagePrompts(entries []services.ImagesPrompts, shots []elevenlabs.Shot) []string {
+	prompts := make([]string, len(shots))
+	for i := range shots {
+		if i < len(entries) {
+			prompts[i] = strings.TrimSpace(entries[i].Prompt)
+		}
+		if prompts[i] == "" {
+			prompts[i] = fallbackPromptFromShot(shots[i])
+		}
+	}
+	if len(entries) != len(shots) {
+		log.Printf("LLM prompt count mismatch: got %d for %d shots", len(entries), len(shots))
+	}
+	return prompts
+}
+
+func fallbackPromptFromShot(shot elevenlabs.Shot) string {
+	sanitized := sanitizeShotText(shot.Text)
+	return fmt.Sprintf("SCENE: %s. NEGATIVES: nudity, gore, explicit content, watermark, blur.", sanitized)
+}
+
+func buildPromptVariants(stylePrefix string, basePrompt string, shot elevenlabs.Shot) []string {
+	basePrompt = strings.TrimSpace(basePrompt)
+	if basePrompt == "" {
+		basePrompt = strings.TrimSpace(shot.Text)
+	}
+
+	sanitized := sanitizeShotText(shot.Text)
+
+	return []string{
+		fmt.Sprintf("%s\n\n %s%s", stylePrefix, basePrompt, safePromptSuffix),
+		fmt.Sprintf("%s\n\n SCENE: %s. NEGATIVES: nudity, lingerie, gore, explicit content, graphic violence.%s", stylePrefix, sanitized, safePromptSuffix),
+		fmt.Sprintf("%s\n\n SCENE: cinematic establishing shot of %s, crowd-friendly. NEGATIVES: nudity, blood, injuries, suggestive poses.%s", stylePrefix, sanitized, safePromptSuffix),
+	}
+}
+
+func sanitizeShotText(text string) string {
+	clean := strings.ReplaceAll(text, "\n", " ")
+	clean = strings.TrimSpace(clean)
+	if clean == "" {
+		return "the scene's environment"
+	}
+	if len(clean) > 160 {
+		clean = clean[:160]
+	}
+	return clean
 }

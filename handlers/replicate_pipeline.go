@@ -57,7 +57,7 @@ func uploadGeneratedFile(mio *services.MinioService, filePath string, fileName s
 	return nil
 }
 
-func processVideoGeneration(jobID string, script string, webhook string, voiceID string, mode string, visualStyle string, captionStyle string, opts generationOptions) {
+func processVideoGeneration(jobID string, script string, webhook string, voiceID string, mode string, visualStyle string, captionStyle string, captionPosition string, opts generationOptions) {
 	job := newGenerationJob(jobID, normalizeMode(mode), webhook)
 	if !opts.GenerateKling && !opts.GenerateImages {
 		job.fail("invalid_options", errors.New("no generation variant selected"))
@@ -102,6 +102,7 @@ func processVideoGeneration(jobID string, script string, webhook string, voiceID
 	}
 	stills := plan.Shots
 	captionCfg := resolveCaptionStyle(captionStyle)
+	resolvedPosition := resolveCaptionPosition(job.mode, captionPosition)
 	if len(stills) == 0 {
 		job.fail("generate_images", errors.New("no stills generated"))
 		return
@@ -136,7 +137,7 @@ func processVideoGeneration(jobID string, script string, webhook string, voiceID
 		}
 		job.addCleanup(klingVoiceCopy)
 
-		klingVideoPath, err := createVideoFromClips(jobID, transcript, klingClips, klingVoiceCopy, job.mode, captionCfg)
+		klingVideoPath, err := createVideoFromClips(jobID, transcript, klingClips, klingVoiceCopy, job.mode, captionCfg, resolvedPosition)
 		if err != nil {
 			job.fail("create_kling_video", err)
 			return
@@ -158,7 +159,7 @@ func processVideoGeneration(jobID string, script string, webhook string, voiceID
 		}
 		job.addCleanup(imageVoiceCopy)
 
-		imageVideoPath, err := createVideo(jobID, transcript, stills, imageVoiceCopy, job.mode, captionCfg)
+		imageVideoPath, err := createVideo(jobID, transcript, stills, imageVoiceCopy, job.mode, captionCfg, resolvedPosition)
 		if err != nil {
 			job.fail("create_image_video", err)
 			return
@@ -415,7 +416,30 @@ func klingQualityMode(mode string) string {
 	return "standard"
 }
 
-func createVideoFromClips(jobID string, transcript *models.TranscriptionOutput, clips []models.VideoWithTimestamp, voice string, mode string, captionCfg captionStyleConfig) (string, error) {
+func resolveCaptionPosition(mode string, requested string) string {
+	pos := strings.TrimSpace(strings.ToLower(requested))
+	switch pos {
+	case "top", "bottom", "center":
+		return pos
+	}
+	if strings.EqualFold(mode, "portrait") {
+		return "center"
+	}
+	return "bottom"
+}
+
+func alignmentTagForPosition(pos string) string {
+	switch pos {
+	case "top":
+		return "{\\an8}"
+	case "center":
+		return "{\\an5}"
+	default:
+		return "{\\an2}"
+	}
+}
+
+func createVideoFromClips(jobID string, transcript *models.TranscriptionOutput, clips []models.VideoWithTimestamp, voice string, mode string, captionCfg captionStyleConfig, position string) (string, error) {
 	ctx := context.Background()
 
 	updateJobStatus(jobID, "merging_clips", "", "")
@@ -455,7 +479,8 @@ func createVideoFromClips(jobID string, transcript *models.TranscriptionOutput, 
 		updateJobStatus(jobID, "failed", "", "Error getting absolute path for ASS template: "+err.Error())
 		return "", err
 	}
-	subtitlesPath, err := subtitles.CreateAssFile(animationSubs, baseAssPath, captionCfg.TextPrefix, captionCfg.Karaoke)
+	fullPrefix := captionCfg.TextPrefix + alignmentTagForPosition(position)
+	subtitlesPath, err := subtitles.CreateAssFile(animationSubs, baseAssPath, fullPrefix, captionCfg.Karaoke)
 	if err != nil {
 		return "", err
 	}
@@ -468,7 +493,7 @@ func createVideoFromClips(jobID string, transcript *models.TranscriptionOutput, 
 	return outputFilePath, nil
 }
 
-func createVideo(jobID string, transcript *models.TranscriptionOutput, imagesWithTS []models.ImageWithTimestamp, voice string, mode string, captionCfg captionStyleConfig) (string, error) {
+func createVideo(jobID string, transcript *models.TranscriptionOutput, imagesWithTS []models.ImageWithTimestamp, voice string, mode string, captionCfg captionStyleConfig, position string) (string, error) {
 	ctx := context.Background()
 	updateJobStatus(jobID, "creating_subtitle_file", "", "")
 
@@ -499,7 +524,8 @@ func createVideo(jobID string, transcript *models.TranscriptionOutput, imagesWit
 		updateJobStatus(jobID, "failed", "", "Error getting absolute path for base.ass: "+err.Error())
 		return "", err
 	}
-	subtitlesPath, err := subtitles.CreateAssFile(animationSubs, baseAssPath, captionCfg.TextPrefix, captionCfg.Karaoke)
+	fullPrefix := captionCfg.TextPrefix + alignmentTagForPosition(position)
+	subtitlesPath, err := subtitles.CreateAssFile(animationSubs, baseAssPath, fullPrefix, captionCfg.Karaoke)
 	if err != nil {
 		return "", err
 	}
