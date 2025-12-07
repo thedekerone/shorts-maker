@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"math"
 	"strings"
 
 	"github.com/thedekerone/shorts-maker/subtitles"
@@ -82,4 +83,13 @@ func resolveCaptionStyle(name string) captionStyleConfig {
 			Karaoke:    false,
 		}
 	}
+}
+
+func adjustCaptionForMode(cfg captionStyleConfig, mode string) captionStyleConfig {
+	copy := cfg
+	if strings.EqualFold(mode, "portrait") {
+		font := float64(copy.SubtitleStyles.FontSize)
+		copy.SubtitleStyles.FontSize = int(math.Max(26, font*0.82))
+	}
+	return copy
 }

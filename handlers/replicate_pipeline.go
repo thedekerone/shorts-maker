@@ -26,6 +26,8 @@ import (
 	"github.com/thedekerone/shorts-maker/subtitles"
 )
 
+const klingMaxRetries = 3
+
 func uploadGeneratedFile(mio *services.MinioService, filePath string, fileName string, jobID string) error {
 	file, err := os.Open(filePath)
 	if err != nil {
@@ -57,33 +59,29 @@ func uploadGeneratedFile(mio *services.MinioService, filePath string, fileName s
 	return nil
 }
 
-func processVideoGeneration(jobID string, script string, webhook string, voiceID string, mode string, visualStyle string, captionStyle string, captionPosition string, opts generationOptions) {
+func processVideoGeneration(jobID string, script string, webhook string, voiceID string, mode string, visualStyle string, captionStyle string, captionPosition string, opts generationOptions) error {
 	job := newGenerationJob(jobID, normalizeMode(mode), webhook)
 	if !opts.GenerateKling && !opts.GenerateImages {
-		job.fail("invalid_options", errors.New("no generation variant selected"))
-		return
+		return job.fail("invalid_options", errors.New("no generation variant selected"))
 	}
 	defer job.cleanupFiles()
 
 	log.Printf("job %s: starting generation", jobID)
 
 	if err := job.initServices(); err != nil {
-		job.fail("init_services", err)
-		return
+		return job.fail("init_services", err)
 	}
 
 	voicePath, transcript, err := generateVoice(jobID, script, voiceID)
 	if err != nil {
-		job.fail("generate_voice", err)
-		return
+		return job.fail("generate_voice", err)
 	}
 	job.addCleanup(voicePath)
 
 	if transcript == nil {
 		transcript, err = generateTranscription(jobID, job.replicate, voicePath, script)
 		if err != nil {
-			job.fail("generate_transcription", err)
-			return
+			return job.fail("generate_transcription", err)
 		}
 	}
 
@@ -91,21 +89,18 @@ func processVideoGeneration(jobID string, script string, webhook string, voiceID
 	log.Printf("job %s: built %d shots", jobID, len(shotPlan.Shots))
 
 	if err := uploadGeneratedFile(job.minio, voicePath, "voice_script", jobID); err != nil {
-		job.fail("upload_voice", err)
-		return
+		return job.fail("upload_voice", err)
 	}
 
 	plan, err := generateImages(jobID, &shotPlan, job.mode, visualStyle)
 	if err != nil {
-		job.fail("generate_images", err)
-		return
+		return job.fail("generate_images", err)
 	}
 	stills := plan.Shots
-	captionCfg := resolveCaptionStyle(captionStyle)
+	captionCfg := adjustCaptionForMode(resolveCaptionStyle(captionStyle), job.mode)
 	resolvedPosition := resolveCaptionPosition(job.mode, captionPosition)
 	if len(stills) == 0 {
-		job.fail("generate_images", errors.New("no stills generated"))
-		return
+		return job.fail("generate_images", errors.New("no stills generated"))
 	}
 	for _, still := range stills {
 		job.addCleanup(still.URL)
@@ -113,8 +108,7 @@ func processVideoGeneration(jobID string, script string, webhook string, voiceID
 
 	for i, still := range stills {
 		if err := uploadGeneratedFile(job.minio, still.URL, fmt.Sprintf("generate_image_%d", i), jobID); err != nil {
-			job.fail("upload_image", err)
-			return
+			return job.fail("upload_image", err)
 		}
 	}
 
@@ -123,8 +117,7 @@ func processVideoGeneration(jobID string, script string, webhook string, voiceID
 	if opts.GenerateKling {
 		klingClips, err := generateKlingVideos(jobID, job.replicate, stills, job.mode)
 		if err != nil {
-			job.fail("generate_kling", err)
-			return
+			return job.fail("generate_kling", err)
 		}
 		for _, clip := range klingClips {
 			job.addCleanup(clip.Path)
@@ -132,44 +125,38 @@ func processVideoGeneration(jobID string, script string, webhook string, voiceID
 
 		klingVoiceCopy, err := duplicateFile(voicePath)
 		if err != nil {
-			job.fail("copy_voice_kling", err)
-			return
+			return job.fail("copy_voice_kling", err)
 		}
 		job.addCleanup(klingVoiceCopy)
 
 		klingVideoPath, err := createVideoFromClips(jobID, transcript, klingClips, klingVoiceCopy, job.mode, captionCfg, resolvedPosition)
 		if err != nil {
-			job.fail("create_kling_video", err)
-			return
+			return job.fail("create_kling_video", err)
 		}
 		job.addCleanup(klingVideoPath)
 
 		klingURL, err = uploadToMinio(jobID, "kling_video", job.minio, klingVideoPath)
 		if err != nil {
-			job.fail("upload_kling_video", err)
-			return
+			return job.fail("upload_kling_video", err)
 		}
 	}
 
 	if opts.GenerateImages {
 		imageVoiceCopy, err := duplicateFile(voicePath)
 		if err != nil {
-			job.fail("copy_voice_images", err)
-			return
+			return job.fail("copy_voice_images", err)
 		}
 		job.addCleanup(imageVoiceCopy)
 
 		imageVideoPath, err := createVideo(jobID, transcript, stills, imageVoiceCopy, job.mode, captionCfg, resolvedPosition)
 		if err != nil {
-			job.fail("create_image_video", err)
-			return
+			return job.fail("create_image_video", err)
 		}
 		job.addCleanup(imageVideoPath)
 
 		imageURL, err = uploadToMinio(jobID, "image_video", job.minio, imageVideoPath)
 		if err != nil {
-			job.fail("upload_image_video", err)
-			return
+			return job.fail("upload_image_video", err)
 		}
 	}
 
@@ -182,8 +169,7 @@ func processVideoGeneration(jobID string, script string, webhook string, voiceID
 	}
 
 	if finalURL == "" {
-		job.fail("missing_outputs", errors.New("no video outputs generated"))
-		return
+		return job.fail("missing_outputs", errors.New("no video outputs generated"))
 	}
 
 	updateJobStatus(jobID, "completed", finalURL, "")
@@ -193,6 +179,7 @@ func processVideoGeneration(jobID string, script string, webhook string, voiceID
 	}
 
 	log.Printf("job %s: generation completed", jobID)
+	return nil
 }
 
 func connectToMinio(jobID string) (*services.MinioService, error) {
@@ -292,9 +279,23 @@ func generateKlingVideos(jobID string, rs *services.ReplicateService, stills []m
 				prompt = "Cinematic shot, photorealistic"
 			}
 
-			videoPath, err := rs.GenerateKlingVideo(prompt, seg.StartImage.URL, seg.Duration, qualityMode)
-			if err != nil {
-				once.Do(func() { firstErr = fmt.Errorf("Error generating Kling video %d: %w", i, err) })
+			variants := buildKlingPromptVariants(prompt)
+			var (
+				videoPath string
+				lastErr   error
+			)
+
+			for attempt := 0; attempt < klingMaxRetries; attempt++ {
+				candidate := variants[minInt(attempt, len(variants)-1)]
+				videoPath, lastErr = rs.GenerateKlingVideo(candidate, seg.StartImage.URL, seg.Duration, qualityMode)
+				if lastErr == nil {
+					break
+				}
+				log.Printf("job %s: kling segment %d attempt %d failed: %v", jobID, i, attempt+1, lastErr)
+			}
+
+			if lastErr != nil {
+				once.Do(func() { firstErr = fmt.Errorf("Error generating Kling video %d: %w", i, lastErr) })
 				return
 			}
 
@@ -437,6 +438,28 @@ func alignmentTagForPosition(pos string) string {
 	default:
 		return "{\\an2}"
 	}
+}
+
+const klingSafeSuffix = " PG-rated, family-friendly visuals; no nudity, no gore, no explicit content."
+
+func buildKlingPromptVariants(base string) []string {
+	sanitized := strings.TrimSpace(base)
+	if sanitized == "" {
+		sanitized = "Cinematic shot, photorealistic"
+	}
+	fallback := "Wide cinematic establishing shot of the scene, dynamic camera move, dramatic lighting."
+	return []string{
+		sanitized,
+		sanitized + klingSafeSuffix,
+		fallback + klingSafeSuffix,
+	}
+}
+
+func minInt(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }
 
 func createVideoFromClips(jobID string, transcript *models.TranscriptionOutput, clips []models.VideoWithTimestamp, voice string, mode string, captionCfg captionStyleConfig, position string) (string, error) {

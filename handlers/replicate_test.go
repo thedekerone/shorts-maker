@@ -2,10 +2,13 @@ package handlers
 
 import (
 	"bytes"
+	"context"
 	"net/http/httptest"
+	"path/filepath"
 	"testing"
 
 	"github.com/thedekerone/shorts-maker/models"
+	"github.com/thedekerone/shorts-maker/services/store"
 )
 
 func TestNormalizeMode(t *testing.T) {
@@ -83,20 +86,45 @@ func TestBuildKlingSegments(t *testing.T) {
 }
 
 func TestSetJobVideoURL(t *testing.T) {
-	job := &Job{ID: "job1"}
-	jobsMutex.Lock()
-	jobs[job.ID] = job
-	jobsMutex.Unlock()
-
-	setJobVideoURL(job.ID, "kling_video", "https://foo")
-	if job.KlingURL == "" || job.URL != job.KlingURL {
-		t.Fatalf("kling url not set properly: %+v", job)
+	st := setupTestStore(t)
+	ctx := context.Background()
+	jobID := "job1"
+	if err := st.CreateJob(ctx, store.JobRecord{ID: jobID, Script: "script", Mode: "portrait", Status: "queued"}); err != nil {
+		t.Fatalf("create job: %v", err)
 	}
 
-	setJobVideoURL(job.ID, "image_video", "https://bar")
-	if job.ImagesURL != "https://bar" {
-		t.Fatalf("image url not set")
+	setJobVideoURL(jobID, "kling_video", "https://foo")
+	record, err := st.GetJob(ctx, jobID)
+	if err != nil {
+		t.Fatalf("get job: %v", err)
 	}
+	if record.KlingURL == "" || cleanURL(record.KlingURL) != "https://foo" || record.CurrentURL != "https://foo" {
+		t.Fatalf("kling url not stored: %+v", record)
+	}
+
+	setJobVideoURL(jobID, "image_video", "https://bar")
+	record, err = st.GetJob(ctx, jobID)
+	if err != nil {
+		t.Fatalf("get job: %v", err)
+	}
+	if cleanURL(record.ImagesURL) != "https://bar" {
+		t.Fatalf("image url not set: %+v", record)
+	}
+}
+
+func setupTestStore(t *testing.T) *store.Store {
+	t.Helper()
+	dbPath := filepath.Join(t.TempDir(), "jobs.db")
+	st, err := store.New(dbPath)
+	if err != nil {
+		t.Fatalf("init store: %v", err)
+	}
+	RegisterJobStore(st)
+	t.Cleanup(func() {
+		st.Close()
+		RegisterJobStore(nil)
+	})
+	return st
 }
 
 func TestParseGenerationRequest(t *testing.T) {

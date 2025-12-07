@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -12,10 +13,12 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/thedekerone/shorts-maker/services"
+	"github.com/thedekerone/shorts-maker/services/store"
 )
 
-func HandleReplicateRequest(m *http.ServeMux, minioClient *services.MinioService) {
+func HandleReplicateRequest(m *http.ServeMux, minioClient *services.MinioService, jobDB *store.Store) {
 	_ = minioClient // reserved for future use (upload helpers rely on global services)
+	RegisterJobStore(jobDB)
 
 	prefix := "/replicate"
 
@@ -174,18 +177,32 @@ func parseGenerationRequest(r *http.Request) (generationRequest, error) {
 }
 
 func enqueueGenerationJob(req generationRequest, opts generationOptions) (string, error) {
+	if jobStore == nil {
+		return "", errors.New("job store not configured")
+	}
 	if !opts.GenerateKling && !opts.GenerateImages {
 		return "", errors.New("no generation variant selected")
 	}
 
 	jobID := uuid.New().String()
-	job := &Job{ID: jobID, Status: "initialized"}
+	record := store.JobRecord{
+		ID:              jobID,
+		Script:          req.Script,
+		VoiceID:         req.VoiceID,
+		Mode:            req.Mode,
+		VisualStyle:     req.VisualStyle,
+		CaptionStyle:    req.CaptionStyle,
+		CaptionPosition: req.CaptionPosition,
+		MusicID:         req.MusicID,
+		Webhook:         req.Webhook,
+		Status:          "queued",
+	}
 
-	jobsMutex.Lock()
-	jobs[jobID] = job
-	jobsMutex.Unlock()
+	if err := jobStore.CreateJob(context.Background(), record); err != nil {
+		return "", err
+	}
 
-	go processVideoGeneration(jobID, req.Script, req.Webhook, req.VoiceID, req.Mode, req.VisualStyle, req.CaptionStyle, req.CaptionPosition, opts)
+	go runJob(jobID, opts)
 
 	return jobID, nil
 }
@@ -206,11 +223,14 @@ func getJobStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jobsMutex.RLock()
-	job, exists := jobs[jobID]
-	jobsMutex.RUnlock()
+	if jobStore == nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("job store not configured"))
+		return
+	}
 
-	if !exists {
+	record, err := jobStore.GetJob(context.Background(), jobID)
+	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		w.Write([]byte("Job not found"))
 		return
@@ -224,17 +244,49 @@ func getJobStatus(w http.ResponseWriter, r *http.Request) {
 		ImagesURL string `json:"images_url,omitempty"`
 		Error     string `json:"error,omitempty"`
 	}{
-		ID:        job.ID,
-		Status:    job.Status,
-		URL:       job.FormattedURL(),
-		KlingURL:  cleanURL(job.KlingURL),
-		ImagesURL: cleanURL(job.ImagesURL),
-		Error:     job.Error,
+		ID:        record.ID,
+		Status:    record.Status,
+		URL:       cleanURL(record.CurrentURL),
+		KlingURL:  cleanURL(record.KlingURL),
+		ImagesURL: cleanURL(record.ImagesURL),
+		Error:     record.Error,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(response)
+}
+
+func runJob(jobID string, opts generationOptions) {
+	if jobStore == nil {
+		log.Printf("job %s: no store configured", jobID)
+		return
+	}
+
+	ctx := context.Background()
+	record, err := jobStore.GetJob(ctx, jobID)
+	if err != nil {
+		log.Printf("job %s: load failed: %v", jobID, err)
+		return
+	}
+
+	if err := jobStore.UpdateStatus(ctx, jobID, "running", "", ""); err != nil {
+		log.Printf("job %s: failed to set running: %v", jobID, err)
+	}
+
+	if err := processVideoGeneration(jobID, record.Script, record.Webhook, record.VoiceID, record.Mode, record.VisualStyle, record.CaptionStyle, record.CaptionPosition, opts); err != nil {
+		updated, incErr := jobStore.IncrementRetry(ctx, jobID, err.Error())
+		if incErr != nil {
+			log.Printf("job %s: retry increment failed: %v", jobID, incErr)
+			return
+		}
+		if updated.RetryCount < updated.MaxRetries {
+			log.Printf("job %s: retrying (%d/%d)", jobID, updated.RetryCount, updated.MaxRetries)
+			time.AfterFunc(10*time.Second, func() {
+				runJob(jobID, opts)
+			})
+		}
+	}
 }
 
 func enableCORS(next http.HandlerFunc) http.HandlerFunc {

@@ -1,15 +1,16 @@
 package handlers
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/thedekerone/shorts-maker/services"
+	"github.com/thedekerone/shorts-maker/services/store"
 )
 
 const defaultWebhookBase = "http://localhost:3000"
@@ -81,39 +82,20 @@ func resolveWebhookURL(raw string) string {
 	return defaultWebhookBase + raw
 }
 
-var (
-	jobs      = make(map[string]*Job)
-	jobsMutex sync.RWMutex
-)
+var jobStore *store.Store
+
+func RegisterJobStore(s *store.Store) {
+	jobStore = s
+}
 
 func setJobVideoURL(jobID, variant, url string) {
-	if url == "" {
+	if jobStore == nil || url == "" {
 		return
 	}
-
-	jobsMutex.Lock()
-	defer jobsMutex.Unlock()
-
-	job, ok := jobs[jobID]
-	if !ok {
-		return
-	}
-
-	url = cleanURL(url)
-
-	switch variant {
-	case "kling_video":
-		job.KlingURL = url
-		job.URL = url
-	case "image_video":
-		job.ImagesURL = url
-		if job.URL == "" {
-			job.URL = url
-		}
-	default:
-		if job.URL == "" {
-			job.URL = url
-		}
+	ctx := context.Background()
+	clean := cleanURL(url)
+	if err := jobStore.UpdateVideoURL(ctx, jobID, variant, clean); err != nil {
+		log.Printf("job %s: failed to update video url: %v", jobID, err)
 	}
 }
 
@@ -173,12 +155,11 @@ func (g *generationJob) fail(stage string, err error) error {
 }
 
 func updateJobStatus(jobID, status, url, errorMsg string) {
-	jobsMutex.Lock()
-	defer jobsMutex.Unlock()
-
-	if job, exists := jobs[jobID]; exists {
-		job.Status = status
-		job.URL = url
-		job.Error = errorMsg
+	if jobStore == nil {
+		return
+	}
+	ctx := context.Background()
+	if err := jobStore.UpdateStatus(ctx, jobID, status, cleanURL(url), errorMsg); err != nil {
+		log.Printf("job %s: failed to update status: %v", jobID, err)
 	}
 }

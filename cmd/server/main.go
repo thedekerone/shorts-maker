@@ -4,11 +4,13 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/minio/minio-go/v7"
 	"github.com/thedekerone/shorts-maker/handlers"
 	"github.com/thedekerone/shorts-maker/services"
+	"github.com/thedekerone/shorts-maker/services/store"
 )
 
 func main() {
@@ -56,8 +58,18 @@ func main() {
 		log.Println("Bucket created and set to public read access")
 	}
 
+	dbPath := os.Getenv("JOBS_DB_PATH")
+	if dbPath == "" {
+		dbPath = "jobs.db"
+	}
+	jobStore, err := store.New(dbPath)
+	if err != nil {
+		log.Fatalf("failed to open job store: %v", err)
+	}
+	defer jobStore.Close()
+
 	mux.HandleFunc("/ping", handlers.HealthCheckHandler)
-	handlers.HandleReplicateRequest(mux, minioClient)
+	handlers.HandleReplicateRequest(mux, minioClient, jobStore)
 	handlers.HandleVideoRequest(mux, minioClient)
 
 	log.Fatal(http.ListenAndServe(":8080", mux))
