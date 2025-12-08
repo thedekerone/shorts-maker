@@ -112,7 +112,7 @@ func (rs *ReplicateService) GetImages(prompt string, quantity int64, mode string
 	return imagePaths, nil
 }
 
-func (rs *ReplicateService) GenerateKlingVideo(prompt string, startImagePath string, durationSeconds int, qualityMode string) (string, error) {
+func (rs *ReplicateService) GenerateKlingVideo(prompt string, startImagePath string, durationSeconds int, qualityMode string, aspectRatio string, negativePrompt string) (string, error) {
 	ctx := context.TODO()
 
 	if durationSeconds != 5 && durationSeconds != 10 {
@@ -129,14 +129,22 @@ func (rs *ReplicateService) GenerateKlingVideo(prompt string, startImagePath str
 		mode = "standard"
 	}
 
-	input := replicate.PredictionInput{
-		"prompt":      prompt,
-		"start_image": startImageFile,
-		"duration":    durationSeconds,
-		"mode":        mode,
+	if aspectRatio == "" {
+		aspectRatio = "9:16"
 	}
 
-	output, err := rs.RunWithModel(ctx, "kwaivgi/kling-v2.1", input, nil)
+	input := replicate.PredictionInput{
+		"prompt":         prompt,
+		"start_image":    startImageFile,
+		"duration":       durationSeconds,
+		"mode":           mode,
+		"aspect_ratio":  aspectRatio,
+	}
+	if negativePrompt != "" {
+		input["negative_prompt"] = negativePrompt
+	}
+
+	output, err := rs.RunWithModel(ctx, "kwaivgi/kling-v2.5-turbo-pro", input, nil)
 	if err != nil {
 		return "", fmt.Errorf("kling prediction failed: %w", err)
 	}

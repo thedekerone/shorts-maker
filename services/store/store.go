@@ -92,18 +92,18 @@ func (s *Store) migrate() error {
 		return err
 	}
 
-	if err := s.addColumn("generate_kling", "INTEGER NOT NULL DEFAULT 0"); err != nil {
-		return err
+	columns := map[string]string{
+		"generate_kling":  "INTEGER NOT NULL DEFAULT 0",
+		"generate_images": "INTEGER NOT NULL DEFAULT 0",
+		"thumb_url":       "TEXT",
+		"current_url":     "TEXT",
 	}
-	if err := s.addColumn("generate_images", "INTEGER NOT NULL DEFAULT 0"); err != nil {
-		return err
+	for col, def := range columns {
+		if err := s.addColumn(col, def); err != nil {
+			return err
+		}
 	}
-	if err := s.addColumn("thumb_url", "TEXT"); err != nil {
-		return err
-	}
-	if err := s.addColumn("current_url", "TEXT"); err != nil {
-		return err
-	}
+
 	return nil
 }
 

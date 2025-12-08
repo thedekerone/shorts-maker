@@ -27,6 +27,7 @@ import (
 )
 
 const klingMaxRetries = 3
+const klingNegativePrompt = "nudity, gore, explicit content, watermark, logo, subtitles, text overlay, severe blur, extra limbs"
 
 func uploadGeneratedFile(mio *services.MinioService, filePath string, fileName string, jobID string) error {
 	file, err := os.Open(filePath)
@@ -99,6 +100,7 @@ func processVideoGeneration(jobID string, script string, webhook string, voiceID
 	stills := plan.Shots
 	captionCfg := adjustCaptionForMode(resolveCaptionStyle(captionStyle), job.mode)
 	resolvedPosition := resolveCaptionPosition(job.mode, captionPosition)
+
 	if len(stills) == 0 {
 		return job.fail("generate_images", errors.New("no stills generated"))
 	}
@@ -115,7 +117,7 @@ func processVideoGeneration(jobID string, script string, webhook string, voiceID
 	var klingURL, imageURL string
 
 	if opts.GenerateKling {
-		klingClips, err := generateKlingVideos(jobID, job.replicate, stills, job.mode)
+		klingClips, err := generateKlingVideos(jobID, job.replicate, plan, &shotPlan, job.mode)
 		if err != nil {
 			return job.fail("generate_kling", err)
 		}
@@ -240,7 +242,8 @@ func generateImages(jobID string, shotPlan *elevenlabs.ShotPlan, mode string, vi
 	return plan, nil
 }
 
-func generateKlingVideos(jobID string, rs *services.ReplicateService, stills []models.ImageWithTimestamp, mode string) ([]models.VideoWithTimestamp, error) {
+func generateKlingVideos(jobID string, rs *services.ReplicateService, plan *models.ImagePlan, shotPlan *elevenlabs.ShotPlan, mode string) ([]models.VideoWithTimestamp, error) {
+	stills := plan.Shots
 	if len(stills) == 0 {
 		return nil, fmt.Errorf("no stills provided for Kling generation")
 	}
@@ -254,7 +257,7 @@ func generateKlingVideos(jobID string, rs *services.ReplicateService, stills []m
 
 	updateJobStatus(jobID, "generating_kling_videos", "", "")
 	qualityMode := klingQualityMode(mode)
-
+	aspectRatio := klingAspectRatio(mode)
 	const maxConcurrentKlingJobs = 2
 
 	clipped := make([]models.VideoWithTimestamp, len(segments))
@@ -274,12 +277,7 @@ func generateKlingVideos(jobID string, rs *services.ReplicateService, stills []m
 			sem <- struct{}{}
 			defer func() { <-sem }()
 
-			prompt := strings.TrimSpace(seg.Prompt)
-			if prompt == "" {
-				prompt = "Cinematic shot, photorealistic"
-			}
-
-			variants := buildKlingPromptVariants(prompt)
+			variants := buildKlingPromptVariants(plan.StylePrompt, seg.Prompt, seg.Indices, shotPlan.Shots)
 			var (
 				videoPath string
 				lastErr   error
@@ -287,7 +285,7 @@ func generateKlingVideos(jobID string, rs *services.ReplicateService, stills []m
 
 			for attempt := 0; attempt < klingMaxRetries; attempt++ {
 				candidate := variants[minInt(attempt, len(variants)-1)]
-				videoPath, lastErr = rs.GenerateKlingVideo(candidate, seg.StartImage.URL, seg.Duration, qualityMode)
+				videoPath, lastErr = rs.GenerateKlingVideo(candidate, seg.StartImage.URL, seg.Duration, qualityMode, aspectRatio, klingNegativePrompt)
 				if lastErr == nil {
 					break
 				}
@@ -319,6 +317,7 @@ type klingSegment struct {
 	StartImage models.ImageWithTimestamp
 	Prompt     string
 	Duration   int
+	Indices    []int
 }
 
 func buildKlingSegments(stills []models.ImageWithTimestamp) []klingSegment {
@@ -342,22 +341,27 @@ func buildKlingSegments(stills []models.ImageWithTimestamp) []klingSegment {
 
 	var (
 		currentStart   models.ImageWithTimestamp
+		currentIndices []int
 		accumulatedDur float64
 		prompts        []string
 		startSet       bool
 	)
 
 	flush := func(duration int) {
-		prompt := strings.Join(filterEmpty(prompts), "\n")
+		prompt := strings.Join(filterEmpty(prompts), "
+")
 		if prompt == "" {
 			prompt = "Cinematic shot, photorealistic"
 		}
+		indicesCopy := append([]int(nil), currentIndices...)
 		segments = append(segments, klingSegment{
 			StartImage: currentStart,
 			Prompt:     prompt,
 			Duration:   duration,
+			Indices:    indicesCopy,
 		})
 		prompts = prompts[:0]
+		currentIndices = currentIndices[:0]
 		accumulatedDur = 0
 		startSet = false
 	}
@@ -367,6 +371,7 @@ func buildKlingSegments(stills []models.ImageWithTimestamp) []klingSegment {
 			currentStart = still
 			startSet = true
 		}
+		currentIndices = append(currentIndices, idx)
 		if trimmed := strings.TrimSpace(still.Prompt); trimmed != "" {
 			prompts = append(prompts, trimmed)
 		}
@@ -432,27 +437,86 @@ func resolveCaptionPosition(mode string, requested string) string {
 func alignmentTagForPosition(pos string) string {
 	switch pos {
 	case "top":
-		return "{\\an8}"
+		return "{\an8}"
 	case "center":
-		return "{\\an5}"
+		return "{\an5}"
 	default:
-		return "{\\an2}"
+		return "{\an2}"
 	}
 }
 
 const klingSafeSuffix = " PG-rated, family-friendly visuals; no nudity, no gore, no explicit content."
 
-func buildKlingPromptVariants(base string) []string {
-	sanitized := strings.TrimSpace(base)
-	if sanitized == "" {
-		sanitized = "Cinematic shot, photorealistic"
+func klingAspectRatio(mode string) string {
+	if strings.EqualFold(mode, "landscape") {
+		return "16:9"
 	}
-	fallback := "Wide cinematic establishing shot of the scene, dynamic camera move, dramatic lighting."
-	return []string{
-		sanitized,
-		sanitized + klingSafeSuffix,
-		fallback + klingSafeSuffix,
+	return "9:16"
+}
+
+func buildKlingPromptVariants(stylePrompt, base string, indices []int, shots []elevenlabs.Shot) []string {
+	continuity := describeShotChain(indices, shots)
+	cleaned := stripStylePrefix(base)
+	if cleaned == "" && len(indices) > 0 && indices[0] < len(shots) {
+		cleaned = sanitizeNarrative(shots[indices[0]].Text)
 	}
+	styleClause := strings.TrimSpace(stylePrompt)
+	if styleClause != "" && !strings.HasSuffix(styleClause, ".") {
+		styleClause += "."
+	}
+	if styleClause == "" {
+		styleClause = "Style: cinematic realism, true-to-life materials, physically based lighting."
+	}
+
+	cameraA := "Handheld cinematic camera with subtle micro-jitter, 35mm lens, natural parallax, physically-based lighting."
+	cameraB := "Smooth steadicam arc with a slow push-in, volumetric fog, shallow depth-of-field, specular highlights."
+	cameraC := "Aerial drift transitioning to shoulder-cam, gentle roll, dynamic shutter speed, atmospheric haze."
+
+	baseLine := fmt.Sprintf("CONTINUATION %s. SCENE: %s%s", continuity, cleaned, klingSafeSuffix)
+
+	variant1 := fmt.Sprintf("%s %s %s", cameraA, styleClause, baseLine)
+	variant2 := fmt.Sprintf("%s Maintain %s %s", cameraB, strings.TrimSuffix(styleClause, "."), baseLine)
+	variant3 := fmt.Sprintf("%s Keep %s %s", cameraC, strings.TrimSuffix(styleClause, "."), baseLine)
+
+	return []string{variant1, variant2, variant3}
+}
+
+func stripStylePrefix(input string) string {
+	lines := strings.Split(input, "\n")
+	var kept []string
+	for _, line := range lines {
+		trimmed := strings.TrimSpace(line)
+		if trimmed == "" {
+			continue
+		}
+		upper := strings.ToUpper(trimmed)
+		if strings.HasPrefix(upper, "STYLE:") || strings.HasPrefix(upper, "NEGATIVES:") {
+			continue
+		}
+		kept = append(kept, trimmed)
+	}
+	return strings.Join(kept, " ")
+}
+
+func describeShotChain(indices []int, shots []elevenlabs.Shot) string {
+	if len(indices) == 0 || len(shots) == 0 {
+		return "from the previous shot into the next beat"
+	}
+	first := indices[0]
+	curr := sanitizeNarrative(shots[first].Text)
+	prev := "previous shot"
+	if first > 0 {
+		prev = sanitizeNarrative(shots[first-1].Text)
+	}
+	return fmt.Sprintf("from shot #%d (%s) into shot #%d (%s)", first, prev, first+1, curr)
+}
+
+func sanitizeNarrative(text string) string {
+	clean := strings.TrimSpace(strings.ReplaceAll(text, "\n", " "))
+	if len(clean) > 200 {
+		clean = clean[:200]
+	}
+	return clean
 }
 
 func minInt(a, b int) int {
